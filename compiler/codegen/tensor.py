@@ -1,5 +1,6 @@
 from llvmlite import ir
-from passes import known_multiple, shared_layout
+from compiler.analysis import known_multiple
+from compiler.transforms import shared_layout
 F32 = ir.FloatType()
 I32 = ir.IntType(32)
 

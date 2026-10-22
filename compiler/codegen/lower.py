@@ -1,13 +1,11 @@
-import json
+import contextlib
 import math
-import re
-from dataclasses import dataclass
-from pathlib import Path
-from emmy.compiler.graph import Graph
-from llvmlite import binding as llvm
 from llvmlite import ir
-from passes import STATIC_SHARED_LIMIT, Options, RecurrenceEmitter, default_unroll, plain_reduction, reciprocal_sqrt_source, run_passes, sharing_width, striped_reduction, walk
-from tensor import TensorEmitter
+from compiler.analysis import STATIC_SHARED_LIMIT, walk
+from compiler.codegen.tensor import TensorEmitter
+from compiler.passes import run_passes
+from compiler.passes.recurrence import RecurrenceEmitter
+from compiler.transforms import default_unroll, plain_reduction, reciprocal_sqrt_source, sharing_width, striped_reduction
 I1 = ir.IntType(1)
 I8 = ir.IntType(8)
 I32 = ir.IntType(32)
@@ -17,12 +15,6 @@ VOID = ir.VoidType()
 
 def integer(value):
     return ir.Constant(I32, int(value.value if hasattr(value, 'as_static') else value))
-
-@dataclass(frozen=True)
-class Compilation:
-    ptx: str
-    unoptimized: str
-    optimized: str
 
 class Lowering:
 
@@ -81,7 +73,8 @@ class Lowering:
                 self.allocate(stmt.axis.name, I32)
                 if self.options.coalesced_reductions and plain_reduction(stmt):
                     accum = next((s for s in stmt.body if type(s).__name__ == 'Accum'))
-                    self.allocate('__vector_' + accum.name, ir.VectorType(F32, 4))
+                    self.allocate('__vector4_' + accum.name, ir.VectorType(F32, 4))
+                    self.allocate('__vector8_' + accum.name, ir.VectorType(F32, 8))
             if kind == 'Tile':
                 for axis in stmt.axes:
                     self.allocate(axis.name, I32)
@@ -295,13 +288,19 @@ class Lowering:
             start = self.builder.urem(self.get('lane'), integer(cooperative))
             step = integer(cooperative)
         coalesced = self.options.coalesced_reductions and self.tile_stmt is not None and striped_reduction(stmt, self.tile_stmt, self.launch['block'][0])
+        width = 4
         if coalesced:
-            start = self.builder.mul(start, integer(4))
-            step = self.builder.mul(step, integer(4))
+            count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)
+            iters = stmt.axis.extent.value // (self.launch['block'][0] * 4)
+            if iters > count >= iters // 2 and stmt.axis.extent.value % (self.launch['block'][0] * 8) == 0:
+                width = 8
+        if coalesced:
+            start = self.builder.mul(start, integer(width))
+            step = self.builder.mul(step, integer(width))
         vectorize = self.options.vector_width > 1 and plain_reduction(stmt) and (not coalesced)
         if coalesced:
-            vector_name = '__vector_' + stmt.body[-1].name
-            self.put(vector_name, ir.Constant(ir.VectorType(F32, 4), [0.0] * 4))
+            vector_name = '__vector' + str(width) + '_' + stmt.body[-1].name
+            self.put(vector_name, ir.Constant(ir.VectorType(F32, width), [0.0] * width))
         self.put(stmt.axis.name, start)
         header = self.function.append_basic_block(stmt.axis.name + '.test')
         body = self.function.append_basic_block(stmt.axis.name + '.body')
@@ -320,9 +319,9 @@ class Lowering:
         if coalesced:
             load = stmt.body[0]
             pointer = self.address(load.input, load.index)
-            vector = ir.VectorType(F32, 4)
+            vector = ir.VectorType(F32, width)
             pointer = self.builder.bitcast(pointer, vector.as_pointer(pointer.type.addrspace))
-            values = self.load(pointer, load.input, 16)
+            values = self.load(pointer, load.input, 4 * width)
             if len(stmt.body) == 3:
                 values = self.builder.fmul(values, values, flags=('contract',))
             result = self.builder.fadd(self.get(vector_name), values, flags=('reassoc', 'nsz', 'contract'))
@@ -336,7 +335,8 @@ class Lowering:
         self.reassociate = old_reassociate
         self.put(stmt.axis.name, self.builder.add(self.get(stmt.axis.name), step))
         latch = self.builder.branch(header)
-        count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)
+        if not coalesced:
+            count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)
         hint = ['llvm.loop.unroll.count', integer(count)] if count > 1 else ['llvm.loop.unroll.disable']
         metadata = ir.MDValue(self.module, (), name=str(len(self.module.metadata)))
         hints = [self.module.add_metadata(hint)]
@@ -346,7 +346,7 @@ class Lowering:
         latch.set_metadata('llvm.loop', metadata)
         self.builder.position_at_end(exit_block)
         if coalesced:
-            partial = self.intrinsic('llvm.vector.reduce.fadd.v4f32', F32, [ir.Constant(F32, 0.0), self.get(vector_name)])
+            partial = self.intrinsic(f'llvm.vector.reduce.fadd.v{width}f32', F32, [ir.Constant(F32, 0.0), self.get(vector_name)])
             partial.fastmath.add('reassoc')
             partial.fastmath.add('nsz')
             self.put(stmt.body[-1].name, partial)
@@ -368,16 +368,30 @@ class Lowering:
         if stmt.block_threads and stmt.block_threads != self.launch['block'][0]:
             raise ValueError('Tile block_threads disagrees with the launch')
         block = self.intrinsic('llvm.nvvm.read.ptx.sreg.ctaid.x', I32, [])
-        threads = self.intrinsic('llvm.nvvm.read.ptx.sreg.ntid.x', I32, [])
-        gid = self.builder.add(self.builder.mul(block, threads), self.tid)
         size = math.prod((a.extent.value for a in stmt.axes))
-        with self.builder.if_then(self.builder.icmp_unsigned('<', gid, integer(size))):
-            stride = size
-            for axis in stmt.axes:
-                extent = axis.extent.value
-                stride //= extent
-                value = self.builder.urem(self.builder.udiv(gid, integer(stride)), integer(extent))
-                self.put(axis.name, value)
+        exact = size == self.launch['grid'][0] * self.launch['block'][0]
+        direct = exact and not (stmt.raster_group and stmt.raster_axes) and stmt.axes[-1].extent.value == self.launch['block'][0]
+        if direct:
+            outer = block
+            gid = None
+        else:
+            threads = self.intrinsic('llvm.nvvm.read.ptx.sreg.ntid.x', I32, [])
+            gid = self.builder.add(self.builder.mul(block, threads), self.tid)
+            outer = gid
+        guard = contextlib.nullcontext() if exact else self.builder.if_then(self.builder.icmp_unsigned('<', gid, integer(size)))
+        with guard:
+            leading = stmt.axes[:-1] if gid is None else stmt.axes
+            if gid is None and len(leading) == 1 and leading[0].extent.value == self.launch['grid'][0]:
+                self.put(leading[0].name, outer)
+            else:
+                stride = size if gid is not None else size // stmt.axes[-1].extent.value
+                for axis in leading:
+                    extent = axis.extent.value
+                    stride //= extent
+                    value = self.builder.urem(self.builder.udiv(outer, integer(stride)), integer(extent))
+                    self.put(axis.name, value)
+            if gid is None:
+                self.put(stmt.axes[-1].name, self.tid)
             if stmt.raster_group and stmt.raster_axes:
                 names = [axis.name for axis in stmt.axes]
                 mi, ni = (names.index(name) for name in stmt.raster_axes)
@@ -475,7 +489,8 @@ class Lowering:
             index = [self.builder.add(x, self.expression(y)) for x, y in zip(index, stmt.lane_index, strict=True)]
         destination = self.builder.ptrtoint(self.address(stmt.smem, index), I32)
         source = self.builder.ptrtoint(self.address(stmt.src, stmt.src_index), I64)
-        self.assembly(f'cp.async.ca.shared.global [$0], [$1], {stmt.nbytes};', 'r,l,~{memory}', args=(destination, source))
+        policy = 'cg' if stmt.nbytes == 16 else 'ca'
+        self.assembly(f'cp.async.{policy}.shared.global [$0], [$1], {stmt.nbytes};', 'r,l,~{memory}', args=(destination, source))
 
     def body(self, body):
         for position, stmt in enumerate(body):
@@ -583,53 +598,3 @@ class Lowering:
         self.builder.ret_void()
         return str(self.module)
 
-def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Compilation:
-    if not re.fullmatch('sm_(?:8[069]|9[0]|1[012][0])', arch):
-        raise ValueError(f'unsupported target {arch}; use sm_80, sm_86, sm_89, sm_90, sm_100, sm_110, or sm_120')
-    if opt_level not in (0, 1, 2, 3):
-        raise ValueError('optimization level must be 0, 1, 2, or 3')
-    if options is None:
-        options = Options()
-    path = Path(path)
-    graph = Graph.from_dict(json.loads(path.read_text()))
-    kernels = [n.op for n in graph.nodes.values() if type(n.op).__name__ == 'KernelOp']
-    if len(kernels) != 1:
-        raise ValueError('expected exactly one KernelOp in the input graph')
-    kernel = kernels[0]
-    metadata = json.loads(path.with_name('meta.json').read_text())
-    launches = [k for k in metadata['kernels'] if k['entry'] == kernel.name]
-    if len(launches) != 1:
-        raise ValueError(f'meta.json must contain exactly one launch for {kernel.name}')
-    llvm.initialize_all_targets()
-    llvm.initialize_all_asmprinters()
-    features = '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'
-    target = llvm.Target.from_triple('nvptx64-nvidia-cuda')
-    machine = target.create_target_machine(cpu=arch, features=features, opt=opt_level)
-    module = ir.Module(name=kernel.name)
-    module.triple = 'nvptx64-nvidia-cuda'
-    module.data_layout = str(machine.target_data)
-    lowering = Lowering(kernel, launches[0], module, options)
-    unoptimized = lowering.generate()
-    with llvm.parse_assembly(unoptimized) as lowered:
-        lowered.verify()
-        tuning = llvm.PipelineTuningOptions(speed_level=opt_level)
-        tuning.loop_vectorization = options.vector_width > 1
-        tuning.slp_vectorization = opt_level >= 2
-        with llvm.create_pass_builder(machine, tuning) as passes:
-            with llvm.create_new_module_pass_manager() as promotion:
-                promotion.add_sroa_pass()
-                promotion.run(lowered, passes)
-            with passes.getModulePassManager() as optimizer:
-                optimizer.run(lowered, passes)
-            if opt_level:
-                with llvm.create_new_module_pass_manager() as cleanup:
-                    if lowering.striped:
-                        cleanup.add_loop_strength_reduce_pass()
-                    cleanup.add_new_gvn_pass()
-                    cleanup.add_instruction_combine_pass()
-                    cleanup.add_simplify_cfg_pass()
-                    cleanup.run(lowered, passes)
-        lowered.verify()
-        optimized = str(lowered)
-        ptx = machine.emit_assembly(lowered)
-    return Compilation(ptx, unoptimized, optimized)

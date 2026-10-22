@@ -1,8 +1,10 @@
 import argparse
+import os
 import sys
 from pathlib import Path
-from llvm_ptx import compile_kernel
-from passes import Options
+for _env in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS'):
+    os.environ.setdefault(_env, '1')
+from compiler import Options, compile_kernel
 
 def main():
     parser = argparse.ArgumentParser(description='Compile Emmy Kernel IR to PTX through LLVM')

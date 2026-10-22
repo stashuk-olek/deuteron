@@ -14,9 +14,10 @@ import time
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+for _env in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS'):
+    os.environ.setdefault(_env, '1')
 import numpy as np
-from llvm_ptx import compile_kernel
-from passes import Options
+from compiler import Options, compile_kernel
 DTYPES = {'f32': np.float32, 'f16': np.float16, 'f64': np.float64, 'i32': np.int32, 'i64': np.int64}
 SCALARS = {'f32': ct.c_float, 'f16': ct.c_uint16, 'f64': ct.c_double, 'i32': ct.c_int32, 'i64': ct.c_int64}
 HANDLE = ct.c_void_p
@@ -368,8 +369,8 @@ def main():
     args.artifacts = args.artifacts.resolve()
     args.artifacts.mkdir(parents=True, exist_ok=True)
     settings = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
-    names = ('compile.py', 'llvm_ptx.py', 'passes.py', 'tensor.py', 'benchmark.py')
-    settings['compiler_sha256'] = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest() for name in names}
+    names = ('compile.py', 'benchmark.py', 'compiler/__init__.py', 'compiler/options.py', 'compiler/analysis.py', 'compiler/transforms.py', 'compiler/build.py', 'compiler/passes/__init__.py', 'compiler/passes/contraction.py', 'compiler/passes/recurrence.py', 'compiler/codegen/__init__.py', 'compiler/codegen/lower.py', 'compiler/codegen/tensor.py')
+    settings['compiler_sha256'] = {name: hashlib.sha256((Path(__file__).parent / name).read_bytes()).hexdigest() for name in names}
     write_json(args.artifacts / 'manifest.json', settings)
     partitions = [(d, problems[i::len(devices)], settings) for i, d in enumerate(devices) if problems[i::len(devices)]]
     if len(partitions) == 1:
