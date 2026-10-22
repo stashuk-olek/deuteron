@@ -1,5 +1,6 @@
 import hashlib
 import json
+import multiprocessing
 import os
 import re
 from dataclasses import dataclass
@@ -51,7 +52,26 @@ def _store(key, result):
     if root:
         blob = Path(root) / (key + '.json')
         blob.parent.mkdir(parents=True, exist_ok=True)
-        blob.write_text(json.dumps({'ptx': result.ptx, 'unoptimized': result.unoptimized, 'optimized': result.optimized}))
+        tmp = blob.with_suffix('.json.tmp')
+        tmp.write_text(json.dumps({'ptx': result.ptx, 'unoptimized': result.unoptimized, 'optimized': result.optimized}))
+        os.replace(tmp, blob)
+
+def _compile_one(job):
+    path, arch, opt_level, options = job
+    return compile_kernel(path, arch=arch, opt_level=opt_level, options=options)
+
+def compile_many(jobs, workers=None):
+    jobs = list(jobs)
+    if not jobs:
+        return []
+    if workers is None:
+        workers = min(len(jobs), os.cpu_count() or 1)
+    if workers < 1:
+        raise ValueError('workers must be >= 1')
+    if len(jobs) == 1 or workers == 1:
+        return [_compile_one(job) for job in jobs]
+    with multiprocessing.get_context('spawn').Pool(processes=min(workers, len(jobs))) as pool:
+        return pool.map(_compile_one, jobs)
 
 def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Compilation:
     if not re.fullmatch('sm_(?:8[069]|9[0]|1[012][0])', arch):

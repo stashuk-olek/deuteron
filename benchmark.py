@@ -17,7 +17,7 @@ from pathlib import Path
 for _env in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS'):
     os.environ.setdefault(_env, '1')
 import numpy as np
-from compiler import Options, compile_kernel
+from compiler import Options, compile_kernel, compile_many
 DTYPES = {'f32': np.float32, 'f16': np.float16, 'f64': np.float64, 'i32': np.int32, 'i64': np.int64}
 SCALARS = {'f32': ct.c_float, 'f16': ct.c_uint16, 'f64': ct.c_double, 'i32': ct.c_int32, 'i64': ct.c_int64}
 HANDLE = ct.c_void_p
@@ -293,6 +293,17 @@ def run_partition(device, problems, settings):
     overrides = {k: settings[k] for k in ('contraction_precision', 'approximate_math') if settings[k] is not None}
     options = dataclasses.replace(Options(), **overrides)
     try:
+        batched, batch_seconds = ({}, 0.0)
+        if settings['jobs'] > 1:
+            order = []
+            for problem in map(Path, problems):
+                for launch in json.loads((problem / 'meta.json').read_text())['kernels']:
+                    order.append((problem, launch['entry']))
+            arch = settings['arch'] or ('sm_89' if settings['remote'] else runner.device_info['arch'])
+            started = time.perf_counter()
+            results = compile_many([(problem / (entry + '.ir.json'), arch, settings['opt_level'], options) for problem, entry in order], settings['jobs'])
+            batch_seconds = (time.perf_counter() - started) / len(results)
+            batched = dict(zip(order, results))
         for problem in map(Path, problems):
             destination = Path(settings['artifacts']) / problem.name
             destination.mkdir(parents=True, exist_ok=True)
@@ -304,9 +315,12 @@ def run_partition(device, problems, settings):
                 for launch in metadata['kernels']:
                     entry = launch['entry']
                     path = problem / (entry + '.ir.json')
-                    started = time.perf_counter()
-                    compilation = compile_kernel(path, arch=settings['arch'] or ('sm_89' if settings['remote'] else runner.device_info['arch']), opt_level=settings['opt_level'], options=options)
-                    seconds = time.perf_counter() - started
+                    if (problem, entry) in batched:
+                        compilation, seconds = (batched[(problem, entry)], batch_seconds)
+                    else:
+                        started = time.perf_counter()
+                        compilation = compile_kernel(path, arch=settings['arch'] or ('sm_89' if settings['remote'] else runner.device_info['arch']), opt_level=settings['opt_level'], options=options)
+                        seconds = time.perf_counter() - started
                     for suffix, content in [('ptx', compilation.ptx), ('ll', compilation.optimized), ('unoptimized.ll', compilation.unoptimized)]:
                         (destination / f'{entry}.{suffix}').write_text(content)
                     record = runner.run_kernel(launch, compilation.ptx, produced, warmup=settings['warmup'], iters=settings['iters'], samples=settings['samples'])
@@ -333,6 +347,7 @@ def main():
     parser.add_argument('problems', nargs='*')
     parser.add_argument('--problems-dir', required=True, type=Path)
     parser.add_argument('--devices', default='0')
+    parser.add_argument('--jobs', type=int, default=1)
     parser.add_argument('--remote', action='store_true')
     parser.add_argument('--server', default='http://runner.riftstack.ai:48701')
     parser.add_argument('--artifacts', type=Path, default=Path('benchmark-results'))
