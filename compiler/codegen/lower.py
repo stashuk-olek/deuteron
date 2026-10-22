@@ -294,6 +294,9 @@ class Lowering:
             iters = stmt.axis.extent.value // (self.launch['block'][0] * 4)
             if iters > count >= iters // 2 and stmt.axis.extent.value % (self.launch['block'][0] * 8) == 0:
                 width = 8
+            trips = stmt.axis.extent.value // (self.launch['block'][0] * width)
+            if trips <= 128:
+                count = max(count, trips)
         if coalesced:
             start = self.builder.mul(start, integer(width))
             step = self.builder.mul(step, integer(width))

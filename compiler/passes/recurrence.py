@@ -67,7 +67,7 @@ def _eval(expression, env):
             return left ^ right
     return None
 
-def _full_cover(load, shape, ranges):
+def _cover_points(load, shape, ranges):
     if len(load.index) != len(shape):
         return None
     names = index_variables(load.index)
@@ -98,6 +98,13 @@ def _full_cover(load, shape, ranges):
             seen.add(flat + k)
         if len(seen) > n:
             return None
+    return seen
+
+def _full_cover(load, shape, ranges):
+    seen = _cover_points(load, shape, ranges)
+    if seen is None:
+        return None
+    n = math.prod(shape)
     return n * 4 if seen == set(range(n)) else None
 
 def _stage_operands(tile, outer, reduction, launch, loads, width, extent, parts, used):
@@ -111,21 +118,34 @@ def _stage_operands(tile, outer, reduction, launch, loads, width, extent, parts,
     shapes = {a['name']: tuple(a['shape']) for a in launch['args']}
     rounds = extent // width
     block = launch['block'][0]
-    cands = []
+    by_buffer = {}
     for load in loads:
         names = index_variables(load.index)
-        if names is None or outer.axis.name not in names:
+        if names is None:
             continue
         shape = shapes.get(load.input)
         if not shape:
             continue
-        nbytes = _full_cover(load, shape, ranges)
-        if nbytes is None or nbytes % 16:
+        seen = _cover_points(load, shape, ranges)
+        if seen is None:
             continue
-        trips = reduction.axis.extent.value * rounds if reduction.axis.name in names else extent
-        if trips * block * len(load.names) * 4 < 2 * nbytes:
+        if outer.axis.name in names:
+            trips = reduction.axis.extent.value * rounds if reduction.axis.name in names else extent
+        else:
+            trips = reduction.axis.extent.value
+        traffic = trips * block * len(load.names) * 4
+        slot = by_buffer.setdefault(load.input, [set(), 0])
+        slot[0].update(seen)
+        slot[1] += traffic
+    cands = []
+    for name, (seen, traffic) in by_buffer.items():
+        shape = shapes[name]
+        nbytes = math.prod(shape) * 4
+        if seen != set(range(math.prod(shape))) or nbytes % 16:
             continue
-        cands.append((load.input, nbytes, trips))
+        if traffic < 2 * nbytes:
+            continue
+        cands.append((name, nbytes, traffic))
     cands.sort(key=lambda c: -c[2])
     staged, total, seen = ([], used, set())
     for name, nbytes, _ in cands:
@@ -330,7 +350,7 @@ def _recurrence(tile, outer, at, launch, readonly, tag):
     count = launch['block'][0] // width * parts * extent
     if count * 4 > STATIC_SHARED_LIMIT or parts * (extent // width) > 32:
         return None
-    staged = _stage_operands(tile, outer, reductions[0], launch, (varying[0], *gather), width, extent, parts, count * 4)
+    staged = _stage_operands(tile, outer, reductions[0], launch, (varying[0], *invariant, *gather), width, extent, parts, count * 4)
     return Recurrence(tile, outer, prefix, suffix, reductions, tuple(invariant), tuple(varying), scale, width, extent, tuple(components), tuple(gather), next(iter(identities)), tag, staged)
 
 class RecurrenceEmitter:
@@ -472,7 +492,10 @@ class RecurrenceEmitter:
 
         def score_step():
             for load in p.invariant:
-                lowering.body((load,))
+                if load.input in self.operands:
+                    self.staged_load(load)
+                else:
+                    lowering.body((load,))
             for r in range(rounds):
                 lowering.put(keyaxis, lowering.builder.add(lane, integer(r * p.width)))
                 varying = p.varying[0]
@@ -485,7 +508,7 @@ class RecurrenceEmitter:
                     name = f'{self.scores}_{part}_{r}'
                     product = lowering.arithmetic('multiply', [lowering.get(load.names[0]), kval])
                     lowering.put(name, lowering.arithmetic('add', [lowering.get(name), product]))
-        self.loop_n(kaxis, p.reductions[0].axis.extent.value, score_step, unroll=32)
+        self.loop_n(kaxis, p.reductions[0].axis.extent.value, score_step, unroll=64)
         for part in range(parts):
             scores = [lowering.arithmetic('multiply', [lowering.get(f'{self.scores}_{part}_{r}'), scale]) for r in range(rounds)]
             maximum = ir.Constant(F32, p.identity)
@@ -517,7 +540,7 @@ class RecurrenceEmitter:
             for part, _m, _n, y, name_in in p.components:
                 product = lowering.arithmetic('multiply', [weights[part], lowering.get(name_in)])
                 lowering.put(y, lowering.builder.fadd(lowering.get(y), product, flags=('reassoc', 'nsz', 'contract')))
-        self.loop_n(keyaxis, p.extent, value_step, unroll=max(1, 16 // len(p.reductions)))
+        self.loop_n(keyaxis, p.extent, value_step, unroll=64)
         for part, _m, n, _y, _name_in in p.components:
             lowering.put(n, lowering.get(f'{self.normalizer}_{part}'))
         lowering.body(p.suffix)
