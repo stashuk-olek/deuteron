@@ -2,6 +2,9 @@ __pycache__/
 *.pyc
 .venv/
 benchmark-results/
+artifacts/
+results.json
+/problems
 *.ptx
 *.ll
 *.cubin
