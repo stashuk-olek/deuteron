@@ -1,22 +1,22 @@
 from llvmlite import ir
-from matmul_pass import known_multiple
+from passes import known_multiple, shared_layout
 F32 = ir.FloatType()
 I32 = ir.IntType(32)
 
 def integer(value):
     return ir.Constant(I32, int(value))
 
-class MMAEmitter:
+class TensorEmitter:
 
     def __init__(self, lowering, plan, mode='bf16x3'):
         if mode not in ('tf32x3', 'bf16x3'):
-            raise ValueError(f'unsupported matrix precision {mode}')
+            raise ValueError(f'unsupported contraction precision {mode}')
         self.lowering = lowering
         self.plan = plan
         self.mode = mode
-        self.warps_n = plan.tile_n // 8
-        self.active_threads = plan.tile_m // 16 * self.warps_n * 32
-        self.accumulators = [lowering.builder.alloca(F32, name='mma.acc') for _ in range(4)]
+        self.warps_n = plan.cols // 8
+        self.active_threads = plan.rows // 16 * self.warps_n * 32
+        self.accumulators = [lowering.builder.alloca(F32, name='tensor.acc') for _ in range(4)]
         for slot in self.accumulators:
             lowering.builder.store(ir.Constant(F32, 0.0), slot)
 
@@ -28,23 +28,19 @@ class MMAEmitter:
         col = b.add(b.mul(b.urem(warp, integer(self.warps_n)), integer(8)), b.mul(b.urem(lane, integer(4)), integer(2)))
         return (row, col)
 
-    def swizzle_shared_index(self, buffer, index):
+    def remap(self, buffer, index):
         plan = self.plan
-        if buffer not in (plan.a_buffer, plan.b_buffer):
+        if buffer not in (plan.lhs_buffer, plan.rhs_buffer):
             return index
         lower = self.lowering
         b = lower.builder
         row, col = [v if isinstance(v, ir.Value) else lower.expression(v) for v in index]
         columns = lower.shapes[buffer][1]
-        if buffer == plan.a_buffer:
-            shift = 3 if self.mode == 'bf16x3' else 2
-            mask = min(3 if self.mode == 'bf16x3' else 7, columns - 1 >> shift)
-            mixing_row = row
-        else:
-            shift, mask = (3, min(3, columns - 1 >> 3))
-            mixing_row = b.lshr(row, integer(1)) if self.mode == 'bf16x3' else row
+        role = 'row' if buffer == plan.lhs_buffer else 'col'
+        shift, mask, halve = shared_layout(columns, role, self.mode)
+        mixing = b.lshr(row, integer(1)) if halve else row
         if mask:
-            col = b.xor(col, b.shl(b.and_(mixing_row, integer(mask)), integer(shift)))
+            col = b.xor(col, b.shl(b.and_(mixing, integer(mask)), integer(shift)))
         return [row, col]
 
     def tf32(self, value):
@@ -82,10 +78,10 @@ class MMAEmitter:
         else:
             emit()
 
-    def emit_dot(self):
-        self.active(self._emit_dot)
+    def emit(self):
+        self.active(self._emit)
 
-    def _emit_dot(self):
+    def _emit(self):
         lower, plan = (self.lowering, self.plan)
         b = lower.builder
         row, _ = self.coordinates()
@@ -93,62 +89,62 @@ class MMAEmitter:
         packed = self.mode == 'bf16x3'
         quad_k = b.mul(b.urem(lane, integer(4)), integer(2 if packed else 1))
         column = b.add(b.mul(b.urem(warp, integer(self.warps_n)), integer(8)), b.udiv(lane, integer(4)))
-        a_base = [lower.expression(v) for v in plan.a_base]
-        b_base = [lower.expression(v) for v in plan.b_base]
+        lhs_base = [lower.expression(v) for v in plan.lhs_base]
+        rhs_base = [lower.expression(v) for v in plan.rhs_base]
         accumulators = [b.load(slot) for slot in self.accumulators]
 
-        def load_a(k_offset, row_offset):
-            if k_offset >= plan.tile_k:
+        def load_lhs(k_offset, row_offset):
+            if k_offset >= plan.depth:
                 return ir.Constant(F32, 0.0)
-            indices = [b.add(a_base[0], b.add(row, integer(row_offset))), b.add(a_base[1], b.add(quad_k, integer(k_offset)))]
-            return lower.load(lower.address(plan.a_buffer, indices), plan.a_buffer, 4)
+            indices = [b.add(lhs_base[0], b.add(row, integer(row_offset))), b.add(lhs_base[1], b.add(quad_k, integer(k_offset)))]
+            return lower.load(lower.address(plan.lhs_buffer, indices), plan.lhs_buffer, 4)
 
-        def load_a_pair(k_offset, row_offset):
-            if k_offset >= plan.tile_k:
+        def load_lhs_pair(k_offset, row_offset):
+            if k_offset >= plan.depth:
                 return [ir.Constant(F32, 0.0)] * 2
-            if known_multiple(plan.a_base[1]) % 2:
-                return [load_a(k_offset + i, row_offset) for i in range(2)]
-            indices = [b.add(a_base[0], b.add(row, integer(row_offset))), b.add(a_base[1], b.add(quad_k, integer(k_offset)))]
-            pointer = lower.address(plan.a_buffer, indices)
+            if known_multiple(plan.lhs_base[1]) % 2:
+                return [load_lhs(k_offset + i, row_offset) for i in range(2)]
+            indices = [b.add(lhs_base[0], b.add(row, integer(row_offset))), b.add(lhs_base[1], b.add(quad_k, integer(k_offset)))]
+            pointer = lower.address(plan.lhs_buffer, indices)
             vector_type = ir.VectorType(F32, 2)
             vector = b.load(b.bitcast(pointer, vector_type.as_pointer(pointer.type.addrspace)), align=4)
             return [b.extract_element(vector, integer(i)) for i in range(2)]
 
-        def load_b(k_offset):
-            if k_offset >= plan.tile_k:
+        def load_rhs(k_offset):
+            if k_offset >= plan.depth:
                 return ir.Constant(F32, 0.0)
-            indices = [b.add(b_base[0], b.add(quad_k, integer(k_offset))), b.add(b_base[1], column)]
-            return lower.load(lower.address(plan.b_buffer, indices), plan.b_buffer, 4)
-        for k in range(0, plan.tile_k, 16 if packed else 8):
+            indices = [b.add(rhs_base[0], b.add(quad_k, integer(k_offset))), b.add(rhs_base[1], column)]
+            return lower.load(lower.address(plan.rhs_buffer, indices), plan.rhs_buffer, 4)
+        for k in range(0, plan.depth, 16 if packed else 8):
             if packed:
-                a_values = [value for q in (0, 8) for m in (0, 8) for value in load_a_pair(k + q, m)]
-                b_values = [load_b(k + q + v) for q in (0, 8) for v in (0, 1)]
-                a_high, a_restored = self.bf16(a_values)
-                b_high, b_restored = self.bf16(b_values)
-                a_low, _ = self.bf16([b.fsub(v, h) for v, h in zip(a_values, a_restored, strict=True)])
-                b_low, _ = self.bf16([b.fsub(v, h) for v, h in zip(b_values, b_restored, strict=True)])
+                lhs_values = [value for q in (0, 8) for m in (0, 8) for value in load_lhs_pair(k + q, m)]
+                rhs_values = [load_rhs(k + q + v) for q in (0, 8) for v in (0, 1)]
+                lhs_high, lhs_restored = self.bf16(lhs_values)
+                rhs_high, rhs_restored = self.bf16(rhs_values)
+                lhs_low, _ = self.bf16([b.fsub(v, h) for v, h in zip(lhs_values, lhs_restored, strict=True)])
+                rhs_low, _ = self.bf16([b.fsub(v, h) for v, h in zip(rhs_values, rhs_restored, strict=True)])
             else:
-                a_values = [load_a(k + q, m) for q in (0, 4) for m in (0, 8)]
-                b_values = [load_b(k + q) for q in (0, 4)]
-                a_high = [self.tf32(v) for v in a_values]
-                b_high = [self.tf32(v) for v in b_values]
-                a_low = [self.tf32(b.fsub(v, b.bitcast(h, F32))) for v, h in zip(a_values, a_high, strict=True)]
-                b_low = [self.tf32(b.fsub(v, b.bitcast(h, F32))) for v, h in zip(b_values, b_high, strict=True)]
-            accumulators = self.mma(a_low, b_high, accumulators)
-            accumulators = self.mma(a_high, b_low, accumulators)
-            accumulators = self.mma(a_high, b_high, accumulators)
+                lhs_values = [load_lhs(k + q, m) for q in (0, 4) for m in (0, 8)]
+                rhs_values = [load_rhs(k + q) for q in (0, 4)]
+                lhs_high = [self.tf32(v) for v in lhs_values]
+                rhs_high = [self.tf32(v) for v in rhs_values]
+                lhs_low = [self.tf32(b.fsub(v, b.bitcast(h, F32))) for v, h in zip(lhs_values, lhs_high, strict=True)]
+                rhs_low = [self.tf32(b.fsub(v, b.bitcast(h, F32))) for v, h in zip(rhs_values, rhs_high, strict=True)]
+            accumulators = self.mma(lhs_low, rhs_high, accumulators)
+            accumulators = self.mma(lhs_high, rhs_low, accumulators)
+            accumulators = self.mma(lhs_high, rhs_high, accumulators)
         for slot, value in zip(self.accumulators, accumulators, strict=True):
             b.store(value, slot)
 
-    def emit_write(self, statement):
-        if not any((statement is candidate for candidate in self.plan.output_writes)):
+    def emit_store(self, statement):
+        if not any((statement is candidate for candidate in self.plan.writes)):
             return False
-        if statement is not self.plan.output_writes[0]:
+        if statement is not self.plan.writes[0]:
             return True
-        self.active(self._emit_write)
+        self.active(self._store)
         return True
 
-    def _emit_write(self):
+    def _store(self):
         lower, plan = (self.lowering, self.plan)
         b = lower.builder
         row, col = self.coordinates()

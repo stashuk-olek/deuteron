@@ -16,7 +16,7 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 import numpy as np
 from llvm_ptx import compile_kernel
-from optimizations import Options
+from passes import Options
 DTYPES = {'f32': np.float32, 'f16': np.float16, 'f64': np.float64, 'i32': np.int32, 'i64': np.int64}
 SCALARS = {'f32': ct.c_float, 'f16': ct.c_uint16, 'f64': ct.c_double, 'i32': ct.c_int32, 'i64': ct.c_int64}
 HANDLE = ct.c_void_p
@@ -289,7 +289,7 @@ class RemoteRunner:
 def run_partition(device, problems, settings):
     runner = RemoteRunner(settings['server']) if settings['remote'] else LocalRunner(device)
     reports = []
-    overrides = {k: settings[k] for k in ('dot_precision', 'approximate_math') if settings[k] is not None}
+    overrides = {k: settings[k] for k in ('contraction_precision', 'approximate_math') if settings[k] is not None}
     options = dataclasses.replace(Options(), **overrides)
     try:
         for problem in map(Path, problems):
@@ -337,7 +337,7 @@ def main():
     parser.add_argument('--artifacts', type=Path, default=Path('benchmark-results'))
     parser.add_argument('--arch')
     parser.add_argument('--opt-level', type=int, choices=range(4), default=2)
-    parser.add_argument('--dot-precision', choices=('f32', 'tf32x3', 'bf16x3'))
+    parser.add_argument('--contraction-precision', choices=('f32', 'tf32x3', 'bf16x3'))
     parser.add_argument('--approximate-math', action=argparse.BooleanOptionalAction)
     parser.add_argument('--warmup', type=int, default=20)
     parser.add_argument('--iters', type=int, default=200)
@@ -368,7 +368,7 @@ def main():
     args.artifacts = args.artifacts.resolve()
     args.artifacts.mkdir(parents=True, exist_ok=True)
     settings = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
-    names = ('compile.py', 'llvm_ptx.py', 'optimizations.py', 'attention_pass.py', 'matmul_pass.py', 'mma_emitter.py', 'benchmark.py')
+    names = ('compile.py', 'llvm_ptx.py', 'passes.py', 'tensor.py', 'benchmark.py')
     settings['compiler_sha256'] = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest() for name in names}
     write_json(args.artifacts / 'manifest.json', settings)
     partitions = [(d, problems[i::len(devices)], settings) for i, d in enumerate(devices) if problems[i::len(devices)]]

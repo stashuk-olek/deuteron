@@ -6,26 +6,17 @@ from pathlib import Path
 from emmy.compiler.graph import Graph
 from llvmlite import binding as llvm
 from llvmlite import ir
-from attention_pass import prepare_attention
-from matmul_pass import recognize_matmul
-from mma_emitter import MMAEmitter
-from optimizations import Options, contiguous_sum, default_unroll, reciprocal_sqrt_source, simple_sum, uniform_dot_width
+from passes import STATIC_SHARED_LIMIT, Options, RecurrenceEmitter, default_unroll, plain_reduction, reciprocal_sqrt_source, run_passes, sharing_width, striped_reduction, walk
+from tensor import TensorEmitter
 I1 = ir.IntType(1)
 I8 = ir.IntType(8)
 I32 = ir.IntType(32)
 I64 = ir.IntType(64)
 F32 = ir.FloatType()
 VOID = ir.VoidType()
-STATIC_SHARED_LIMIT = 48 * 1024
 
 def integer(value):
     return ir.Constant(I32, int(value.value if hasattr(value, 'as_static') else value))
-
-def walk(body):
-    for stmt in body:
-        yield stmt
-        for attr in ('body', 'else_body', 'combine_states'):
-            yield from walk(getattr(stmt, attr, ()))
 
 @dataclass(frozen=True)
 class Compilation:
@@ -40,14 +31,13 @@ class Lowering:
         self.launch = launch
         self.module = module
         self.options = options
-        if options.dot_precision not in ('f32', 'tf32x3', 'bf16x3'):
-            raise ValueError(f'unsupported dot precision {options.dot_precision}')
-        self.mma_emitter = None
+        self.tensors = []
+        self.recurrences = {}
         self.tile_stmt = None
         self.uniform_axes = set()
         self.divergent_depth = 0
         self.reassociate = False
-        self.uses_cooperative_dots = False
+        self.striped = False
         self.slots = {}
         self.buffers = {}
         self.shapes = {}
@@ -77,7 +67,7 @@ class Lowering:
             self.shapes[name] = tuple(specs[name]['shape'])
         for stmt in walk(kernel.body):
             kind = type(stmt).__name__
-            if kind in ('Load', 'Assign', 'Accum', 'Init', 'Let'):
+            if kind in ('Load', 'Assign', 'Accum', 'Init', 'Let', 'Select'):
                 dtype = getattr(stmt, 'dtype', None)
                 if dtype is not None and dtype.name != 'f32':
                     raise NotImplementedError(f'{kind}: unsupported dtype {dtype.name}')
@@ -89,7 +79,7 @@ class Lowering:
                     self.allocate(name, F32)
             if kind in ('Loop', 'StridedLoop'):
                 self.allocate(stmt.axis.name, I32)
-                if self.options.coalesced_reductions and simple_sum(stmt):
+                if self.options.coalesced_reductions and plain_reduction(stmt):
                     accum = next((s for s in stmt.body if type(s).__name__ == 'Accum'))
                     self.allocate('__vector_' + accum.name, ir.VectorType(F32, 4))
             if kind == 'Tile':
@@ -102,14 +92,13 @@ class Lowering:
         self.tid = tid
         self.put('lane', self.builder.and_(tid, integer(31)))
         self.put('warp', self.builder.lshr(tid, integer(5)))
-        self.attention_emitter = prepare_attention(self) if self.options.staged_attention else None
-        if options.dot_precision != 'f32':
-            plan = recognize_matmul(kernel, launch)
-            if plan is not None:
-                instruction_k = 16 if options.dot_precision == 'bf16x3' else 8
-                active_threads = plan.tile_m // 16 * (plan.tile_n // 8) * 32
-                if plan.tile_k % instruction_k == 0 and active_threads == launch['block'][0]:
-                    self.mma_emitter = MMAEmitter(self, plan, options.dot_precision)
+        hints = run_passes(kernel, launch, options)
+        for plan in hints.recurrences:
+            try:
+                self.recurrences[id(plan.tile)] = RecurrenceEmitter(self, plan)
+            except ValueError:
+                continue
+        self.tensors = [TensorEmitter(self, plan, options.contraction_precision) for plan in hints.contractions]
 
     def allocate(self, name, dtype):
         if name not in self.slots:
@@ -193,11 +182,26 @@ class Lowering:
             method = {'+': 'add', '-': 'sub', '*': 'mul', '/': 'sdiv', '//': 'sdiv', '%': 'srem', '&': 'and_', '|': 'or_', '^': 'xor', '<<': 'shl', '>>': 'ashr', '&&': 'and_', '||': 'or_'}.get(op)
             if method:
                 return getattr(self.builder, method)(left, right)
+        if kind == 'CastExpr':
+            value = self.expression(expr.expr)
+            if expr.dtype == 'int':
+                return self.builder.fptosi(value, I32) if value.type == F32 else value
+            return self.builder.sitofp(value, F32) if value.type == I32 else value
+        if kind == 'FlatIndex':
+            return self.offset(expr.buffer, expr.index)
+        if kind == 'Builtin':
+            return self.builtin(expr.name)
+        if kind == 'FuncCallExpr':
+            values = [self.expression(a) for a in expr.args]
+            if all((v.type == F32 for v in values)):
+                return self.arithmetic(expr.name, values)
+            if all((v.type == I32 for v in values)) and len(values) == 2:
+                method = {'add': 'add', 'subtract': 'sub', 'multiply': 'mul'}.get(expr.name)
+                if method:
+                    return getattr(self.builder, method)(*values)
         raise NotImplementedError(f'expression {expr!r}')
 
-    def address(self, buffer, index, extra=0):
-        if self.mma_emitter is not None:
-            index = self.mma_emitter.swizzle_shared_index(buffer, index)
+    def offset(self, buffer, index):
         shape = self.shapes[buffer]
         if not index and math.prod(shape) == 1:
             shape = ()
@@ -207,9 +211,28 @@ class Lowering:
         for coordinate, extent in zip(index, shape, strict=True):
             value = coordinate if isinstance(coordinate, ir.Value) else self.expression(coordinate)
             offset = self.builder.add(self.builder.mul(offset, integer(extent)), value)
+        return offset
+
+    def address(self, buffer, index, extra=0):
+        for emitter in self.tensors:
+            index = emitter.remap(buffer, index)
+        offset = self.offset(buffer, index)
         if extra:
             offset = self.builder.add(offset, integer(extra))
         return self.builder.gep(self.buffers[buffer], [self.builder.sext(offset, I64)])
+
+    def builtin(self, name):
+        if name == 'threadIdx.x':
+            return self.tid
+        if name == 'blockIdx.x':
+            return self.intrinsic('llvm.nvvm.read.ptx.sreg.ctaid.x', I32, [])
+        if name == 'blockDim.x':
+            return self.intrinsic('llvm.nvvm.read.ptx.sreg.ntid.x', I32, [])
+        if name in ('threadIdx.y', 'threadIdx.z', 'blockIdx.y', 'blockIdx.z'):
+            return integer(0)
+        if name in ('blockDim.y', 'blockDim.z'):
+            return integer(1)
+        raise NotImplementedError(f'gpu builtin {name}')
 
     def load(self, pointer, buffer, alignment):
         value = self.builder.load(pointer, align=alignment)
@@ -238,6 +261,18 @@ class Lowering:
             if op == 'relu':
                 args = [args[0], ir.Constant(F32, 0.0)]
             return self.intrinsic('llvm.maxnum.f32', F32, args)
+        if op == 'minimum':
+            return self.intrinsic('llvm.minnum.f32', F32, args)
+        if op == 'rsqrt':
+            if self.options.approximate_math:
+                return self.intrinsic('llvm.nvvm.rsqrt.approx.ftz.f', F32, args)
+            return self.builder.fdiv(ir.Constant(F32, 1.0), self.intrinsic('llvm.sqrt.f32', F32, args))
+        if op == 'exp_fast':
+            return self.arithmetic('exp', args)
+        if op == 'negative':
+            return self.builder.fneg(args[0])
+        if op == 'absolute':
+            return self.intrinsic('llvm.fabs.f32', F32, args)
         raise NotImplementedError(f'elementwise operation {op}')
 
     def loop(self, stmt):
@@ -253,17 +288,17 @@ class Lowering:
             start, step = (self.expression(stmt.start), self.expression(stmt.step))
             end = self.expression(stmt.end) if stmt.end is not None else integer(stmt.axis.extent)
         cooperative = 1
-        if self.options.cooperative_dots and self.tile_stmt is not None and (self.divergent_depth == 0) and (self.launch['block'][0] % 32 == 0):
-            cooperative = uniform_dot_width(stmt, self.tile_stmt, self.uniform_axes)
+        if self.options.reduction_sharing and self.tile_stmt is not None and (self.divergent_depth == 0) and (self.launch['block'][0] % 32 == 0):
+            cooperative = sharing_width(stmt, self.tile_stmt, self.uniform_axes)
         if cooperative > 1:
-            self.uses_cooperative_dots = True
+            self.striped = True
             start = self.builder.urem(self.get('lane'), integer(cooperative))
             step = integer(cooperative)
-        coalesced = self.options.coalesced_reductions and self.tile_stmt is not None and contiguous_sum(stmt, self.tile_stmt, self.launch['block'][0])
+        coalesced = self.options.coalesced_reductions and self.tile_stmt is not None and striped_reduction(stmt, self.tile_stmt, self.launch['block'][0])
         if coalesced:
             start = self.builder.mul(start, integer(4))
             step = self.builder.mul(step, integer(4))
-        vectorize = self.options.vector_width > 1 and simple_sum(stmt) and (not coalesced)
+        vectorize = self.options.vector_width > 1 and plain_reduction(stmt) and (not coalesced)
         if coalesced:
             vector_name = '__vector_' + stmt.body[-1].name
             self.put(vector_name, ir.Constant(ir.VectorType(F32, 4), [0.0] * 4))
@@ -361,8 +396,9 @@ class Lowering:
                 self.put(names[oi], self.builder.udiv(within, width))
             old_tile = self.tile_stmt
             self.tile_stmt = stmt if size % 32 == 0 else None
-            if self.attention_emitter is not None and stmt is self.attention_emitter.plan.tile:
-                self.attention_emitter.emit()
+            emitter = self.recurrences.get(id(stmt))
+            if emitter is not None:
+                emitter.emit()
             else:
                 self.body(stmt.body)
             self.tile_stmt = old_tile
@@ -394,7 +430,7 @@ class Lowering:
     def tree(self, stmt):
         if stmt.length < 1 or stmt.length & stmt.length - 1:
             raise ValueError('tree length must be a power of two')
-        if self.options.shuffle_tree and stmt.tid_var == 'warp' and (stmt.inner is None) and (stmt.length <= 32):
+        if self.options.tree_specialization and stmt.tid_var == 'warp' and (stmt.inner is None) and (stmt.length <= 32):
             with self.builder.if_then(self.builder.icmp_unsigned('==', self.get('warp'), integer(0))):
                 slot = self.builder.and_(self.get('lane'), integer(stmt.length - 1))
                 for buf, state in zip(stmt.bufs, stmt.state, strict=True):
@@ -444,12 +480,15 @@ class Lowering:
     def body(self, body):
         for position, stmt in enumerate(body):
             kind = type(stmt).__name__
-            if self.mma_emitter is not None:
-                if stmt is self.mma_emitter.plan.inner_loop:
-                    self.mma_emitter.emit_dot()
-                    continue
-                if kind == 'Write' and self.mma_emitter.emit_write(stmt):
-                    continue
+            replaced = False
+            for emitter in self.tensors:
+                if stmt is emitter.plan.loop:
+                    emitter.emit()
+                    replaced = True
+                elif kind == 'Write' and emitter.emit_store(stmt):
+                    replaced = True
+            if replaced:
+                continue
             if kind == 'Tile':
                 self.tile(stmt)
             elif kind in ('Loop', 'StridedLoop'):
@@ -508,6 +547,11 @@ class Lowering:
                 value = self.expression(stmt.value)
                 if value.type == I32:
                     value = self.builder.sitofp(value, F32)
+                self.put(stmt.name, value)
+            elif kind == 'Select':
+                value = self.get(stmt.branches[-1].value)
+                for branch in reversed(stmt.branches[:-1]):
+                    value = self.builder.select(self.expression(branch.select), self.get(branch.value), value)
                 self.put(stmt.name, value)
             elif kind == 'Cond':
                 self.divergent_depth += 1
@@ -579,7 +623,7 @@ def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Co
                 optimizer.run(lowered, passes)
             if opt_level:
                 with llvm.create_new_module_pass_manager() as cleanup:
-                    if lowering.uses_cooperative_dots:
+                    if lowering.striped:
                         cleanup.add_loop_strength_reduce_pass()
                     cleanup.add_new_gvn_pass()
                     cleanup.add_instruction_combine_pass()

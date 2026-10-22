@@ -2,7 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 from llvm_ptx import compile_kernel
-from optimizations import Options
+from passes import Options
 
 def main():
     parser = argparse.ArgumentParser(description='Compile Emmy Kernel IR to PTX through LLVM')
@@ -11,8 +11,8 @@ def main():
     parser.add_argument('--opt-level', type=int, choices=range(4), default=2)
     parser.add_argument('--unroll', type=int, choices=(0, 1, 2, 4, 8, 16, 32), default=0)
     parser.add_argument('--vector-width', type=int, choices=(1, 2, 4, 8, 16), default=4)
-    parser.add_argument('--dot-precision', choices=('f32', 'tf32x3', 'bf16x3'), default='bf16x3')
-    for flag in ('approximate-math', 'cooperative-dots', 'staged-attention', 'shuffle-tree', 'coalesced-reductions', 'warp-willreturn'):
+    parser.add_argument('--contraction-precision', choices=('f32', 'tf32x3', 'bf16x3'), default='bf16x3')
+    for flag in ('approximate-math', 'reduction-sharing', 'recurrence-staging', 'tree-specialization', 'coalesced-reductions', 'warp-willreturn'):
         parser.add_argument('--' + flag, action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--dump-llvm', type=Path)
     parser.add_argument('--dump-unoptimized', type=Path)
