@@ -4,7 +4,9 @@ from compiler.analysis import STATIC_SHARED_LIMIT, free_variables, index_variabl
 from compiler.options import Recurrence
 from compiler.transforms import SCALAR_OPS, sharing_width, symbolic, uniform_prefix_values
 I1 = ir.IntType(1)
+I8 = ir.IntType(8)
 I32 = ir.IntType(32)
+I64 = ir.IntType(64)
 F32 = ir.FloatType()
 VOID = ir.VoidType()
 
@@ -30,6 +32,109 @@ def _stage_tile(tile, launch, readonly, tag):
         if plan is not None:
             staged.append(plan)
     return staged[0] if len(staged) == 1 else None
+
+def _eval(expression, env):
+    if isinstance(expression, int):
+        return expression
+    tag = kind(expression)
+    if tag == 'Literal':
+        return expression.value if isinstance(expression.value, int) else None
+    if tag == 'Var':
+        return env.get(expression.name)
+    if tag == 'BinaryExpr':
+        left, right = (_eval(expression.left, env), _eval(expression.right, env))
+        if left is None or right is None or not isinstance(left, int) or not isinstance(right, int):
+            return None
+        if expression.op == '+':
+            return left + right
+        if expression.op == '-':
+            return left - right
+        if expression.op == '*':
+            return left * right
+        if expression.op in ('/', '//'):
+            return left // right if right else None
+        if expression.op == '%':
+            return left % right if right else None
+        if expression.op == '<<':
+            return left << right
+        if expression.op == '>>':
+            return left >> right
+        if expression.op == '&':
+            return left & right
+        if expression.op == '|':
+            return left | right
+        if expression.op == '^':
+            return left ^ right
+    return None
+
+def _full_cover(load, shape, ranges):
+    if len(load.index) != len(shape):
+        return None
+    names = index_variables(load.index)
+    if names is None or any((a not in ranges for a in names)):
+        return None
+    axes = sorted(names)
+    total = 1
+    for a in axes:
+        total *= ranges[a]
+        if total > 65536:
+            return None
+    n = math.prod(shape)
+    seen = set()
+    for ticket in range(total):
+        env = {}
+        for a in axes:
+            env[a], ticket = (ticket % ranges[a], ticket // ranges[a])
+        point = []
+        for coord in load.index:
+            value = _eval(coord, env)
+            if value is None:
+                return None
+            point.append(value)
+        flat = 0
+        for value, extent in zip(point, shape):
+            flat = flat * extent + value
+        for k in range(len(load.names)):
+            seen.add(flat + k)
+        if len(seen) > n:
+            return None
+    return n * 4 if seen == set(range(n)) else None
+
+def _stage_operands(tile, outer, reduction, launch, loads, width, extent, parts, used):
+    if parts < 2:
+        return ()
+    if math.prod((a.extent.value for a in tile.axes)) != launch['grid'][0] * launch['block'][0]:
+        return ()
+    ranges = {a.name: a.extent.value for a in tile.axes}
+    ranges[outer.axis.name] = extent
+    ranges[reduction.axis.name] = reduction.axis.extent.value
+    shapes = {a['name']: tuple(a['shape']) for a in launch['args']}
+    rounds = extent // width
+    block = launch['block'][0]
+    cands = []
+    for load in loads:
+        names = index_variables(load.index)
+        if names is None or outer.axis.name not in names:
+            continue
+        shape = shapes.get(load.input)
+        if not shape:
+            continue
+        nbytes = _full_cover(load, shape, ranges)
+        if nbytes is None or nbytes % 16:
+            continue
+        trips = reduction.axis.extent.value * rounds if reduction.axis.name in names else extent
+        if trips * block * len(load.names) * 4 < 2 * nbytes:
+            continue
+        cands.append((load.input, nbytes, trips))
+    cands.sort(key=lambda c: -c[2])
+    staged, total, seen = ([], used, set())
+    for name, nbytes, _ in cands:
+        if name in seen or total + nbytes > STATIC_SHARED_LIMIT:
+            continue
+        seen.add(name)
+        total += nbytes
+        staged.append((name, nbytes))
+    return tuple(staged)
 
 def _recurrence(tile, outer, at, launch, readonly, tag):
     prefix, suffix = (tile.body[:at], tile.body[at + 1:])
@@ -225,7 +330,8 @@ def _recurrence(tile, outer, at, launch, readonly, tag):
     count = launch['block'][0] // width * parts * extent
     if count * 4 > STATIC_SHARED_LIMIT or parts * (extent // width) > 32:
         return None
-    return Recurrence(tile, outer, prefix, suffix, reductions, tuple(invariant), tuple(varying), scale, width, extent, tuple(components), tuple(gather), next(iter(identities)), tag)
+    staged = _stage_operands(tile, outer, reductions[0], launch, (varying[0], *gather), width, extent, parts, count * 4)
+    return Recurrence(tile, outer, prefix, suffix, reductions, tuple(invariant), tuple(varying), scale, width, extent, tuple(components), tuple(gather), next(iter(identities)), tag, staged)
 
 class RecurrenceEmitter:
 
@@ -235,6 +341,9 @@ class RecurrenceEmitter:
             raise ValueError('staged recurrence scratch already allocated')
         if any((name.startswith(f'__score_{plan.tag}_') or name.startswith(f'__normalizer_{plan.tag}_') for name in lowering.slots)):
             raise ValueError('staged recurrence slots already allocated')
+        for index, (_name, _nbytes) in enumerate(plan.staged):
+            if f'__operand_{plan.tag}_{index}' in lowering.buffers or f'staged_operand_{plan.tag}_{index}' in lowering.module.globals or f'__copy_{plan.tag}_{index}' in lowering.slots:
+                raise ValueError('staged operand scratch already allocated')
         self.lowering = lowering
         self.plan = plan
         self.scores = f'__score_{plan.tag}'
@@ -253,6 +362,61 @@ class RecurrenceEmitter:
         scratch.align = 16
         lowering.buffers[self.staged] = lowering.builder.gep(scratch, [integer(0), integer(0)])
         lowering.shapes[self.staged] = (count,)
+        self.operands = {}
+        for index, (name, nbytes) in enumerate(plan.staged):
+            key = f'__operand_{plan.tag}_{index}'
+            scratch = ir.GlobalVariable(lowering.module, ir.ArrayType(F32, nbytes // 4), f'staged_operand_{plan.tag}_{index}', addrspace=3)
+            scratch.linkage = 'internal'
+            scratch.initializer = ir.Constant(scratch.value_type, ir.Undefined)
+            scratch.align = 16
+            lowering.buffers[key] = lowering.builder.gep(scratch, [integer(0), integer(0)])
+            lowering.shapes[key] = lowering.shapes[name]
+            lowering.allocate(f'__copy_{plan.tag}_{index}', I32)
+            self.operands[name] = key
+
+    def stage_copy(self, source, scratch, nbytes, index):
+        lowering = self.lowering
+        name = f'__copy_{self.plan.tag}_{index}'
+        block = lowering.launch['block'][0]
+        builder = lowering.builder
+        lowering.put(name, lowering.tid)
+        header = lowering.function.append_basic_block(name + '.test')
+        body = lowering.function.append_basic_block(name + '.body')
+        end = lowering.function.append_basic_block(name + '.end')
+        builder.branch(header)
+        builder.position_at_end(header)
+        builder.cbranch(builder.icmp_unsigned('<', lowering.get(name), integer(nbytes // 16)), body, end)
+        builder.position_at_end(body)
+        ticket = lowering.get(name)
+        words = builder.mul(ticket, integer(4))
+        dest = builder.ptrtoint(builder.gep(lowering.buffers[scratch], [words]), I32)
+        src = builder.ptrtoint(builder.gep(lowering.buffers[source], [words]), I64)
+        lowering.assembly('cp.async.cg.shared.global [$0], [$1], 16;', 'r,l,~{memory}', args=(dest, src))
+        lowering.put(name, builder.add(ticket, integer(block)))
+        builder.branch(header)
+        builder.position_at_end(end)
+
+    def stage_fence(self):
+        lowering = self.lowering
+        lowering.assembly('cp.async.commit_group;', '~{memory}')
+        lowering.assembly('cp.async.wait_group 0;', '~{memory}')
+        lowering.synchronize()
+
+    def staged_load(self, load):
+        lowering = self.lowering
+        scratch = self.operands[load.input]
+        count = len(load.names)
+        pointer = lowering.address(scratch, load.index)
+        if count == 1:
+            lowering.put(load.names[0], lowering.load(pointer, scratch, 4))
+        elif count in (2, 4):
+            vector = ir.VectorType(F32, count)
+            pointer = lowering.builder.bitcast(pointer, vector.as_pointer(pointer.type.addrspace))
+            value = lowering.load(pointer, scratch, 4 * count)
+            for i, name in enumerate(load.names):
+                lowering.put(name, lowering.builder.extract_element(value, integer(i)))
+        else:
+            raise NotImplementedError(f'load width {count}')
 
     def loop_n(self, name, extent, callback, unroll=8):
         lowering = self.lowering
@@ -290,6 +454,10 @@ class RecurrenceEmitter:
         lowering = self.lowering
         p = self.plan
         lowering.body(p.prefix)
+        for index, (name, nbytes) in enumerate(p.staged):
+            self.stage_copy(name, self.operands[name], nbytes, index)
+        if p.staged:
+            self.stage_fence()
         parts = len(p.reductions)
         rounds = p.extent // p.width
         keyaxis = p.loop.axis.name
@@ -307,7 +475,11 @@ class RecurrenceEmitter:
                 lowering.body((load,))
             for r in range(rounds):
                 lowering.put(keyaxis, lowering.builder.add(lane, integer(r * p.width)))
-                lowering.body((p.varying[0],))
+                varying = p.varying[0]
+                if varying.input in self.operands:
+                    self.staged_load(varying)
+                else:
+                    lowering.body((varying,))
                 kval = lowering.get(p.varying[0].names[0])
                 for part, load in enumerate(p.invariant):
                     name = f'{self.scores}_{part}_{r}'
@@ -333,7 +505,11 @@ class RecurrenceEmitter:
             lowering.put(y, ir.Constant(F32, 0.0))
 
         def value_step():
-            lowering.body(p.gather)
+            for load in p.gather:
+                if load.input in self.operands:
+                    self.staged_load(load)
+                else:
+                    lowering.body((load,))
             weights = []
             for part in range(parts):
                 offset = lowering.builder.add(base, lowering.builder.add(lowering.get(keyaxis), integer(part * p.extent)))

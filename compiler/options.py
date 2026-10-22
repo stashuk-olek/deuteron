@@ -45,6 +45,7 @@ class Recurrence:
     gather: tuple
     identity: float
     tag: int
+    staged: tuple = ()
 
 @dataclass(frozen=True)
 class Hints:
