@@ -422,7 +422,11 @@ class Lowering:
         block = self.intrinsic('llvm.nvvm.read.ptx.sreg.ctaid.x', I32, [])
         size = math.prod((a.extent.value for a in stmt.axes))
         exact = size == self.launch['grid'][0] * self.launch['block'][0]
-        direct = exact and not (stmt.raster_group and stmt.raster_axes) and stmt.axes[-1].extent.value == self.launch['block'][0]
+        split, width = len(stmt.axes) - 1, stmt.axes[-1].extent.value
+        while not exact and split and width < self.launch['block'][0]:
+            split -= 1
+            width *= stmt.axes[split].extent.value
+        direct = not (stmt.raster_group and stmt.raster_axes) and width == self.launch['block'][0] and (exact or (0 < size < 2**32 and self.launch['grid'][0] * self.launch['block'][0] <= 2**32 and all(a.extent.value > 0 for a in stmt.axes)))
         if direct:
             outer = block
             gid = None
@@ -430,20 +434,24 @@ class Lowering:
             threads = self.intrinsic('llvm.nvvm.read.ptx.sreg.ntid.x', I32, [])
             gid = self.builder.add(self.builder.mul(block, threads), self.tid)
             outer = gid
-        guard = contextlib.nullcontext() if exact else self.builder.if_then(self.builder.icmp_unsigned('<', gid, integer(size)))
+        guard = contextlib.nullcontext() if exact else self.builder.if_then(self.builder.icmp_unsigned('<', gid if gid is not None else block, integer(size if gid is not None else size // self.launch['block'][0])))
         with guard:
-            leading = stmt.axes[:-1] if gid is None else stmt.axes
+            leading = stmt.axes[:split] if gid is None else stmt.axes
             if gid is None and len(leading) == 1 and leading[0].extent.value == self.launch['grid'][0]:
                 self.put(leading[0].name, outer)
             else:
-                stride = size if gid is not None else size // stmt.axes[-1].extent.value
+                stride = size if gid is not None else size // self.launch['block'][0]
                 for axis in leading:
                     extent = axis.extent.value
                     stride //= extent
                     value = self.builder.urem(self.builder.udiv(outer, integer(stride)), integer(extent))
                     self.put(axis.name, value)
             if gid is None:
-                self.put(stmt.axes[-1].name, self.tid)
+                stride = self.launch['block'][0]
+                for axis in stmt.axes[split:]:
+                    stride //= axis.extent.value
+                    value = self.tid if split == len(stmt.axes) - 1 else self.builder.urem(self.builder.udiv(self.tid, integer(stride)), integer(axis.extent.value))
+                    self.put(axis.name, value)
             if stmt.raster_group and stmt.raster_axes:
                 names = [axis.name for axis in stmt.axes]
                 mi, ni = (names.index(name) for name in stmt.raster_axes)

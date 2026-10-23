@@ -101,7 +101,7 @@ def default_unroll(loop: Any, tile: Any, uniform_axes: Any) -> int:
         inner = sum((sharing_width(child, tile, uniform_axes | {loop.axis.name}) > 1 for child in loop.body))
         if inner == 1:
             return 32
-    return 8
+    return min(8, max(1, 32 // max(1, len(loop.body)))) if kind(loop) == 'Loop' and not loop.seed else 8
 
 def shared_layout(columns: Any, role: Any, mode: Any) -> Any:
     if role == 'row':

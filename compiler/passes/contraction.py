@@ -208,7 +208,7 @@ def _contraction(tile: Any, inner: Any, axes: Any, cells: Any, smem: Any, parent
         expected_rhs = (add_terms(canonical(rhs_base[0]), (('var', inner.axis.name), 1)), add_terms(canonical(rhs_base[1]), (('var', col_axis), cols), ((), c)))
         if tuple(map(canonical, lhs.index)) != expected_lhs or tuple(map(canonical, rhs.index)) != expected_rhs:
             return None
-    if depth % step or tile_rows // 16 * (tile_cols // 8) * 32 != threads:
+    if step and (depth % step or tile_rows // 16 * (tile_cols // 8) * 32 != threads):
         return None
     return Contraction(tile, inner, outer, lhs_buffer, lhs_base, rhs_buffer, rhs_base, output.output, base, output.atomic, tile_rows, tile_cols, depth, tuple(writes))
 
