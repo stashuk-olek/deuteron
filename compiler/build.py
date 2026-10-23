@@ -10,6 +10,7 @@ from llvmlite import binding as llvm
 from llvmlite import ir
 from compiler.codegen.lower import Lowering
 from compiler.options import Options
+from compiler.passes.vectorize import vectorize_elementwise
 
 @dataclass(frozen=True)
 class Compilation:
@@ -102,6 +103,10 @@ def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Co
     launches = [k for k in metadata['kernels'] if k['entry'] == kernel.name]
     if len(launches) != 1:
         raise ValueError(f'meta.json must contain exactly one launch for {kernel.name}')
+    if options.elementwise_vectorize:
+        vectorized = vectorize_elementwise(kernel, launches[0])
+        if vectorized is not None:
+            kernel = vectorized
     llvm.initialize_all_targets()
     llvm.initialize_all_asmprinters()
     features = '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'

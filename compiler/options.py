@@ -11,6 +11,7 @@ class Options:
     tree_specialization: bool = True
     coalesced_reductions: bool = True
     warp_willreturn: bool = True
+    elementwise_vectorize: bool = True
 
 @dataclass(frozen=True)
 class Contraction:

@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--unroll', type=int, choices=(0, 1, 2, 4, 8, 16, 32), default=0)
     parser.add_argument('--vector-width', type=int, choices=(1, 2, 4, 8, 16), default=4)
     parser.add_argument('--contraction-precision', choices=('f32', 'tf32x3', 'bf16x3'), default='bf16x3')
-    for flag in ('approximate-math', 'reduction-sharing', 'recurrence-staging', 'tree-specialization', 'coalesced-reductions', 'warp-willreturn'):
+    for flag in ('approximate-math', 'reduction-sharing', 'recurrence-staging', 'tree-specialization', 'coalesced-reductions', 'warp-willreturn', 'elementwise-vectorize'):
         parser.add_argument('--' + flag, action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--dump-llvm', type=Path)
     parser.add_argument('--dump-unoptimized', type=Path)
