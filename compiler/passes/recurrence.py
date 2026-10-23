@@ -1,7 +1,9 @@
 import math
+from dataclasses import replace
 from typing import Any
 from llvmlite import ir
-from compiler.analysis import STATIC_SHARED_LIMIT, free_variables, index_variables, integer, kind, walk
+from emmy.compiler.ir.stmt.body import Body
+from compiler.analysis import STATIC_SHARED_LIMIT, exprs, free_variables, index_variables, integer, kind, uses, walk
 from compiler.options import Recurrence
 from compiler.transforms import SCALAR_OPS, sharing_width, symbolic, uniform_prefix_values
 I1: Any = ir.IntType(1)
@@ -10,6 +12,33 @@ I32: Any = ir.IntType(32)
 I64: Any = ir.IntType(64)
 F32: Any = ir.FloatType()
 VOID: Any = ir.VoidType()
+
+def reorder_recurrences(kernel: Any, launch: Any) -> Any:
+    if len(kernel.body) != 1 or kernel.serial:
+        return kernel
+    readonly = {a['name'] for a in launch['args'] if not a.get('output')}
+    for plan in stage_recurrences(kernel, launch):
+        tile = plan.tile
+        if tile.raster_group or tile.aux_threads or math.prod(a.extent.value for a in tile.axes) != launch['grid'][0] * launch['block'][0]:
+            continue
+        allowed = {a.name for a in tile.axes} | {plan.loop.axis.name, plan.reductions[0].axis.name}
+        valid = True
+        for statement in walk(tile.body):
+            expressions = exprs(statement)
+            names = index_variables(expressions) if expressions is not None else None
+            used = uses(statement)
+            if names is None or names - allowed or used is None or used & {'lane', 'warp'}:
+                valid = False
+                break
+        if not valid:
+            continue
+        dependent = set().union(*(index_variables(load.index) for load in (*plan.invariant, *plan.varying)))
+        axes = tuple(a for a in tile.axes if a.name in dependent) + tuple(a for a in tile.axes if a.name not in dependent)
+        remapped = replace(tile, axes=axes)
+        candidate = _stage_tile(remapped, launch, readonly, plan.tag)
+        if candidate is not None and candidate.width > plan.width:
+            return replace(kernel, body=Body((remapped,)))
+    return kernel
 
 def stage_recurrences(kernel: Any, launch: Any) -> tuple[Recurrence, ...]:
     readonly = {a['name'] for a in launch['args'] if not a.get('output')}

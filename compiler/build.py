@@ -13,6 +13,7 @@ from llvmlite import ir
 from compiler.codegen.lower import Lowering
 from compiler.options import Options
 from compiler.passes.regforward import forward_reduction_loads_register
+from compiler.passes.recurrence import reorder_recurrences
 from compiler.passes.vectorize import vectorize_elementwise
 from compiler.ptx import rewrite_ptx
 
@@ -115,6 +116,8 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
         forwarded = forward_reduction_loads_register(kernel, launches[0])
         if forwarded is not None:
             kernel = forwarded
+    if options.recurrence_staging:
+        kernel = reorder_recurrences(kernel, launches[0])
     llvm.initialize_all_targets()
     llvm.initialize_all_asmprinters()
     features = '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'
