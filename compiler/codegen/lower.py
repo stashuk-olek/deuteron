@@ -345,7 +345,7 @@ class Lowering:
         if coalesced:
             start = self.builder.mul(start, integer(width))
             step = self.builder.mul(step, integer(width))
-        if coalesced and not self.options.unroll and trips >= 32 and trips % (64 // width) == 0 and stmt.body[0].input in self.readonly and self.buffers[stmt.body[0].input].type.addrspace == 1 and _no_writes_to(self.tile_stmt, stmt.body[0].input):
+        if coalesced and not self.options.unroll and trips >= 32 and trips % (64 // width) == 0 and stmt.body[-1].op.name == 'add' and (len(stmt.body) == 2 or stmt.body[1].op.name == 'multiply') and stmt.body[0].input in self.readonly and self.buffers[stmt.body[0].input].type.addrspace == 1 and _no_writes_to(self.tile_stmt, stmt.body[0].input):
             self.register_reduction(stmt, start, step, width, trips)
             return
         vectorize = self.options.vector_width > 1 and plain_reduction(stmt) and (not coalesced)

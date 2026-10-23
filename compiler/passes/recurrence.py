@@ -19,7 +19,8 @@ def reorder_recurrences(kernel: Any, launch: Any) -> Any:
     readonly = {a['name'] for a in launch['args'] if not a.get('output')}
     for plan in stage_recurrences(kernel, launch):
         tile = plan.tile
-        if tile.raster_group or tile.aux_threads or math.prod(a.extent.value for a in tile.axes) != launch['grid'][0] * launch['block'][0]:
+        names = {a.name for a in tile.axes}
+        if len(names) != len(tile.axes) or names & {'lane', 'warp'} or tile.raster_group or tile.aux_threads or math.prod(a.extent.value for a in tile.axes) != launch['grid'][0] * launch['block'][0]:
             continue
         allowed = {a.name for a in tile.axes} | {plan.loop.axis.name, plan.reductions[0].axis.name}
         valid = True
