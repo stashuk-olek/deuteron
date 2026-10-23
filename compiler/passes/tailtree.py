@@ -1,177 +1,112 @@
-
+import math
 from dataclasses import replace
 from typing import Any
 
-from emmy.compiler.ir.expr import Literal
+from emmy.compiler.ir.expr import BinaryExpr, Literal, Var
+from emmy.compiler.ir.kernel.ir import WarpShuffle
 from emmy.compiler.ir.stmt.body import Body
 from emmy.compiler.ir.stmt.leaves import Load
 from compiler.analysis import kind, walk
+from compiler.passes.regforward import _bound_names
 from compiler.passes.vectorize import _uses_after
-from compiler.transforms import default_unroll, striped_reduction
 
 MAX_LENGTH = 8
 
 
-def _writes_buffer(stmt: Any, buffer: str) -> bool:
-    for node in walk((stmt,)):
-        tag = kind(node)
-        if tag == 'Write' and node.output == buffer:
-            return True
-        if tag == 'CpAsyncCopy' and node.smem == buffer:
-            return True
-    return False
+def _accesses(body: Any) -> tuple[set[str], set[str]]:
+    reads, writes = set(), set()
+    for stmt in walk(body):
+        tag = kind(stmt)
+        if tag == 'Load':
+            reads.add(stmt.input)
+        elif tag == 'Write':
+            writes.add(stmt.output)
+        elif tag == 'CpAsyncCopy':
+            reads.add(stmt.src)
+            writes.add(stmt.smem)
+        elif tag == 'TreeHalve':
+            reads.update(stmt.bufs)
+            writes.update(stmt.bufs)
+    return reads, writes
 
 
-def _coalesced_dependent_loop(tile: Any, body: list, at: int, threads: int, unroll: int) -> bool:
-    rest = replace(tile, body=Body(tuple(s for k, s in enumerate(body) if k != at)))
-    for idx in range(at):
-        loop = body[idx]
-        if kind(loop) != 'StridedLoop':
-            continue
-        if not striped_reduction(loop, tile, threads):
-            continue
-        if striped_reduction(loop, rest, threads):
-            continue
-        step = loop.step
-        extent = loop.axis.extent.value
-        if kind(step) != 'Literal' or not isinstance(step.value, int) or step.value <= 0:
-            return True
-        if extent <= 0 or extent % step.value:
-            return True
-        cap = unroll or default_unroll(loop, None, set())
-        if extent // step.value > cap:
-            return True
-    return False
+def _scalar_tree(stmt: Any, tag: int, bound: set) -> Any:
+    lanes = [f'__tail_0_{tag}_{m}' for m in range(stmt.length)]
+    if set(lanes) & bound:
+        return None
+    combine = stmt.combine_states[0]
+    stmts: list[Any] = [Load(names=(name,), input=stmt.bufs[0], index=(Literal(m, dtype='int'),), dtype=combine.dtype) for m, name in enumerate(lanes)]
+    depth = 0
+    while len(lanes) > 1:
+        level = []
+        for p in range(0, len(lanes), 2):
+            name = stmt.state[0] if len(lanes) == 2 else f'__tail_0_{tag}_p{depth}_{p // 2}'
+            if len(lanes) != 2 and name in bound:
+                return None
+            bound.add(name)
+            stmts.append(replace(combine, name=name, args=(lanes[p], lanes[p + 1])))
+            level.append(name)
+        lanes = level
+        depth += 1
+    return stmts
 
 
-def _linearize_in_tile(tile: Any, tag: int, threads: int, unroll: int) -> Any:
+def linearize_small_trees(kernel: Any, launch: Any, options: Any) -> Any:
+    if len(kernel.body) != 1 or kind(kernel.body[0]) != 'Tile':
+        return None
+    tile = kernel.body[0]
+    threads = launch['block'][0]
+    if threads % 32 or not tile.axes or tile.axes[-1].extent.value != threads:
+        return None
+    if math.prod(a.extent.value for a in tile.axes) != threads * launch['grid'][0]:
+        return None
     smems = [s for s in walk(tile.body) if kind(s) == 'Smem']
     body = list(tile.body)
     for at, stmt in enumerate(body):
-        if kind(stmt) != 'TreeHalve':
+        if kind(stmt) != 'TreeHalve' or stmt.tid_var != 'warp' or stmt.inner is not None or stmt.barrier_id:
             continue
-        if stmt.length < 2 or stmt.length > MAX_LENGTH or stmt.length & stmt.length - 1:
+        if not 2 <= stmt.length <= MAX_LENGTH or stmt.length & (stmt.length - 1):
             continue
-        if stmt.inner is not None:
+        bufs, states, others = set(stmt.bufs), set(stmt.state), set(stmt.state_b)
+        if not len(bufs) == len(states) == len(others) == len(stmt.bufs) == len(stmt.state) == len(stmt.state_b):
             continue
-        if len(stmt.bufs) != 1 or len(stmt.state) != 1 or len(stmt.state_b) != 1:
+        if not bufs or states & others or stmt.dtype is not None and stmt.dtype.name != 'f32':
             continue
-        if stmt.dtype is not None and getattr(stmt.dtype, 'name', None) != 'f32':
+        if len(smems) != len(bufs) or {s.name for s in smems} != bufs:
             continue
-        if len(stmt.combine_states) != 1:
+        if any(s.dtype != 'float' or len(s.extents) != 1 or s.extents[0] < stmt.length for s in smems):
             continue
-        combine = stmt.combine_states[0]
-        if kind(combine) != 'Assign' or combine.name != stmt.state[0]:
-            continue
-        if set(combine.args) != {stmt.state[0], stmt.state_b[0]}:
-            continue
-        if combine.op.name != 'add':
-            continue
-        buf = stmt.bufs[0]
-        decls = [s for s in smems if s.name == buf]
-        if len(decls) != 1:
-            continue
-        decl = decls[0]
-        if decl.dtype != 'float' or len(decl.extents) != 1:
-            continue
-        size = 1
-        for extent in decl.extents:
-            size *= int(extent)
-        if size < stmt.length:
-            continue
-        if len(smems) != 1:
-            continue
-        if _coalesced_dependent_loop(tile, body, at, threads, unroll):
-            continue
-        after = _uses_after(tile, at)
-        if after is None or stmt.state_b[0] in after:
-            continue
-        last_write = None
-        for idx in range(at):
-            if _writes_buffer(body[idx], buf):
-                last_write = idx
-        if last_write is None:
-            continue
-        if not any((kind(s) == 'Sync' and not s.warp for s in body[last_write + 1:at])):
-            continue
-        written_before: set[str] = set()
-        for idx in range(at + 1):
-            for node in walk((body[idx],)):
-                if kind(node) == 'Write':
-                    written_before.add(node.output)
-        read_after: set[str] = set()
-        for idx in range(at + 1, len(body)):
-            for node in walk((body[idx],)):
-                if kind(node) == 'Load':
-                    read_after.add(node.input)
-        if (written_before & read_after) - {buf}:
-            continue
-        bound = set()
-        for node in walk(tile.body):
-            name = kind(node)
-            if name == 'Load':
-                bound.update(node.names)
-            elif name in ('Assign', 'Accum', 'Init', 'Let'):
-                bound.add(node.name)
-            elif name in ('WarpShuffle', 'TreeHalve'):
-                bound.update(node.state)
-                bound.update(node.state_b)
-            elif name in ('Loop', 'StridedLoop'):
-                bound.add(node.axis.name)
-            elif name == 'Smem':
-                bound.add(node.name)
-            elif name == 'Select':
-                bound.add(node.name)
-        lanes = [f'__tail_{tag}_{at}_{m}' for m in range(stmt.length)]
-        if set(lanes) & bound:
-            continue
-        level = list(lanes)
-        stmts: list[Any] = [
-            Load(names=(name,), input=buf, index=(Literal(m, dtype='int'),), dtype=getattr(combine, 'dtype', None))
-            for m, name in enumerate(lanes)
-        ]
-        depth = 0
-        ok = True
-        while len(level) > 1:
-            nxt = []
-            for p in range(0, len(level), 2):
-                a, b = level[p], level[p + 1]
-                if len(level) == 2:
-                    name = stmt.state[0]
-                else:
-                    name = f'__tail_{tag}_{at}_p{depth}_{p // 2}'
-                    if name in bound:
-                        ok = False
-                        break
-                    bound.add(name)
-                stmts.append(replace(combine, name=name, args=(a, b)))
-                nxt.append(name)
-            if not ok:
+        bound = states | others
+        defined = set()
+        for combine in stmt.combine_states:
+            if kind(combine) != 'Assign' or set(combine.args) - bound or combine.dtype is not None and combine.dtype.name != 'f32':
                 break
-            level = nxt
-            depth += 1
-        if not ok or len(level) != 1 or level[0] != stmt.state[0]:
-            continue
-        merged = [*body[:at], *stmts, *body[at + 1:]]
-        return replace(tile, body=Body(tuple(merged)))
-    return None
-
-
-def linearize_small_trees(kernel: Any, launch: Any, options: Any = None) -> Any:
-    threads = launch['block'][0]
-    unroll = options.unroll if options is not None else 0
-    changed = False
-    tiles = []
-    for tag, stmt in enumerate(kernel.body):
-        if kind(stmt) != 'Tile':
-            tiles.append(stmt)
-            continue
-        tile = _linearize_in_tile(stmt, tag, threads, unroll)
-        if tile is None:
-            tiles.append(stmt)
+            bound.add(combine.name)
+            defined.add(combine.name)
         else:
-            tiles.append(tile)
-            changed = True
-    if not changed:
-        return None
-    return replace(kernel, body=Body(tuple(tiles)))
+            after = _uses_after(tile, at)
+            if not states <= defined or after is None or ((defined | others) - states) & after:
+                continue
+            before_reads, before_writes = _accesses(body[:at])
+            after_reads, after_writes = _accesses(body[at + 1:])
+            if not bufs <= before_writes or bufs & (after_reads | after_writes):
+                continue
+            if before_writes & (after_reads | after_writes) or before_reads & after_writes:
+                continue
+            last_write = max(i for i, s in enumerate(body[:at]) if _accesses((s,))[1] & bufs)
+            if not any(kind(s) == 'Sync' and not s.warp and not s.barrier_id for s in body[last_write + 1:at]):
+                continue
+            scalar = len(states) == len(stmt.combine_states) == 1 and stmt.combine_states[0].op.name == 'add' and set(stmt.combine_states[0].args) == states | others
+            if scalar:
+                stmts = _scalar_tree(stmt, at, _bound_names(tile))
+                if stmts is None:
+                    continue
+            elif options.tree_specialization:
+                slot = BinaryExpr(op='&', left=Var('lane'), right=Literal(stmt.length - 1, dtype='int'))
+                stmts = [Load(names=(state,), input=buf, index=(slot,), dtype=stmt.dtype) for buf, state in zip(stmt.bufs, stmt.state)]
+                stmts.append(WarpShuffle(state=stmt.state, state_b=stmt.state_b, combine_states=stmt.combine_states, length=stmt.length, dtype=stmt.dtype))
+            else:
+                continue
+            tile = replace(tile, body=Body((*body[:at], *stmts, *body[at + 1:])))
+            return replace(kernel, body=Body((tile,)))
+    return None

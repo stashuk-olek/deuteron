@@ -13,7 +13,6 @@ from llvmlite import ir
 from compiler.codegen.lower import Lowering
 from compiler.options import Options
 from compiler.passes.regforward import forward_reduction_loads_register
-from compiler.passes.tailtree import linearize_small_trees
 from compiler.passes.vectorize import vectorize_elementwise
 from compiler.ptx import rewrite_ptx
 
@@ -116,10 +115,6 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
         forwarded = forward_reduction_loads_register(kernel, launches[0])
         if forwarded is not None:
             kernel = forwarded
-    if options.tail_linearize:
-        linearized = linearize_small_trees(kernel, launches[0], options)
-        if linearized is not None:
-            kernel = linearized
     llvm.initialize_all_targets()
     llvm.initialize_all_asmprinters()
     features = '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'

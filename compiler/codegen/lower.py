@@ -6,6 +6,7 @@ from compiler.analysis import STATIC_SHARED_LIMIT, walk
 from compiler.codegen.tensor import TensorEmitter
 from compiler.options import Options
 from compiler.passes import run_passes
+from compiler.passes.tailtree import linearize_small_trees
 from compiler.passes.recurrence import RecurrenceEmitter
 from compiler.transforms import default_unroll, plain_reduction, reciprocal_sqrt_source, sharing_width, striped_reduction
 I1: Any = ir.IntType(1)
@@ -21,6 +22,9 @@ def integer(value: Any) -> Any:
 class Lowering:
 
     def __init__(self, kernel: Any, launch: Any, module: Any, options: Options) -> None:
+        self.coalesced: set[int] = {id(loop) for tile in kernel.body if type(tile).__name__ == 'Tile' for loop in tile.body if options.coalesced_reductions and striped_reduction(loop, tile, launch['block'][0])}
+        if options.tail_linearize:
+            kernel = linearize_small_trees(kernel, launch, options) or kernel
         self.kernel = kernel
         self.launch = launch
         self.module = module
@@ -290,7 +294,7 @@ class Lowering:
             self.striped = True
             start = self.builder.urem(self.get('lane'), integer(cooperative))
             step = integer(cooperative)
-        coalesced = self.options.coalesced_reductions and self.tile_stmt is not None and striped_reduction(stmt, self.tile_stmt, self.launch['block'][0])
+        coalesced = self.tile_stmt is not None and id(stmt) in self.coalesced
         width = 4
         count: Any = None
         if coalesced:
