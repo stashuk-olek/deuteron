@@ -120,8 +120,6 @@ class Lowering:
         if function is None:
             function = ir.Function(self.module, signature, name)
         call = self.builder.call(function, args)
-        if name == 'llvm.nvvm.read.ptx.sreg.ctaid.x' and 0 < self.launch['grid'][0] < 2**32:
-            call.set_metadata('range', self.module.add_metadata([integer(0), integer(self.launch['grid'][0])]))
         if self.options.warp_willreturn and name in ('llvm.nvvm.activemask', 'llvm.nvvm.shfl.sync.bfly.i32'):
             set.add(call.attributes, 'willreturn')
         return call
