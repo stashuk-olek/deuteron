@@ -513,6 +513,9 @@ class RecurrenceEmitter:
         keyaxis = p.loop.axis.name
         kaxis = p.reductions[0].axis.name
         lane = lowering.builder.urem(lowering.get('lane'), integer(p.width))
+        varying = p.varying[0]
+        packed = rounds in (2, 4) and lowering.shapes[varying.input][-1] % rounds == 0 and varying.input not in self.operands and kind(varying.index[-1]) == 'Var' and varying.index[-1].name == keyaxis and keyaxis not in index_variables(varying.index[:-1])
+        keys = [lowering.builder.add(lowering.builder.mul(lane, integer(rounds)), integer(r)) for r in range(rounds)] if packed else []
         group = lowering.builder.udiv(lowering.tid, integer(p.width))
         base = lowering.builder.mul(group, integer(parts * p.extent))
         scale = lowering.get(p.scale)
@@ -527,7 +530,7 @@ class RecurrenceEmitter:
                 else:
                     lowering.body((load,))
             for r in range(rounds):
-                lowering.put(keyaxis, lowering.builder.add(lane, integer(r * p.width)))
+                lowering.put(keyaxis, keys[r] if packed else lowering.builder.add(lane, integer(r * p.width)))
                 varying = p.varying[0]
                 if varying.input in self.operands:
                     self.staged_load(varying)
@@ -548,7 +551,7 @@ class RecurrenceEmitter:
             mass = ir.Constant(F32, 0.0)
             for r, score in enumerate(scores):
                 weight = lowering.arithmetic('exp', [lowering.arithmetic('subtract', [score, maximum])])
-                offset = lowering.builder.add(base, lowering.builder.add(lane, integer(part * p.extent + r * p.width)))
+                offset = lowering.builder.add(base, lowering.builder.add(keys[r], integer(part * p.extent)) if packed else lowering.builder.add(lane, integer(part * p.extent + r * p.width)))
                 lowering.builder.store(weight, lowering.address(self.staged, (offset,)), align=4)
                 mass = lowering.arithmetic('add', [mass, weight])
             mass = self.reduce(mass, p.width, 'add')
