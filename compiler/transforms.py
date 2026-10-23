@@ -1,13 +1,14 @@
 import math
+from typing import Any
 from compiler.analysis import free_variables, index_variables, integer, kind
-SCALAR_OPS = {'add', 'subtract', 'multiply', 'divide', 'copy', 'reciprocal', 'exp', 'exp_fast', 'sqrt', 'rsqrt', 'maximum', 'minimum', 'relu', 'negative', 'absolute'}
+SCALAR_OPS: set[str] = {'add', 'subtract', 'multiply', 'divide', 'copy', 'reciprocal', 'exp', 'exp_fast', 'sqrt', 'rsqrt', 'maximum', 'minimum', 'relu', 'negative', 'absolute'}
 
-def reciprocal_sqrt_source(statement, previous):
+def reciprocal_sqrt_source(statement: Any, previous: Any) -> Any:
     if type(statement).__name__ == 'Assign' and statement.op.name == 'reciprocal' and (type(previous).__name__ == 'Assign') and (previous.op.name == 'sqrt') and (len(previous.args) == 1) and (statement.args == (previous.name,)) and (previous.name != previous.args[0]):
         return previous.args[0]
     return None
 
-def sharing_width(loop, tile, uniform_axes):
+def sharing_width(loop: Any, tile: Any, uniform_axes: Any) -> int:
     if type(loop).__name__ != 'Loop' or len(loop.body) != 4:
         return 1
     if (tile.block_threads or 256) % 32:
@@ -50,7 +51,7 @@ def sharing_width(loop, tile, uniform_axes):
         return 1
     return width
 
-def plain_reduction(loop):
+def plain_reduction(loop: Any) -> bool:
     if type(loop).__name__ != 'StridedLoop':
         return False
     if any((type(s).__name__ not in ('Load', 'Assign', 'Accum', 'Let') for s in loop.body)):
@@ -58,7 +59,7 @@ def plain_reduction(loop):
     accumulators = [s for s in loop.body if type(s).__name__ == 'Accum']
     return len(accumulators) == 1 and accumulators[0].op.associative and accumulators[0].op.identity == 0 and (accumulators[0].base is None)
 
-def striped_reduction(loop, tile, threads):
+def striped_reduction(loop: Any, tile: Any, threads: Any) -> bool:
     if not plain_reduction(loop) or len(loop.body) not in (2, 3) or (not loop.seed):
         return False
     load, accum = (loop.body[0], loop.body[-1])
@@ -93,7 +94,7 @@ def striped_reduction(loop, tile, threads):
             return any((type(s).__name__ == 'TreeHalve' and s.state == (accum.name,) and (s.length == threads // 32) and (s.tid_var == 'warp') for s in tile.body[index + 2:]))
     return False
 
-def default_unroll(loop, tile, uniform_axes):
+def default_unroll(loop: Any, tile: Any, uniform_axes: Any) -> int:
     if plain_reduction(loop):
         return 32
     if tile is not None:
@@ -102,13 +103,13 @@ def default_unroll(loop, tile, uniform_axes):
             return 32
     return 8
 
-def shared_layout(columns, role, mode):
+def shared_layout(columns: Any, role: Any, mode: Any) -> Any:
     if role == 'row':
         shift = 3 if mode == 'bf16x3' else 2
         return (shift, min(3 if mode == 'bf16x3' else 7, columns - 1 >> shift), False)
     return (3, min(3, columns - 1 >> 3), mode == 'bf16x3')
 
-def symbolic(op, *args):
+def symbolic(op: Any, *args: Any) -> Any:
     if op == 'copy':
         return args[0]
     if op in ('multiply', 'add', 'maximum'):
@@ -120,7 +121,7 @@ def symbolic(op, *args):
         args = tuple(sorted(args, key=repr))
     return (op, *args)
 
-def uniform_prefix_values(prefix, tile, width):
+def uniform_prefix_values(prefix: Any, tile: Any, width: Any) -> Any:
     uniform_axes = {'warp'}
     for index, axis in enumerate(tile.axes):
         stride = math.prod((a.extent.value for a in tile.axes[index + 1:]))

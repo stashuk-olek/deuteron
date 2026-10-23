@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 @dataclass(frozen=True)
 class Options:
@@ -15,8 +16,8 @@ class Options:
 
 @dataclass(frozen=True)
 class Contraction:
-    tile: object
-    loop: object
+    tile: Any
+    loop: Any
     outer: object
     lhs_buffer: str
     lhs_base: tuple
@@ -32,8 +33,8 @@ class Contraction:
 
 @dataclass
 class Recurrence:
-    tile: object
-    loop: object
+    tile: Any
+    loop: Any
     prefix: tuple
     suffix: tuple
     reductions: tuple

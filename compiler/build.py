@@ -1,3 +1,4 @@
+from __future__ import annotations
 import hashlib
 import json
 import multiprocessing
@@ -5,6 +6,7 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from emmy.compiler.graph import Graph
 from llvmlite import binding as llvm
 from llvmlite import ir
@@ -18,10 +20,10 @@ class Compilation:
     unoptimized: str
     optimized: str
 
-_MEMORY = {}
-_STAMP = None
+_MEMORY: dict[str, Compilation] = {}
+_STAMP: bytes | None = None
 
-def _stamp():
+def _stamp() -> Any:
     global _STAMP
     if _STAMP is None:
         digest = hashlib.sha256()
@@ -33,7 +35,7 @@ def _stamp():
         _STAMP = digest.digest()
     return _STAMP
 
-def _entry(key):
+def _entry(key: str) -> Any:
     hit = _MEMORY.get(key)
     if hit is not None:
         return hit
@@ -47,7 +49,7 @@ def _entry(key):
             return hit
     return None
 
-def _store(key, result):
+def _store(key: str, result: Compilation) -> None:
     _MEMORY[key] = result
     root = os.environ.get('DEUTERON_CACHE')
     if root:
@@ -57,11 +59,11 @@ def _store(key, result):
         tmp.write_text(json.dumps({'ptx': result.ptx, 'unoptimized': result.unoptimized, 'optimized': result.optimized}))
         os.replace(tmp, blob)
 
-def _compile_one(job):
+def _compile_one(job: Any) -> Compilation:
     path, arch, opt_level, options = job
     return compile_kernel(path, arch=arch, opt_level=opt_level, options=options)
 
-def compile_many(jobs, workers=None):
+def compile_many(jobs: Any, workers: int | None = None) -> list[Compilation]:
     jobs = list(jobs)
     if not jobs:
         return []
@@ -74,7 +76,7 @@ def compile_many(jobs, workers=None):
     with multiprocessing.get_context('spawn').Pool(processes=min(workers, len(jobs))) as pool:
         return pool.map(_compile_one, jobs)
 
-def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Compilation:
+def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, options: Options | None = None) -> Compilation:
     if not re.fullmatch('sm_(?:8[069]|9[0]|1[012][0])', arch):
         raise ValueError(f'unsupported target {arch}; use sm_80, sm_86, sm_89, sm_90, sm_100, sm_110, or sm_120')
     if opt_level not in (0, 1, 2, 3):
@@ -95,7 +97,7 @@ def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Co
     if hit is not None:
         return hit
     graph = Graph.from_dict(json.loads(payload))
-    kernels = [n.op for n in graph.nodes.values() if type(n.op).__name__ == 'KernelOp']
+    kernels: list[Any] = [n.op for n in graph.nodes.values() if type(n.op).__name__ == 'KernelOp']
     if len(kernels) != 1:
         raise ValueError('expected exactly one KernelOp in the input graph')
     kernel = kernels[0]
@@ -112,7 +114,7 @@ def compile_kernel(path: Path, *, arch='sm_89', opt_level=2, options=None) -> Co
     features = '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'
     target = llvm.Target.from_triple('nvptx64-nvidia-cuda')
     machine = target.create_target_machine(cpu=arch, features=features, opt=opt_level)
-    module = ir.Module(name=kernel.name)
+    module: Any = ir.Module(name=kernel.name)
     module.triple = 'nvptx64-nvidia-cuda'
     module.data_layout = str(machine.target_data)
     lowering = Lowering(kernel, launches[0], module, options)

@@ -1,21 +1,22 @@
 import math
 from dataclasses import replace
+from typing import Any
 from emmy.compiler.ir.expr import Literal
 from llvmlite import ir
-I32 = ir.IntType(32)
-STATIC_SHARED_LIMIT = 48 * 1024
-INDEX_OPS = {'+', '-', '*', '/', '//', '%', '&', '|', '^', '<<', '>>', '==', '!=', '<', '<=', '>', '>=', '&&', '||'}
+I32: Any = ir.IntType(32)
+STATIC_SHARED_LIMIT: int = 48 * 1024
+INDEX_OPS: set[str] = {'+', '-', '*', '/', '//', '%', '&', '|', '^', '<<', '>>', '==', '!=', '<', '<=', '>', '>=', '&&', '||'}
 
-def kind(value):
+def kind(value: Any) -> str:
     return type(value).__name__
 
-def walk(body):
+def walk(body: Any) -> Any:
     for statement in body:
         yield statement
         for attr in ('body', 'else_body', 'combine_states'):
             yield from walk(getattr(statement, attr, ()))
 
-def free_variables(expression):
+def free_variables(expression: Any) -> Any:
     if isinstance(expression, int):
         return set()
     tag = kind(expression)
@@ -39,7 +40,7 @@ def free_variables(expression):
         return None
     return index_variables(children)
 
-def index_variables(indices):
+def index_variables(indices: Any) -> Any:
     result = set()
     for index in indices:
         names = free_variables(index)
@@ -48,7 +49,7 @@ def index_variables(indices):
         result.update(names)
     return result
 
-def substitute(expression, names):
+def substitute(expression: Any, names: Any) -> Any:
     if isinstance(expression, int) or kind(expression) == 'Literal':
         return expression
     if kind(expression) == 'Var':
@@ -58,9 +59,9 @@ def substitute(expression, names):
         return replace(expression, **{name: substitute(getattr(expression, name), names) for name in fields})
     raise ValueError('unsupported coordinate expression')
 
-def canonical(expression):
+def canonical(expression: Any) -> Any:
 
-    def frozen(value):
+    def frozen(value: Any) -> Any:
         return tuple(sorted(value.items(), key=repr))
     if isinstance(expression, int):
         return {(): expression} if expression else {}
@@ -94,20 +95,20 @@ def canonical(expression):
         return {(expression.op, frozen(left), frozen(right)): 1}
     raise ValueError('unsupported coordinate operator')
 
-def add_terms(base, *terms):
+def add_terms(base: Any, *terms: Any) -> Any:
     result = dict(base)
     for term, coefficient in terms:
         result[term] = result.get(term, 0) + coefficient
     return {term: coefficient for term, coefficient in result.items() if coefficient}
 
-def difference(left, right):
+def difference(left: Any, right: Any) -> Any:
     return add_terms(left, *((term, -coefficient) for term, coefficient in right.items()))
 
-def constant_difference(left, right):
+def constant_difference(left: Any, right: Any) -> Any:
     value = difference(left, right)
     return value.get((), 0) if set(value) <= {()} else None
 
-def known_multiple(expression):
+def known_multiple(expression: Any) -> int:
     if isinstance(expression, int):
         return abs(expression)
     if kind(expression) == 'Literal':
@@ -127,10 +128,10 @@ def known_multiple(expression):
             return left // divisor[()]
     return 1
 
-def integer(value):
+def integer(value: Any) -> Any:
     return ir.Constant(I32, int(value))
 
-def uses(statement):
+def uses(statement: Any) -> Any:
     tag = kind(statement)
     if tag == 'Write':
         return set(statement.values)
@@ -153,7 +154,7 @@ def uses(statement):
         return set()
     return None
 
-def exprs(statement):
+def exprs(statement: Any) -> Any:
     tag = kind(statement)
     if tag in ('Load', 'Write'):
         return tuple(statement.index)

@@ -8,15 +8,16 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import requests
 
-ROOT = Path(__file__).resolve().parent
-SERVER = "http://runner.riftstack.ai:48701"
+ROOT: Path = Path(__file__).resolve().parent
+SERVER: str = "http://runner.riftstack.ai:48701"
 
 
-def request(server, endpoint, body, http_client):
+def request(server: Any, endpoint: Any, body: Any, http_client: Any) -> Any:
     if http_client == "curl":
         command = [
             "curl",
@@ -42,7 +43,7 @@ def request(server, endpoint, body, http_client):
     return response.json()
 
 
-def check_problem(problem, args):
+def check_problem(problem: Any, args: Any) -> dict[str, Any]:
     metadata = json.loads((problem / "meta.json").read_text())
     destination = args.artifacts / problem.name
     destination.mkdir(parents=True, exist_ok=True)
@@ -134,7 +135,7 @@ def check_problem(problem, args):
     return report
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("problems", nargs="*", help="problem names; defaults to every open problem")
     parser.add_argument("--server", default=SERVER)
@@ -149,7 +150,7 @@ def main():
         if args.problems
         else sorted(p for p in (ROOT / "problems").iterdir() if (p / "meta.json").exists())
     )
-    reports = []
+    reports: list[Any] = []
     for problem in problems:
         try:
             report = check_problem(problem, args)

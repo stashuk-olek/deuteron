@@ -1,4 +1,5 @@
 from dataclasses import replace
+from typing import Any
 from emmy.compiler.ir.axis import Axis, Dim
 from emmy.compiler.ir.expr import BinaryExpr, Literal, Var
 from emmy.compiler.ir.stmt.blocks import StridedLoop
@@ -8,7 +9,7 @@ from compiler.analysis import exprs, free_variables, index_variables, kind, uses
 from compiler.transforms import SCALAR_OPS
 
 
-def _uses_after(tile, at):
+def _uses_after(tile: Any, at: Any) -> Any:
     used = set()
     for s in tile.body[at + 1:]:
         for node in walk((s,)):
@@ -27,7 +28,7 @@ def _uses_after(tile, at):
     return used
 
 
-def _match(loop, tile, threads, tag, at, used_after):
+def _match(loop: Any, tile: Any, threads: Any, tag: Any, at: Any, used_after: Any) -> Any:
     if kind(loop) != 'StridedLoop':
         return None
     if not tile.axes:
@@ -127,16 +128,16 @@ def _match(loop, tile, threads, tag, at, used_after):
     return {'width': width, 'axis_name': axis_name, 'lane_of': lane_of, 'defined': defined}
 
 
-def _rewrite(loop, tile, plan):
+def _rewrite(loop: Any, tile: Any, plan: Any) -> Any:
     width = plan['width']
     lane_of = plan['lane_of']
     var = Var(plan['axis_name'])
     scaled = BinaryExpr(op='*', left=Literal(width, dtype='int'), right=var)
 
-    def remap(index):
+    def remap(index: Any) -> Any:
         return (*index[:-1], scaled)
 
-    body = []
+    body: list[Any] = []
     for s in loop.body:
         if kind(s) == 'Load':
             body.append(Load(names=lane_of[s.names[0]], input=s.input, index=remap(s.index), dtype=s.dtype))
@@ -156,7 +157,7 @@ def _rewrite(loop, tile, plan):
     return StridedLoop(axis=axis, start=loop.start, step=loop.step, body=Body(tuple(body)), unroll=loop.unroll, end=None, seed=loop.seed)
 
 
-def vectorize_elementwise(kernel, launch):
+def vectorize_elementwise(kernel: Any, launch: Any) -> Any:
     threads = launch['block'][0]
     changed = False
     tiles = []

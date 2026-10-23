@@ -1,15 +1,17 @@
+from typing import Any
 from llvmlite import ir
 from compiler.analysis import known_multiple
+from compiler.options import Contraction
 from compiler.transforms import shared_layout
-F32 = ir.FloatType()
-I32 = ir.IntType(32)
+F32: Any = ir.FloatType()
+I32: Any = ir.IntType(32)
 
-def integer(value):
+def integer(value: Any) -> Any:
     return ir.Constant(I32, int(value))
 
 class TensorEmitter:
 
-    def __init__(self, lowering, plan, mode='bf16x3'):
+    def __init__(self, lowering: Any, plan: Contraction, mode: str = 'bf16x3') -> None:
         if mode not in ('tf32x3', 'bf16x3'):
             raise ValueError(f'unsupported contraction precision {mode}')
         self.lowering = lowering
@@ -21,7 +23,7 @@ class TensorEmitter:
         for slot in self.accumulators:
             lowering.builder.store(ir.Constant(F32, 0.0), slot)
 
-    def coordinates(self):
+    def coordinates(self) -> Any:
         lower = self.lowering
         b = lower.builder
         lane, warp = (lower.get('lane'), lower.get('warp'))
@@ -29,7 +31,7 @@ class TensorEmitter:
         col = b.add(b.mul(b.urem(warp, integer(self.warps_n)), integer(8)), b.mul(b.urem(lane, integer(4)), integer(2)))
         return (row, col)
 
-    def remap(self, buffer, index):
+    def remap(self, buffer: Any, index: Any) -> Any:
         plan = self.plan
         if buffer not in (plan.lhs_buffer, plan.rhs_buffer):
             return index
@@ -44,12 +46,12 @@ class TensorEmitter:
             col = b.xor(col, b.shl(b.and_(mixing, integer(mask)), integer(shift)))
         return [row, col]
 
-    def tf32(self, value):
+    def tf32(self, value: Any) -> Any:
         signature = ir.FunctionType(I32, [F32])
         asm = ir.InlineAsm(signature, 'cvt.rna.tf32.f32 $0, $1;', '=r,f', side_effect=False)
         return self.lowering.builder.call(asm, [value])
 
-    def bf16(self, values):
+    def bf16(self, values: Any) -> Any:
         b = self.lowering.builder
         signature = ir.FunctionType(I32, [F32, F32])
         asm = ir.InlineAsm(signature, 'cvt.rn.bf16x2.f32 $0, $1, $2;', '=r,f,f', side_effect=False)
@@ -60,7 +62,7 @@ class TensorEmitter:
             restored.extend((b.bitcast(b.shl(value, integer(16)), F32), b.bitcast(b.and_(value, integer(-65536)), F32)))
         return (packed, restored)
 
-    def mma(self, a_values, b_values, accumulators):
+    def mma(self, a_values: Any, b_values: Any, accumulators: Any) -> Any:
         b = self.lowering.builder
         result_type = ir.LiteralStructType([F32] * 4)
         signature = ir.FunctionType(result_type, [I32] * 6 + [F32] * 4)
@@ -71,7 +73,7 @@ class TensorEmitter:
         value.attributes.add('convergent')
         return [b.extract_value(value, i) for i in range(4)]
 
-    def active(self, emit):
+    def active(self, emit: Any) -> None:
         lower = self.lowering
         if self.active_threads < lower.launch['block'][0]:
             with lower.builder.if_then(lower.builder.icmp_unsigned('<', lower.tid, integer(self.active_threads))):
@@ -79,10 +81,10 @@ class TensorEmitter:
         else:
             emit()
 
-    def emit(self):
+    def emit(self) -> None:
         self.active(self._emit)
 
-    def _emit(self):
+    def _emit(self) -> None:
         lower, plan = (self.lowering, self.plan)
         b = lower.builder
         row, _ = self.coordinates()
@@ -94,13 +96,13 @@ class TensorEmitter:
         rhs_base = [lower.expression(v) for v in plan.rhs_base]
         accumulators = [b.load(slot) for slot in self.accumulators]
 
-        def load_lhs(k_offset, row_offset):
+        def load_lhs(k_offset: Any, row_offset: Any) -> Any:
             if k_offset >= plan.depth:
                 return ir.Constant(F32, 0.0)
             indices = [b.add(lhs_base[0], b.add(row, integer(row_offset))), b.add(lhs_base[1], b.add(quad_k, integer(k_offset)))]
             return lower.load(lower.address(plan.lhs_buffer, indices), plan.lhs_buffer, 4)
 
-        def load_lhs_pair(k_offset, row_offset):
+        def load_lhs_pair(k_offset: Any, row_offset: Any) -> Any:
             if k_offset >= plan.depth:
                 return [ir.Constant(F32, 0.0)] * 2
             if known_multiple(plan.lhs_base[1]) % 2:
@@ -111,7 +113,7 @@ class TensorEmitter:
             vector = b.load(b.bitcast(pointer, vector_type.as_pointer(pointer.type.addrspace)), align=4)
             return [b.extract_element(vector, integer(i)) for i in range(2)]
 
-        def load_rhs(k_offset):
+        def load_rhs(k_offset: Any) -> Any:
             if k_offset >= plan.depth:
                 return ir.Constant(F32, 0.0)
             indices = [b.add(rhs_base[0], b.add(quad_k, integer(k_offset))), b.add(rhs_base[1], column)]
@@ -137,7 +139,7 @@ class TensorEmitter:
         for slot, value in zip(self.accumulators, accumulators, strict=True):
             b.store(value, slot)
 
-    def emit_store(self, statement):
+    def emit_store(self, statement: Any) -> bool:
         if not any((statement is candidate for candidate in self.plan.writes)):
             return False
         if statement is not self.plan.writes[0]:
@@ -145,7 +147,7 @@ class TensorEmitter:
         self.active(self._store)
         return True
 
-    def _store(self):
+    def _store(self) -> None:
         lower, plan = (self.lowering, self.plan)
         b = lower.builder
         row, col = self.coordinates()

@@ -1,16 +1,17 @@
 import math
+from typing import Any
 from llvmlite import ir
 from compiler.analysis import STATIC_SHARED_LIMIT, free_variables, index_variables, integer, kind, walk
 from compiler.options import Recurrence
 from compiler.transforms import SCALAR_OPS, sharing_width, symbolic, uniform_prefix_values
-I1 = ir.IntType(1)
-I8 = ir.IntType(8)
-I32 = ir.IntType(32)
-I64 = ir.IntType(64)
-F32 = ir.FloatType()
-VOID = ir.VoidType()
+I1: Any = ir.IntType(1)
+I8: Any = ir.IntType(8)
+I32: Any = ir.IntType(32)
+I64: Any = ir.IntType(64)
+F32: Any = ir.FloatType()
+VOID: Any = ir.VoidType()
 
-def stage_recurrences(kernel, launch):
+def stage_recurrences(kernel: Any, launch: Any) -> tuple[Recurrence, ...]:
     readonly = {a['name'] for a in launch['args'] if not a.get('output')}
     found = []
     for tag, tile in enumerate(kernel.body):
@@ -21,7 +22,7 @@ def stage_recurrences(kernel, launch):
             found.append(plan)
     return tuple(found)
 
-def _stage_tile(tile, launch, readonly, tag):
+def _stage_tile(tile: Any, launch: Any, readonly: Any, tag: Any) -> Any:
     if not tile.block_threads or tile.block_threads % 32 or math.prod((a.extent.value for a in tile.axes)) % 32:
         return None
     staged = []
@@ -33,7 +34,7 @@ def _stage_tile(tile, launch, readonly, tag):
             staged.append(plan)
     return staged[0] if len(staged) == 1 else None
 
-def _eval(expression, env):
+def _eval(expression: Any, env: Any) -> Any:
     if isinstance(expression, int):
         return expression
     tag = kind(expression)
@@ -67,7 +68,7 @@ def _eval(expression, env):
             return left ^ right
     return None
 
-def _cover_points(load, shape, ranges):
+def _cover_points(load: Any, shape: Any, ranges: Any) -> Any:
     if len(load.index) != len(shape):
         return None
     names = index_variables(load.index)
@@ -100,14 +101,14 @@ def _cover_points(load, shape, ranges):
             return None
     return seen
 
-def _full_cover(load, shape, ranges):
+def _full_cover(load: Any, shape: Any, ranges: Any) -> Any:
     seen = _cover_points(load, shape, ranges)
     if seen is None:
         return None
     n = math.prod(shape)
     return n * 4 if seen == set(range(n)) else None
 
-def _stage_operands(tile, outer, reduction, launch, loads, width, extent, parts, used):
+def _stage_operands(tile: Any, outer: Any, reduction: Any, launch: Any, loads: Any, width: Any, extent: Any, parts: Any, used: Any) -> Any:
     if parts < 2:
         return ()
     if math.prod((a.extent.value for a in tile.axes)) != launch['grid'][0] * launch['block'][0]:
@@ -118,7 +119,7 @@ def _stage_operands(tile, outer, reduction, launch, loads, width, extent, parts,
     shapes = {a['name']: tuple(a['shape']) for a in launch['args']}
     rounds = extent // width
     block = launch['block'][0]
-    by_buffer = {}
+    by_buffer: dict[Any, Any] = {}
     for load in loads:
         names = index_variables(load.index)
         if names is None:
@@ -156,7 +157,7 @@ def _stage_operands(tile, outer, reduction, launch, loads, width, extent, parts,
         staged.append((name, nbytes))
     return tuple(staged)
 
-def _recurrence(tile, outer, at, launch, readonly, tag):
+def _recurrence(tile: Any, outer: Any, at: Any, launch: Any, readonly: Any, tag: Any) -> Any:
     prefix, suffix = (tile.body[:at], tile.body[at + 1:])
     if any((kind(s) not in ('Load', 'Let', 'Assign') for s in prefix)):
         return None
@@ -213,7 +214,7 @@ def _recurrence(tile, outer, at, launch, readonly, tag):
     if len(states) != sum((kind(s) == 'Accum' for s in outer.body)):
         return None
 
-    def mass(op):
+    def mass(op: Any) -> Any:
         return op.associative and op.identity == 0 and product_op.distributes_over(op)
     if any((not s.op.selecting and not mass(s.op) for s in states.values())):
         return None
@@ -222,7 +223,7 @@ def _recurrence(tile, outer, at, launch, readonly, tag):
     inputs = {}
     gather = []
 
-    def get(n):
+    def get(n: Any) -> Any:
         if n not in env:
             external.add(n)
             env[n] = ('external', n)
@@ -355,7 +356,7 @@ def _recurrence(tile, outer, at, launch, readonly, tag):
 
 class RecurrenceEmitter:
 
-    def __init__(self, lowering, plan):
+    def __init__(self, lowering: Any, plan: Recurrence) -> None:
         buffers_key = f'__staged_{plan.tag}'
         if buffers_key in lowering.buffers or f'staged_weights_{plan.tag}' in lowering.module.globals:
             raise ValueError('staged recurrence scratch already allocated')
@@ -376,7 +377,7 @@ class RecurrenceEmitter:
                 lowering.allocate(f'{self.scores}_{part}_{key}', F32)
             lowering.allocate(f'{self.normalizer}_{part}', F32)
         count = lowering.launch['block'][0] // plan.width * parts * plan.extent
-        scratch = ir.GlobalVariable(lowering.module, ir.ArrayType(F32, count), f'staged_weights_{plan.tag}', addrspace=3)
+        scratch: Any = ir.GlobalVariable(lowering.module, ir.ArrayType(F32, count), f'staged_weights_{plan.tag}', addrspace=3)
         scratch.linkage = 'internal'
         scratch.initializer = ir.Constant(scratch.value_type, ir.Undefined)
         scratch.align = 16
@@ -385,7 +386,7 @@ class RecurrenceEmitter:
         self.operands = {}
         for index, (name, nbytes) in enumerate(plan.staged):
             key = f'__operand_{plan.tag}_{index}'
-            scratch = ir.GlobalVariable(lowering.module, ir.ArrayType(F32, nbytes // 4), f'staged_operand_{plan.tag}_{index}', addrspace=3)
+            scratch: Any = ir.GlobalVariable(lowering.module, ir.ArrayType(F32, nbytes // 4), f'staged_operand_{plan.tag}_{index}', addrspace=3)
             scratch.linkage = 'internal'
             scratch.initializer = ir.Constant(scratch.value_type, ir.Undefined)
             scratch.align = 16
@@ -394,7 +395,7 @@ class RecurrenceEmitter:
             lowering.allocate(f'__copy_{plan.tag}_{index}', I32)
             self.operands[name] = key
 
-    def stage_copy(self, source, scratch, nbytes, index):
+    def stage_copy(self, source: Any, scratch: Any, nbytes: Any, index: Any) -> None:
         lowering = self.lowering
         name = f'__copy_{self.plan.tag}_{index}'
         block = lowering.launch['block'][0]
@@ -416,13 +417,13 @@ class RecurrenceEmitter:
         builder.branch(header)
         builder.position_at_end(end)
 
-    def stage_fence(self):
+    def stage_fence(self) -> None:
         lowering = self.lowering
         lowering.assembly('cp.async.commit_group;', '~{memory}')
         lowering.assembly('cp.async.wait_group 0;', '~{memory}')
         lowering.synchronize()
 
-    def staged_load(self, load):
+    def staged_load(self, load: Any) -> None:
         lowering = self.lowering
         scratch = self.operands[load.input]
         count = len(load.names)
@@ -438,7 +439,7 @@ class RecurrenceEmitter:
         else:
             raise NotImplementedError(f'load width {count}')
 
-    def loop_n(self, name, extent, callback, unroll=8):
+    def loop_n(self, name: Any, extent: Any, callback: Any, unroll: Any = 8) -> None:
         lowering = self.lowering
         lowering.put(name, integer(0))
         header = lowering.function.append_basic_block(name + '.phase.test')
@@ -452,7 +453,7 @@ class RecurrenceEmitter:
         lowering.put(name, lowering.builder.add(lowering.get(name), integer(1)))
         latch = lowering.builder.branch(header)
         hint = lowering.module.add_metadata(['llvm.loop.unroll.count', integer(lowering.options.unroll or unroll)])
-        md = ir.MDValue(lowering.module, (), name=str(len(lowering.module.metadata)))
+        md: Any = ir.MDValue(lowering.module, (), name=str(len(lowering.module.metadata)))
         hints = [hint]
         if name == self.plan.loop.axis.name:
             hints.extend([lowering.module.add_metadata(['llvm.loop.vectorize.enable', ir.Constant(I1, 1)]), lowering.module.add_metadata(['llvm.loop.vectorize.width', integer(8)]), lowering.module.add_metadata(['llvm.loop.interleave.count', integer(1)])])
@@ -460,7 +461,7 @@ class RecurrenceEmitter:
         latch.set_metadata('llvm.loop', md)
         lowering.builder.position_at_end(end)
 
-    def reduce(self, value, width, op):
+    def reduce(self, value: Any, width: Any, op: Any) -> Any:
         lowering = self.lowering
         distance = width // 2
         while distance:
@@ -470,7 +471,7 @@ class RecurrenceEmitter:
             distance //= 2
         return value
 
-    def emit(self):
+    def emit(self) -> None:
         lowering = self.lowering
         p = self.plan
         lowering.body(p.prefix)
@@ -490,7 +491,7 @@ class RecurrenceEmitter:
             for r in range(rounds):
                 lowering.put(f'{self.scores}_{part}_{r}', ir.Constant(F32, 0.0))
 
-        def score_step():
+        def score_step() -> None:
             for load in p.invariant:
                 if load.input in self.operands:
                     self.staged_load(load)
@@ -527,7 +528,7 @@ class RecurrenceEmitter:
         for _part, _m, _n, y, _name_in in p.components:
             lowering.put(y, ir.Constant(F32, 0.0))
 
-        def value_step():
+        def value_step() -> None:
             for load in p.gather:
                 if load.input in self.operands:
                     self.staged_load(load)

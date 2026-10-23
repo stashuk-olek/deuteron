@@ -6,7 +6,7 @@ for _env in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECL
     os.environ.setdefault(_env, '1')
 from compiler import Options, compile_kernel
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Compile Emmy Kernel IR to PTX through LLVM')
     parser.add_argument('kernel', type=Path)
     parser.add_argument('--arch', default='sm_89')

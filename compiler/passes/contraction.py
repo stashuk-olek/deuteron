@@ -1,14 +1,15 @@
 import math
+from typing import Any
 from compiler.analysis import add_terms, canonical, constant_difference, index_variables, kind, known_multiple, substitute, uses, exprs, walk
 from compiler.options import Contraction
 
-def tensorize(kernel, launch, precision):
+def tensorize(kernel: Any, launch: Any, precision: str) -> Any:
     try:
         return _tensorize(kernel, launch, precision)
     except (AttributeError, IndexError, KeyError, TypeError, ValueError):
         return ()
 
-def _tensorize(kernel, launch, precision):
+def _tensorize(kernel: Any, launch: Any, precision: str) -> Any:
     threads = launch['block'][0]
     if kernel.serial or threads <= 0 or threads % 32 or launch['block'][1:] != [1, 1] or launch['grid'][1:] != [1, 1]:
         return ()
@@ -20,7 +21,7 @@ def _tensorize(kernel, launch, precision):
         plans.extend(_tensorize_tile(tile, launch, threads, step, taken))
     return tuple(plans)
 
-def _tensorize_tile(tile, launch, threads, step, taken):
+def _tensorize_tile(tile: Any, launch: Any, threads: Any, step: Any, taken: Any) -> Any:
     axes = [axis.name for axis in tile.axes]
     cells = [axis.extent.value for axis in tile.axes]
     if len(tile.axes) < 2 or tile.aux_threads or len(set(axes)) != len(axes) or {'lane', 'warp'} & set(axes):
@@ -54,7 +55,7 @@ def _tensorize_tile(tile, launch, threads, step, taken):
             plans.append(contraction)
     return plans
 
-def _contraction(tile, inner, axes, cells, smem, parents, scope, args, threads, step, taken):
+def _contraction(tile: Any, inner: Any, axes: Any, cells: Any, smem: Any, parents: Any, scope: Any, args: Any, threads: Any, step: Any, taken: Any) -> Any:
     if inner.axis.name in set(axes) | {'lane', 'warp'}:
         return None
     depth = inner.axis.extent.value
@@ -174,7 +175,10 @@ def _contraction(tile, inner, axes, cells, smem, parents, scope, args, threads, 
             names = index_variables((*s.smem_index, *lane_index, *s.src_index))
             if names is None or names - coordinate_names:
                 return None
-    lhs_base = rhs_base = lhs_buffer = rhs_buffer = None
+    lhs_base: Any = None
+    rhs_base: Any = None
+    lhs_buffer: Any = None
+    rhs_buffer: Any = None
     for (r, c), name in sorted(points.items()):
         oriented = []
         for load in accums[name]:

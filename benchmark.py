@@ -14,21 +14,22 @@ import time
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+from typing import Any
 for _env in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS'):
     os.environ.setdefault(_env, '1')
 import numpy as np
 from compiler import Options, compile_kernel, compile_many
-DTYPES = {'f32': np.float32, 'f16': np.float16, 'f64': np.float64, 'i32': np.int32, 'i64': np.int64}
-SCALARS = {'f32': ct.c_float, 'f16': ct.c_uint16, 'f64': ct.c_double, 'i32': ct.c_int32, 'i64': ct.c_int64}
-HANDLE = ct.c_void_p
-DEVICE_PTR = ct.c_uint64
+DTYPES: dict[str, Any] = {'f32': np.float32, 'f16': np.float16, 'f64': np.float64, 'i32': np.int32, 'i64': np.int64}
+SCALARS: dict[str, Any] = {'f32': ct.c_float, 'f16': ct.c_uint16, 'f64': ct.c_double, 'i32': ct.c_int32, 'i64': ct.c_int64}
+HANDLE: Any = ct.c_void_p
+DEVICE_PTR: Any = ct.c_uint64
 
 class CudaError(RuntimeError):
     pass
 
 class Driver:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.lib = ct.CDLL('libcuda.so.1')
         p = ct.POINTER
         signatures = {'cuInit': [ct.c_uint], 'cuDeviceGetCount': [p(ct.c_int)], 'cuDeviceGet': [p(ct.c_int), ct.c_int], 'cuDeviceGetName': [ct.c_char_p, ct.c_int, ct.c_int], 'cuDeviceGetAttribute': [p(ct.c_int), ct.c_int, ct.c_int], 'cuDeviceGetPCIBusId': [ct.c_char_p, ct.c_int, ct.c_int], 'cuCtxCreate_v2': [p(HANDLE), ct.c_uint, ct.c_int], 'cuCtxSetCurrent': [HANDLE], 'cuCtxDestroy_v2': [HANDLE], 'cuStreamCreate': [p(HANDLE), ct.c_uint], 'cuStreamDestroy_v2': [HANDLE], 'cuStreamSynchronize': [HANDLE], 'cuModuleLoadDataEx': [p(HANDLE), HANDLE, ct.c_uint, p(ct.c_int), p(HANDLE)], 'cuModuleGetFunction': [p(HANDLE), HANDLE, ct.c_char_p], 'cuModuleUnload': [HANDLE], 'cuFuncSetAttribute': [HANDLE, ct.c_int, ct.c_int], 'cuFuncGetAttribute': [p(ct.c_int), ct.c_int, HANDLE], 'cuMemAlloc_v2': [p(DEVICE_PTR), ct.c_size_t], 'cuMemFree_v2': [DEVICE_PTR], 'cuMemcpyHtoD_v2': [DEVICE_PTR, HANDLE, ct.c_size_t], 'cuMemcpyDtoH_v2': [HANDLE, DEVICE_PTR, ct.c_size_t], 'cuMemsetD8Async': [DEVICE_PTR, ct.c_ubyte, ct.c_size_t, HANDLE], 'cuLaunchKernel': [HANDLE, *[ct.c_uint] * 7, HANDLE, p(HANDLE), p(HANDLE)], 'cuEventCreate': [p(HANDLE), ct.c_uint], 'cuEventRecord': [HANDLE, HANDLE], 'cuEventSynchronize': [HANDLE], 'cuEventElapsedTime': [p(ct.c_float), HANDLE, HANDLE], 'cuEventDestroy_v2': [HANDLE], 'cuStreamBeginCapture_v2': [HANDLE, ct.c_int], 'cuStreamEndCapture': [HANDLE, p(HANDLE)], 'cuGraphInstantiateWithFlags': [p(HANDLE), HANDLE, ct.c_uint64], 'cuGraphLaunch': [HANDLE, HANDLE], 'cuGraphExecDestroy': [HANDLE], 'cuGraphDestroy': [HANDLE], 'cuGetErrorName': [ct.c_int, p(ct.c_char_p)], 'cuGetErrorString': [ct.c_int, p(ct.c_char_p)]}
@@ -38,7 +39,7 @@ class Driver:
             function.restype = ct.c_int
         self.call('cuInit', 0)
 
-    def call(self, name, *args):
+    def call(self, name: Any, *args: Any) -> None:
         status = getattr(self.lib, name)(*args)
         if status:
             error, description = (ct.c_char_p(), ct.c_char_p())
@@ -46,7 +47,7 @@ class Driver:
             self.lib.cuGetErrorString(status, ct.byref(description))
             raise CudaError(f"{name}: {(error.value or b'unknown').decode()} ({status}): {(description.value or b'').decode()}")
 
-def argument_array(arg, produced=None):
+def argument_array(arg: Any, produced: Any = None) -> Any:
     dtype = DTYPES[arg['dtype']]
     shape = tuple(arg['shape'])
     if arg.get('intermediate'):
@@ -63,13 +64,13 @@ def argument_array(arg, produced=None):
         raise ValueError(f"buffer {arg['name']} has no seed, data, output, or intermediate")
     return np.ascontiguousarray(np.asarray(array, dtype=dtype).reshape(shape))
 
-def launch_arguments(launch):
+def launch_arguments(launch: Any) -> Any:
     by_name = {arg['name']: arg for arg in launch['args']}
     if len(by_name) != len(launch['args']) or len(by_name) != len(launch['arg_order']) or set(by_name) != set(launch['arg_order']):
         raise ValueError('launch args and arg_order must name each argument exactly once')
     return by_name
 
-def compare_outputs(problem, metadata, produced):
+def compare_outputs(problem: Any, metadata: Any, produced: Any) -> Any:
     errors = {}
     with np.load(Path(problem) / 'expected.npz') as expected:
         for name in expected.files:
@@ -83,7 +84,7 @@ def compare_outputs(problem, metadata, produced):
 
 class LocalRunner:
 
-    def __init__(self, device=0, module_cache_size=32):
+    def __init__(self, device: Any = 0, module_cache_size: Any = 32) -> None:
         self.driver = Driver()
         self.device = int(device)
         self.pid = os.getpid()
@@ -106,13 +107,13 @@ class LocalRunner:
             self.close()
             raise
 
-    def __enter__(self):
+    def __enter__(self) -> Any:
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_: Any) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         if not self.context:
             return
         self.driver.lib.cuCtxSetCurrent(self.context)
@@ -127,7 +128,7 @@ class LocalRunner:
         self.driver.lib.cuCtxDestroy_v2(self.context)
         self.context = HANDLE()
 
-    def _function(self, ptx, entry):
+    def _function(self, ptx: Any, entry: Any) -> Any:
         source = ptx.encode() if isinstance(ptx, str) else ptx
         key = hashlib.sha256(source).digest()
         if key in self.modules:
@@ -150,7 +151,7 @@ class LocalRunner:
         self.driver.call('cuModuleGetFunction', ct.byref(function), module, entry.encode())
         return function
 
-    def run_kernel(self, launch, ptx, produced=None, *, warmup=10, iters=100, samples=7):
+    def run_kernel(self, launch: Any, ptx: Any, produced: Any = None, *, warmup: Any = 10, iters: Any = 100, samples: Any = 7) -> dict[str, Any]:
         if self.pid != os.getpid() or not self.context:
             raise RuntimeError('LocalRunner must be open and used in its creating process')
         if warmup < 0 or iters < 1 or samples < 1:
@@ -190,7 +191,7 @@ class LocalRunner:
             if len(grid) != 3 or len(block) != 3 or min(*grid, *block) < 1:
                 raise ValueError('grid and block must each contain three positive dimensions')
 
-            def enqueue():
+            def enqueue() -> None:
                 for pointer, nbytes in reset:
                     self.driver.call('cuMemsetD8Async', pointer, 0, nbytes, self.stream)
                 self.driver.call('cuLaunchKernel', function, *grid, *block, smem, self.stream, params, None)
@@ -239,26 +240,26 @@ class LocalRunner:
             for pointer in allocations.values():
                 self.driver.lib.cuMemFree_v2(pointer)
 
-def write_json(path, value):
+def write_json(path: Any, value: Any) -> None:
     path.write_text(json.dumps(value, indent=2) + '\n')
 
 class RemoteRunner:
 
-    def __init__(self, server):
+    def __init__(self, server: Any) -> None:
         self.server = server.rstrip('/')
         self.device_info = {'server': self.server, 'arch': None}
 
-    def close(self):
+    def close(self) -> None:
         pass
 
-    def request(self, endpoint, body):
+    def request(self, endpoint: Any, body: Any) -> Any:
         command = ['curl', '--fail-with-body', '--silent', '--show-error', '--connect-timeout', '10', '--max-time', '300', '-H', 'Content-Type: application/json', '--data-binary', '@-', self.server + endpoint]
         response = subprocess.run(command, input=json.dumps(body), text=True, capture_output=True, timeout=310, check=False)
         if response.returncode:
             raise RuntimeError(response.stderr or response.stdout)
         return json.loads(response.stdout)
 
-    def run_kernel(self, launch, ptx, produced=None, *, warmup=20, iters=200, samples=7):
+    def run_kernel(self, launch: Any, ptx: Any, produced: Any = None, *, warmup: Any = 20, iters: Any = 200, samples: Any = 7) -> dict[str, Any]:
         by_name = launch_arguments(launch)
         assembled = self.request('/compile', {'ptx': ptx})
         entry = launch['entry']
@@ -287,7 +288,7 @@ class RemoteRunner:
             outputs[name] = np.asarray(output['values'], dtype=DTYPES[by_name[name]['dtype']]).reshape(output['shape'])
         return {'entry': entry, 'median_us': result['median_us'], 'registers': assembled.get('registers', {}).get(entry), 'cubin_id': assembled['cubin_id'], 'arch': assembled.get('arch'), 'iters': iters, 'warmup': warmup, 'timing_method': 'remote_runner', 'timing_includes_output_resets': bool(launch.get('zero_outputs')), 'outputs': outputs}
 
-def run_partition(device, problems, settings):
+def run_partition(device: Any, problems: Any, settings: Any) -> Any:
     runner = RemoteRunner(settings['server']) if settings['remote'] else LocalRunner(device)
     reports = []
     overrides = {k: settings[k] for k in ('contraction_precision', 'approximate_math') if settings[k] is not None}
@@ -342,7 +343,7 @@ def run_partition(device, problems, settings):
         runner.close()
     return reports
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('problems', nargs='*')
     parser.add_argument('--problems-dir', required=True, type=Path)

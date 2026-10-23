@@ -1,38 +1,40 @@
 import contextlib
 import math
+from typing import Any
 from llvmlite import ir
 from compiler.analysis import STATIC_SHARED_LIMIT, walk
 from compiler.codegen.tensor import TensorEmitter
+from compiler.options import Options
 from compiler.passes import run_passes
 from compiler.passes.recurrence import RecurrenceEmitter
 from compiler.transforms import default_unroll, plain_reduction, reciprocal_sqrt_source, sharing_width, striped_reduction
-I1 = ir.IntType(1)
-I8 = ir.IntType(8)
-I32 = ir.IntType(32)
-I64 = ir.IntType(64)
-F32 = ir.FloatType()
-VOID = ir.VoidType()
+I1: Any = ir.IntType(1)
+I8: Any = ir.IntType(8)
+I32: Any = ir.IntType(32)
+I64: Any = ir.IntType(64)
+F32: Any = ir.FloatType()
+VOID: Any = ir.VoidType()
 
-def integer(value):
+def integer(value: Any) -> Any:
     return ir.Constant(I32, int(value.value if hasattr(value, 'as_static') else value))
 
 class Lowering:
 
-    def __init__(self, kernel, launch, module, options):
+    def __init__(self, kernel: Any, launch: Any, module: Any, options: Options) -> None:
         self.kernel = kernel
         self.launch = launch
         self.module = module
         self.options = options
-        self.tensors = []
-        self.recurrences = {}
-        self.tile_stmt = None
-        self.uniform_axes = set()
-        self.divergent_depth = 0
-        self.reassociate = False
-        self.striped = False
-        self.slots = {}
-        self.buffers = {}
-        self.shapes = {}
+        self.tensors: list[Any] = []
+        self.recurrences: dict[Any, Any] = {}
+        self.tile_stmt: Any = None
+        self.uniform_axes: set[Any] = set()
+        self.divergent_depth: int = 0
+        self.reassociate: bool = False
+        self.striped: bool = False
+        self.slots: dict[str, Any] = {}
+        self.buffers: dict[str, Any] = {}
+        self.shapes: dict[str, Any] = {}
         specs = {a['name']: a for a in launch['args']}
         self.readonly = {a['name'] for a in launch['args'] if not a.get('output')}
         if len(specs) != len(launch['args']) or set(specs) != set(launch['arg_order']):
@@ -45,11 +47,11 @@ class Lowering:
         if launch['block'][1:] != [1, 1] or launch['grid'][1:] != [1, 1]:
             raise NotImplementedError('only linear launches are supported')
         signature = ir.FunctionType(VOID, [F32.as_pointer(1)] * len(specs))
-        self.function = ir.Function(module, signature, kernel.name)
+        self.function: Any = ir.Function(module, signature, kernel.name)
         self.function.calling_convention = 'ptx_kernel'
         module.add_named_metadata('nvvm.annotations', [self.function, 'kernel', integer(1)])
         module.add_named_metadata('nvvm.annotations', [self.function, 'maxntidx', integer(launch['block'][0])])
-        self.builder = ir.IRBuilder(self.function.append_basic_block('entry'))
+        self.builder: Any = ir.IRBuilder(self.function.append_basic_block('entry'))
         for arg, name in zip(self.function.args, launch['arg_order'], strict=True):
             arg.name = name
             arg.attributes.add('noalias')
@@ -93,21 +95,21 @@ class Lowering:
                 continue
         self.tensors = [TensorEmitter(self, plan, options.contraction_precision) for plan in hints.contractions]
 
-    def allocate(self, name, dtype):
+    def allocate(self, name: Any, dtype: Any) -> None:
         if name not in self.slots:
             self.slots[name] = self.builder.alloca(dtype, name=name + '.slot')
         elif self.slots[name].type.pointee != dtype:
             raise ValueError(f'inconsistent type for {name}')
 
-    def get(self, name):
+    def get(self, name: Any) -> Any:
         if name not in self.slots:
             raise ValueError(f'unbound value {name}')
         return self.builder.load(self.slots[name], name=name)
 
-    def put(self, name, value):
+    def put(self, name: Any, value: Any) -> None:
         self.builder.store(value, self.slots[name])
 
-    def intrinsic(self, name, result, args):
+    def intrinsic(self, name: Any, result: Any, args: Any) -> Any:
         signature = ir.FunctionType(result, [a.type for a in args])
         function = self.module.globals.get(name)
         if function is None:
@@ -117,12 +119,12 @@ class Lowering:
             set.add(call.attributes, 'willreturn')
         return call
 
-    def assembly(self, text, constraints, result=VOID, args=()):
+    def assembly(self, text: Any, constraints: Any, result: Any = VOID, args: Any = ()) -> Any:
         signature = ir.FunctionType(result, [a.type for a in args])
         asm = ir.InlineAsm(signature, text, constraints, side_effect=True)
         return self.builder.call(asm, args)
 
-    def shared_memory(self):
+    def shared_memory(self) -> None:
         declarations = {}
         offsets = {}
         size = 0
@@ -139,10 +141,11 @@ class Lowering:
             size += math.prod(stmt.extents) * 4
             declarations[stmt.name] = stmt
         dynamic = size > STATIC_SHARED_LIMIT
+        pool: Any = None
         if dynamic:
             if size > self.launch['smem_bytes']:
                 raise ValueError(f"launch provides {self.launch['smem_bytes']} shared bytes; IR needs {size}")
-            pool = ir.GlobalVariable(self.module, ir.ArrayType(I8, 0), 'dynamic_shared', addrspace=3)
+            pool: Any = ir.GlobalVariable(self.module, ir.ArrayType(I8, 0), 'dynamic_shared', addrspace=3)
             pool.linkage = 'external'
             pool.align = max((s.align or 4 for s in declarations.values()))
         for name, stmt in declarations.items():
@@ -151,13 +154,13 @@ class Lowering:
                 pointer = self.builder.gep(pool, [integer(0), integer(offsets[name])])
                 self.buffers[name] = self.builder.bitcast(pointer, F32.as_pointer(3))
             else:
-                array = ir.GlobalVariable(self.module, ir.ArrayType(F32, math.prod(stmt.extents)), name, addrspace=3)
+                array: Any = ir.GlobalVariable(self.module, ir.ArrayType(F32, math.prod(stmt.extents)), name, addrspace=3)
                 array.linkage = 'internal'
                 array.initializer = ir.Constant(array.value_type, ir.Undefined)
                 array.align = max(4, stmt.align)
                 self.buffers[name] = self.builder.gep(array, [integer(0), integer(0)])
 
-    def expression(self, expr):
+    def expression(self, expr: Any) -> Any:
         if isinstance(expr, int):
             return integer(expr)
         kind = type(expr).__name__
@@ -194,7 +197,7 @@ class Lowering:
                     return getattr(self.builder, method)(*values)
         raise NotImplementedError(f'expression {expr!r}')
 
-    def offset(self, buffer, index):
+    def offset(self, buffer: Any, index: Any) -> Any:
         shape = self.shapes[buffer]
         if not index and math.prod(shape) == 1:
             shape = ()
@@ -206,7 +209,7 @@ class Lowering:
             offset = self.builder.add(self.builder.mul(offset, integer(extent)), value)
         return offset
 
-    def address(self, buffer, index, extra=0):
+    def address(self, buffer: Any, index: Any, extra: Any = 0) -> Any:
         for emitter in self.tensors:
             index = emitter.remap(buffer, index)
         offset = self.offset(buffer, index)
@@ -214,7 +217,7 @@ class Lowering:
             offset = self.builder.add(offset, integer(extra))
         return self.builder.gep(self.buffers[buffer], [self.builder.sext(offset, I64)])
 
-    def builtin(self, name):
+    def builtin(self, name: Any) -> Any:
         if name == 'threadIdx.x':
             return self.tid
         if name == 'blockIdx.x':
@@ -227,13 +230,13 @@ class Lowering:
             return integer(1)
         raise NotImplementedError(f'gpu builtin {name}')
 
-    def load(self, pointer, buffer, alignment):
+    def load(self, pointer: Any, buffer: Any, alignment: Any) -> Any:
         value = self.builder.load(pointer, align=alignment)
         if buffer in self.readonly:
             value.set_metadata('invariant.load', self.module.add_metadata([]))
         return value
 
-    def arithmetic(self, op, args):
+    def arithmetic(self, op: Any, args: Any) -> Any:
         method = {'add': 'fadd', 'subtract': 'fsub', 'multiply': 'fmul', 'divide': 'fdiv'}.get(op)
         if method:
             return getattr(self.builder, method)(*args, flags=('contract',))
@@ -268,7 +271,7 @@ class Lowering:
             return self.intrinsic('llvm.fabs.f32', F32, args)
         raise NotImplementedError(f'elementwise operation {op}')
 
-    def loop(self, stmt):
+    def loop(self, stmt: Any) -> None:
         if stmt.seed:
             seeded = set()
             for child in stmt.body:
@@ -289,6 +292,7 @@ class Lowering:
             step = integer(cooperative)
         coalesced = self.options.coalesced_reductions and self.tile_stmt is not None and striped_reduction(stmt, self.tile_stmt, self.launch['block'][0])
         width = 4
+        count: Any = None
         if coalesced:
             count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)
             iters = stmt.axis.extent.value // (self.launch['block'][0] * 4)
@@ -301,6 +305,7 @@ class Lowering:
             start = self.builder.mul(start, integer(width))
             step = self.builder.mul(step, integer(width))
         vectorize = self.options.vector_width > 1 and plain_reduction(stmt) and (not coalesced)
+        vector_name: Any = None
         if coalesced:
             vector_name = '__vector' + str(width) + '_' + stmt.body[-1].name
             self.put(vector_name, ir.Constant(ir.VectorType(F32, width), [0.0] * width))
@@ -341,7 +346,7 @@ class Lowering:
         if not coalesced:
             count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)
         hint = ['llvm.loop.unroll.count', integer(count)] if count > 1 else ['llvm.loop.unroll.disable']
-        metadata = ir.MDValue(self.module, (), name=str(len(self.module.metadata)))
+        metadata: Any = ir.MDValue(self.module, (), name=str(len(self.module.metadata)))
         hints = [self.module.add_metadata(hint)]
         if vectorize:
             hints += [self.module.add_metadata(['llvm.loop.vectorize.enable', ir.Constant(I1, 1)]), self.module.add_metadata(['llvm.loop.vectorize.width', integer(self.options.vector_width)]), self.module.add_metadata(['llvm.loop.interleave.count', integer(1)])]
@@ -365,7 +370,7 @@ class Lowering:
                 distance //= 2
             self.put(name, value)
 
-    def tile(self, stmt):
+    def tile(self, stmt: Any) -> None:
         if stmt.aux_threads:
             raise NotImplementedError('auxiliary threads are outside the open set')
         if stmt.block_threads and stmt.block_threads != self.launch['block'][0]:
@@ -420,7 +425,7 @@ class Lowering:
                 self.body(stmt.body)
             self.tile_stmt = old_tile
 
-    def synchronize(self, barrier_id=0, count=None, warp=False):
+    def synchronize(self, barrier_id: Any = 0, count: Any = None, warp: Any = False) -> None:
         if warp:
             mask = self.intrinsic('llvm.nvvm.activemask', I32, [])
             self.intrinsic('llvm.nvvm.bar.warp.sync', VOID, [mask])
@@ -431,7 +436,7 @@ class Lowering:
         else:
             self.intrinsic('llvm.nvvm.barrier0', VOID, [])
 
-    def shuffle(self, stmt):
+    def shuffle(self, stmt: Any) -> None:
         if stmt.length < 1 or stmt.length > 32 or stmt.length & stmt.length - 1:
             raise ValueError('shuffle length must be a power of two up to 32')
         mask = self.intrinsic('llvm.nvvm.activemask', I32, [])
@@ -444,7 +449,7 @@ class Lowering:
             self.body(stmt.combine_states)
             distance //= 2
 
-    def tree(self, stmt):
+    def tree(self, stmt: Any) -> None:
         if stmt.length < 1 or stmt.length & stmt.length - 1:
             raise ValueError('tree length must be a power of two')
         if self.options.tree_specialization and stmt.tid_var == 'warp' and (stmt.inner is None) and (stmt.length <= 32):
@@ -482,7 +487,7 @@ class Lowering:
         for buf, state in zip(stmt.bufs, stmt.state, strict=True):
             self.put(state, self.builder.load(self.address(buf, (root,))))
 
-    def async_copy(self, stmt):
+    def async_copy(self, stmt: Any) -> None:
         if stmt.swizzle != 'NONE':
             raise NotImplementedError('shared-memory swizzling is outside the open set')
         if stmt.nbytes not in (4, 8, 16):
@@ -495,7 +500,7 @@ class Lowering:
         policy = 'cg' if stmt.nbytes == 16 else 'ca'
         self.assembly(f'cp.async.{policy}.shared.global [$0], [$1], {stmt.nbytes};', 'r,l,~{memory}', args=(destination, source))
 
-    def body(self, body):
+    def body(self, body: Any) -> None:
         for position, stmt in enumerate(body):
             kind = type(stmt).__name__
             replaced = False
@@ -596,7 +601,7 @@ class Lowering:
             else:
                 raise NotImplementedError(f'Kernel IR statement {kind}')
 
-    def generate(self):
+    def generate(self) -> str:
         self.body(self.kernel.body)
         self.builder.ret_void()
         return str(self.module)
