@@ -13,6 +13,7 @@ from llvmlite import ir
 from compiler.codegen.lower import Lowering
 from compiler.options import Options
 from compiler.passes.vectorize import vectorize_elementwise
+from compiler.ptx import rewrite_ptx
 
 @dataclass(frozen=True)
 class Compilation:
@@ -140,7 +141,7 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
                     cleanup.run(lowered, passes)
         lowered.verify()
         optimized = str(lowered)
-        ptx = machine.emit_assembly(lowered)
+        ptx = rewrite_ptx(machine.emit_assembly(lowered), options.approximate_math)
     result = Compilation(ptx, unoptimized, optimized)
     _store(key, result)
     return result
