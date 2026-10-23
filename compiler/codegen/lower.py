@@ -7,6 +7,7 @@ from compiler.codegen.tensor import TensorEmitter
 from compiler.options import Options
 from compiler.passes import run_passes
 from compiler.passes.tailtree import linearize_small_trees
+from compiler.passes.regforward import _no_writes_to
 from compiler.passes.recurrence import RecurrenceEmitter
 from compiler.transforms import default_unroll, plain_reduction, reciprocal_sqrt_source, sharing_width, striped_reduction
 I1: Any = ir.IntType(1)
@@ -275,6 +276,42 @@ class Lowering:
             return self.intrinsic('llvm.fabs.f32', F32, args)
         raise NotImplementedError(f'elementwise operation {op}')
 
+    def register_reduction(self, stmt: Any, start: Any, step: Any, width: int, trips: int) -> None:
+        load = stmt.body[0]
+        self.put(stmt.axis.name, start)
+        source = self.address(load.input, load.index)
+        stride = self.launch['block'][0] * width * 4
+        chunk = 32 // width
+        code = ['{', '.reg .b64 g;', '.reg .b32 left;', '.reg .pred p;', '.reg .f32 a<32>,x<32>,y<32>;', 'mov.u64 g, $1;']
+        def copy(prefix: str) -> None:
+            for j in range(chunk):
+                for k in range(width // 4):
+                    regs = ','.join(f'{prefix}{j * width + n}' for n in range(k * 4, k * 4 + 4))
+                    code.append(f'ld.global.nc.v4.f32 {{{regs}}}, [g+{j * stride + k * 16}];')
+            code.append(f'add.u64 g,g,{chunk * stride};')
+        def consume(prefix: str) -> None:
+            for j in range(32):
+                code.append(f'fma.rn.f32 a{j},{prefix}{j},{prefix}{j},a{j};' if len(stmt.body) == 3 else f'add.f32 a{j},a{j},{prefix}{j};')
+        copy('a')
+        if len(stmt.body) == 3:
+            code += [f'mul.f32 a{j},a{j},a{j};' for j in range(32)]
+        copy('x')
+        code += [f'mov.u32 left,{trips // chunk // 2 - 1};', 'registerloop:', r'.pragma \22nounroll\22;']
+        copy('y')
+        consume('x')
+        copy('x')
+        consume('y')
+        code += ['sub.u32 left,left,1;', 'setp.ne.u32 p,left,0;', '@p bra registerloop;']
+        consume('x')
+        distance = 16
+        while distance:
+            code += [f'add.f32 a{j},a{j},a{j+distance};' for j in range(distance)]
+            distance //= 2
+        code += ['mov.f32 $0,a0;', '}']
+        result = self.assembly('\n'.join(code), '=f,l,~{memory}', F32, (source,))
+        self.put(stmt.body[-1].name, result)
+        self.put(stmt.axis.name, self.builder.add(start, self.builder.mul(step, integer(trips))))
+
     def loop(self, stmt: Any) -> None:
         if stmt.seed:
             seeded = set()
@@ -308,6 +345,9 @@ class Lowering:
         if coalesced:
             start = self.builder.mul(start, integer(width))
             step = self.builder.mul(step, integer(width))
+        if coalesced and not self.options.unroll and trips >= 32 and trips % (64 // width) == 0 and stmt.body[0].input in self.readonly and self.buffers[stmt.body[0].input].type.addrspace == 1 and _no_writes_to(self.tile_stmt, stmt.body[0].input):
+            self.register_reduction(stmt, start, step, width, trips)
+            return
         vectorize = self.options.vector_width > 1 and plain_reduction(stmt) and (not coalesced)
         vector_name: Any = None
         if coalesced:
