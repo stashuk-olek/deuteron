@@ -13,6 +13,8 @@ class Options:
     coalesced_reductions: bool = True
     warp_willreturn: bool = True
     elementwise_vectorize: bool = True
+    register_forwarding: bool = True
+    tail_linearize: bool = True
 
 @dataclass(frozen=True)
 class Contraction:
