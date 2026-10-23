@@ -3,7 +3,7 @@ from dataclasses import replace
 from typing import Any
 from llvmlite import ir
 from emmy.compiler.ir.stmt.body import Body
-from compiler.analysis import STATIC_SHARED_LIMIT, exprs, free_variables, index_variables, integer, kind, uses, walk
+from compiler.analysis import STATIC_SHARED_LIMIT, canonical, exprs, free_variables, index_variables, integer, kind, uses, walk
 from compiler.options import Recurrence
 from compiler.transforms import SCALAR_OPS, sharing_width, symbolic, uniform_prefix_values
 I1: Any = ir.IntType(1)
@@ -563,10 +563,26 @@ class RecurrenceEmitter:
         for _part, _m, _n, y, _name_in in p.components:
             lowering.put(y, ir.Constant(F32, 0.0))
 
+        bases = {}
+        ranges = {a.name: a.extent.value for a in p.tile.axes} | {keyaxis: p.extent}
+        lowering.put(keyaxis, integer(0))
+        for load in p.gather:
+            positions = [i for i, coord in enumerate(load.index) if kind(coord) == 'Var' and coord.name == keyaxis]
+            try:
+                affine = all(not term or term[0] == 'var' for coord in load.index for term in canonical(coord))
+            except ValueError:
+                continue
+            if affine and load.input not in self.operands and len(load.names) == 1 and len(positions) == 1 and math.prod(lowering.shapes[load.input]) < 2 ** 31 and all(keyaxis not in free_variables(coord) for i, coord in enumerate(load.index) if i != positions[0]) and _full_cover(load, lowering.shapes[load.input], ranges):
+                bases[load.names[0]] = (lowering.address(load.input, load.index), math.prod(lowering.shapes[load.input][positions[0] + 1:]))
+
         def value_step() -> None:
             for load in p.gather:
                 if load.input in self.operands:
                     self.staged_load(load)
+                elif load.names[0] in bases:
+                    pointer, stride = bases[load.names[0]]
+                    offset = lowering.builder.mul(lowering.builder.zext(lowering.get(keyaxis), I64), ir.Constant(I64, stride))
+                    lowering.put(load.names[0], lowering.load(lowering.builder.gep(pointer, [offset]), load.input, 4))
                 else:
                     lowering.body((load,))
             weights = []
