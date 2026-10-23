@@ -10,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser(description='Compile Emmy Kernel IR to PTX through LLVM')
     parser.add_argument('kernel', type=Path)
     parser.add_argument('--arch', default='sm_89')
-    parser.add_argument('--opt-level', type=int, choices=range(4), default=2)
+    parser.add_argument('--opt-level', type=int, choices=range(4), default=3)
     parser.add_argument('--unroll', type=int, choices=(0, 1, 2, 4, 8, 16, 32), default=0)
     parser.add_argument('--vector-width', type=int, choices=(1, 2, 4, 8, 16), default=4)
     parser.add_argument('--contraction-precision', choices=('f32', 'tf32x3', 'bf16x3'), default='bf16x3')

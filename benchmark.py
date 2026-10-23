@@ -352,7 +352,7 @@ def main():
     parser.add_argument('--server', default='http://runner.riftstack.ai:48701')
     parser.add_argument('--artifacts', type=Path, default=Path('benchmark-results'))
     parser.add_argument('--arch')
-    parser.add_argument('--opt-level', type=int, choices=range(4), default=2)
+    parser.add_argument('--opt-level', type=int, choices=range(4), default=3)
     parser.add_argument('--contraction-precision', choices=('f32', 'tf32x3', 'bf16x3'))
     parser.add_argument('--approximate-math', action=argparse.BooleanOptionalAction)
     parser.add_argument('--warmup', type=int, default=20)
