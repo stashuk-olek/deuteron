@@ -20,9 +20,11 @@ def reorder_recurrences(kernel: Any, launch: Any) -> Any:
     for plan in stage_recurrences(kernel, launch):
         tile = plan.tile
         names = {a.name for a in tile.axes}
-        if len(names) != len(tile.axes) or names & {'lane', 'warp'} or tile.raster_group or tile.aux_threads or math.prod(a.extent.value for a in tile.axes) != launch['grid'][0] * launch['block'][0]:
+        if len(names) != len(tile.axes) or tile.raster_group or tile.aux_threads or math.prod(a.extent.value for a in tile.axes) != launch['grid'][0] * launch['block'][0]:
             continue
         allowed = {a.name for a in tile.axes} | {plan.loop.axis.name, plan.reductions[0].axis.name}
+        if allowed & {'lane', 'warp'} or any(name.startswith(('threadIdx.', 'blockIdx.', 'blockDim.')) for name in allowed):
+            continue
         valid = True
         for statement in walk(tile.body):
             expressions = exprs(statement)
