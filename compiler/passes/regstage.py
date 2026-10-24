@@ -5,6 +5,7 @@ from typing import Any
 from emmy.compiler.dtype import F32
 from emmy.compiler.ir.expr import BinaryExpr, Literal, TernaryExpr, Var
 from emmy.compiler.ir.stmt.body import Body
+from emmy.compiler.ir.stmt.blocks import Cond
 from emmy.compiler.ir.stmt.leaves import Load, Write
 from compiler.analysis import canonical, exprs, index_variables, kind, known_multiple, walk
 from compiler.passes.contraction import tensorize
@@ -230,7 +231,10 @@ def _stage(kernel: Any, launch: Any) -> Any:
         stores.append(store)
         loads.append(replace(load, index=next_src))
     inner = replace(p.loop, body=Body(tuple(replace(s, index=tuple(_rewrite(v, drop_ring) for v in s.index)) if kind(s) == 'Load' else s for s in p.loop.body)))
-    body = (*stores, outer.body[-3], *loads, inner, outer.body[-1])
+    pending = BinaryExpr(op='<', left=current + depth, right=Literal(extent, dtype='int'))
+    drain = Cond(cond=pending, body=Body((outer.body[-1],)))
+    prefetch = Cond(cond=pending, body=Body(tuple(loads)))
+    body = (*stores, outer.body[-3], prefetch, inner, drain)
     outer = replace(outer, body=Body(body))
     prefix = tuple(s for s in prefix if kind(s) in ('Smem', 'Init'))
     new_tile = replace(tile, body=Body((*prefix, *initial, outer, *suffix)))

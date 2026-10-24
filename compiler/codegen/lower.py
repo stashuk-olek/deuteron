@@ -430,7 +430,7 @@ class Lowering:
         size = math.prod((a.extent.value for a in stmt.axes))
         exact = size == self.launch['grid'][0] * self.launch['block'][0]
         split, width = len(stmt.axes) - 1, stmt.axes[-1].extent.value
-        while not exact and split and width < self.launch['block'][0]:
+        while split and width < self.launch['block'][0] and (not exact or 0 < size <= 2**32 and all(a.extent.value > 0 for a in stmt.axes)):
             split -= 1
             width *= stmt.axes[split].extent.value
         direct = not (stmt.raster_group and stmt.raster_axes) and width == self.launch['block'][0] and (exact or (0 < size < 2**32 and self.launch['grid'][0] * self.launch['block'][0] <= 2**32 and all(a.extent.value > 0 for a in stmt.axes)))
