@@ -1,0 +1,3717 @@
+{
+  "status": "complete",
+  "server": "http://runner.riftstack.ai:48701",
+  "protocol": {
+    "created_utc": "2026-10-24T20:12:47.656573+00:00",
+    "seed": 9781600639255339425,
+    "warmup": 0,
+    "iters": 1,
+    "rounds": [
+      [
+        "r03_mean",
+        "r02_big_sum",
+        "f03_l2norm",
+        "a01_attention",
+        "p03_relu_mul",
+        "a02_attention_128",
+        "p02_scale_shift",
+        "f02_row_softmax",
+        "p00_scalar_add",
+        "p01_vector_add",
+        "m01_matmul_512",
+        "m02_matmul_rect",
+        "f01_rmsnorm",
+        "r04_row_sum",
+        "r01_array_sum"
+      ],
+      [
+        "p00_scalar_add",
+        "p02_scale_shift",
+        "m02_matmul_rect",
+        "r02_big_sum",
+        "a02_attention_128",
+        "p03_relu_mul",
+        "f01_rmsnorm",
+        "m01_matmul_512",
+        "r03_mean",
+        "p01_vector_add",
+        "a01_attention",
+        "r04_row_sum",
+        "f03_l2norm",
+        "r01_array_sum",
+        "f02_row_softmax"
+      ],
+      [
+        "p01_vector_add",
+        "r03_mean",
+        "r04_row_sum",
+        "p03_relu_mul",
+        "a01_attention",
+        "m01_matmul_512",
+        "a02_attention_128",
+        "r02_big_sum",
+        "p00_scalar_add",
+        "m02_matmul_rect",
+        "f01_rmsnorm",
+        "p02_scale_shift",
+        "f03_l2norm",
+        "r01_array_sum",
+        "f02_row_softmax"
+      ],
+      [
+        "p01_vector_add",
+        "a02_attention_128",
+        "p02_scale_shift",
+        "p00_scalar_add",
+        "r01_array_sum",
+        "m01_matmul_512",
+        "r04_row_sum",
+        "a01_attention",
+        "f01_rmsnorm",
+        "r03_mean",
+        "r02_big_sum",
+        "m02_matmul_rect",
+        "f03_l2norm",
+        "f02_row_softmax",
+        "p03_relu_mul"
+      ],
+      [
+        "r04_row_sum",
+        "f03_l2norm",
+        "r03_mean",
+        "r02_big_sum",
+        "f02_row_softmax",
+        "a01_attention",
+        "m02_matmul_rect",
+        "r01_array_sum",
+        "p02_scale_shift",
+        "m01_matmul_512",
+        "f01_rmsnorm",
+        "p03_relu_mul",
+        "p00_scalar_add",
+        "p01_vector_add",
+        "a02_attention_128"
+      ],
+      [
+        "p03_relu_mul",
+        "f03_l2norm",
+        "r04_row_sum",
+        "p00_scalar_add",
+        "a02_attention_128",
+        "r01_array_sum",
+        "p01_vector_add",
+        "r02_big_sum",
+        "r03_mean",
+        "f02_row_softmax",
+        "a01_attention",
+        "m02_matmul_rect",
+        "m01_matmul_512",
+        "p02_scale_shift",
+        "f01_rmsnorm"
+      ]
+    ],
+    "samples_per_problem": 6,
+    "policy": "Fixed six randomized rounds; retain every cold single-call latency; no comparison effect or significance claim; default CLI SM89/O3 PTX assembled for SM120.",
+    "previous_attempt": {
+      "path": "/tmp/deuteron-5090-r6/cold-profile/results.json",
+      "reason": "Stopped on a scalar NumPy reference versus metadata-declared one-element output shape; fixed bounded format compatibility without changing data or tolerances. Same schedule repeated in full."
+    }
+  },
+  "protocol_sha256": "d1799126eb73044226040389b43182b37eb79150ccbff2555ba25c1ef7f47368",
+  "variants": [
+    {
+      "config": "cli",
+      "problem": "a01_attention",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "31d1f098b27de3d5331fbd5d28ff5479ddab5b185c7f704ebed87bfbb4514af1",
+      "ir_sha256": "0a6925795c1b8e108befbdc3300c722ea5a7fb19d2337597eca860e9c36eff9a",
+      "meta_sha256": "c280c572744016ecf6ca2971312ad2ce8a10b28c0f3e38561c1a096c2ea7352f",
+      "expected_sha256": "ccc0ad1a70f679781c8aff8064ae73368e04bc35018a537dc15ef8610262ed51",
+      "targets": {
+        "sm_90": {
+          "bytes": 29392,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul_softmax_reduce_b55365' for 'sm_90'\nptxas info    : Function properties for k_matmul_softmax_reduce_b55365\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 100 registers, used 1 barriers, 32768 bytes smem\nptxas info    : Compile time = 64.040 ms\n"
+        },
+        "sm_120": {
+          "bytes": 33504,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul_softmax_reduce_b55365' for 'sm_120'\nptxas info    : Function properties for k_matmul_softmax_reduce_b55365\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 100 registers, used 1 barriers, 32768 bytes smem\nptxas info    : Compile time = 65.284 ms\n"
+        }
+      },
+      "launch": {
+        "node": "matmul_1",
+        "entry": "k_matmul_softmax_reduce_b55365",
+        "arg_order": [
+          "div_c1",
+          "q",
+          "kt",
+          "v",
+          "matmul_1"
+        ],
+        "grid": [
+          4,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "div_c1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              8.0
+            ]
+          },
+          {
+            "name": "q",
+            "dtype": "f32",
+            "shape": [
+              64,
+              64
+            ],
+            "seed": 0
+          },
+          {
+            "name": "kt",
+            "dtype": "f32",
+            "shape": [
+              64,
+              64
+            ],
+            "seed": 1
+          },
+          {
+            "name": "v",
+            "dtype": "f32",
+            "shape": [
+              64,
+              64
+            ],
+            "seed": 2
+          },
+          {
+            "name": "matmul_1",
+            "dtype": "f32",
+            "shape": [
+              64,
+              64
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/a01_attention.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "a02_attention_128",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "ee7230cd24e29f931b9836e4e1a2c6842264a5ef3864394f60bb8bb2cd1f52a7",
+      "ir_sha256": "a51792c9e4d920a493054fb2a6986d87766cc1b3717078f8e631a45d1b0bf1dd",
+      "meta_sha256": "adcc08994786076e7cb9835ab3bab19b0dc9c0d00a999adea124380f8300de18",
+      "expected_sha256": "ebd7c000d75e52707f2e65304e05fbf963b4799919f814f685490c76c89e7080",
+      "targets": {
+        "sm_90": {
+          "bytes": 11344,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul_softmax_reduce_6f0029' for 'sm_90'\nptxas info    : Function properties for k_matmul_softmax_reduce_6f0029\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 64 registers, used 0 barriers, 512 bytes smem\nptxas info    : Compile time = 15.641 ms\n"
+        },
+        "sm_120": {
+          "bytes": 14280,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul_softmax_reduce_6f0029' for 'sm_120'\nptxas info    : Function properties for k_matmul_softmax_reduce_6f0029\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 80 registers, used 0 barriers, 512 bytes smem\nptxas info    : Compile time = 16.817 ms\n"
+        }
+      },
+      "launch": {
+        "node": "matmul_1",
+        "entry": "k_matmul_softmax_reduce_6f0029",
+        "arg_order": [
+          "div_c1",
+          "q",
+          "kt",
+          "v",
+          "matmul_1"
+        ],
+        "grid": [
+          128,
+          1,
+          1
+        ],
+        "block": [
+          32,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "div_c1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              5.656854
+            ]
+          },
+          {
+            "name": "q",
+            "dtype": "f32",
+            "shape": [
+              128,
+              32
+            ],
+            "seed": 0
+          },
+          {
+            "name": "kt",
+            "dtype": "f32",
+            "shape": [
+              32,
+              128
+            ],
+            "seed": 1
+          },
+          {
+            "name": "v",
+            "dtype": "f32",
+            "shape": [
+              128,
+              32
+            ],
+            "seed": 2
+          },
+          {
+            "name": "matmul_1",
+            "dtype": "f32",
+            "shape": [
+              128,
+              32
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/a02_attention_128.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "f01_rmsnorm",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "70f99cfd38b3df37c4660c8075f3c09a7ebeccb1f0c6de07567f991da59a1b42",
+      "ir_sha256": "a8e6819e3144b942d8983b52b6865fa692868105b20de30f6ba4df424a07862a",
+      "meta_sha256": "f45014c6b0963ec9727fc0f1c9bb585319c4ac94292260bc8f7c10557c1b8e1d",
+      "expected_sha256": "197016500cfca3ee3a1952273d50655e5bbf60093c28ad801e28eb3ccb76a6fb",
+      "targets": {
+        "sm_90": {
+          "bytes": 4816,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_mean_cbd1de' for 'sm_90'\nptxas info    : Function properties for k_mean_cbd1de\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 32 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 4.370 ms\n"
+        },
+        "sm_120": {
+          "bytes": 7432,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_mean_cbd1de' for 'sm_120'\nptxas info    : Function properties for k_mean_cbd1de\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 35 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 4.088 ms\n"
+        }
+      },
+      "launch": {
+        "node": "mul_1",
+        "entry": "k_mean_cbd1de",
+        "arg_order": [
+          "mean_count",
+          "add_c1",
+          "x",
+          "w",
+          "mul_1"
+        ],
+        "grid": [
+          64,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "mean_count",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              1024.0
+            ]
+          },
+          {
+            "name": "add_c1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              1e-05
+            ]
+          },
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              64,
+              1024
+            ],
+            "seed": 0
+          },
+          {
+            "name": "w",
+            "dtype": "f32",
+            "shape": [
+              1024
+            ],
+            "seed": 1
+          },
+          {
+            "name": "mul_1",
+            "dtype": "f32",
+            "shape": [
+              64,
+              1024
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/f01_rmsnorm.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "f02_row_softmax",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "323cd34b380a8b5a2c25edb0e8eb756b53e522107a89e576cb60d51cb58347f7",
+      "ir_sha256": "d48b030e9d9a765aa631287f72935bc59f20926f3ccb09dc7f7932106770af03",
+      "meta_sha256": "ddbe97ea42c7b077d30d140b751f8062caf47b5620cb423a02c1dd848cd61900",
+      "expected_sha256": "7e38d188cdc0bbb7afda1e6007318b0174bcdf82eb3855775967e49d4b8ee8ce",
+      "targets": {
+        "sm_90": {
+          "bytes": 4792,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_softmax_05263d' for 'sm_90'\nptxas info    : Function properties for k_softmax_05263d\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 18 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 4.456 ms\n"
+        },
+        "sm_120": {
+          "bytes": 7240,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_softmax_05263d' for 'sm_120'\nptxas info    : Function properties for k_softmax_05263d\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 22 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 4.154 ms\n"
+        }
+      },
+      "launch": {
+        "node": "softmax",
+        "entry": "k_softmax_05263d",
+        "arg_order": [
+          "x",
+          "softmax"
+        ],
+        "grid": [
+          64,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              64,
+              256
+            ],
+            "seed": 0
+          },
+          {
+            "name": "softmax",
+            "dtype": "f32",
+            "shape": [
+              64,
+              256
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/f02_row_softmax.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "f03_l2norm",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "ed0bf0b2805a108e51a0a2571c5b68ed4174fd29ca33cd261babb8face89c83a",
+      "ir_sha256": "34abdb33fe950100029930242777d0b22a12e523117de21bc9d78b43310c567d",
+      "meta_sha256": "cbf67c2d198f4fea1bb140083ec65c4bf14202090daaa4aac77f1514ecc60b95",
+      "expected_sha256": "fb2e242cbfe9834c6d45f27f29acc750a5b4ea8ad6ab509baa7a5b4c53586380",
+      "targets": {
+        "sm_90": {
+          "bytes": 4024,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_div_reduce' for 'sm_90'\nptxas info    : Function properties for k_div_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 22 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 3.652 ms\n"
+        },
+        "sm_120": {
+          "bytes": 6408,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_div_reduce' for 'sm_120'\nptxas info    : Function properties for k_div_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 22 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 3.285 ms\n"
+        }
+      },
+      "launch": {
+        "node": "div",
+        "entry": "k_div_reduce",
+        "arg_order": [
+          "x",
+          "div"
+        ],
+        "grid": [
+          64,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              64,
+              512
+            ],
+            "seed": 0
+          },
+          {
+            "name": "div",
+            "dtype": "f32",
+            "shape": [
+              64,
+              512
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/f03_l2norm.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "m01_matmul_512",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "92ea0a2bfbd2040331f452db2bae643e283837f2f30b7ddb36e5c1b84df41bea",
+      "ir_sha256": "ed9ab32776ce0de8b0d1f0367da54c586bf993c964efc01482666247a976dc02",
+      "meta_sha256": "3324370a2d29614c6c7ff7cf549563f9afb22bab0ed31ed62d8ffd27c59dcd57",
+      "expected_sha256": "6396bececa75b2adee8c83bb0c090f9a68e7297d7de492f5a2f0cd3e67f24c36",
+      "targets": {
+        "sm_90": {
+          "bytes": 7488,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul_2967be' for 'sm_90'\nptxas info    : Function properties for k_matmul_2967be\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 62 registers, used 1 barriers\nptxas info    : Compile time = 11.796 ms\n"
+        },
+        "sm_120": {
+          "bytes": 10888,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul_2967be' for 'sm_120'\nptxas info    : Function properties for k_matmul_2967be\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 62 registers, used 1 barriers\nptxas info    : Compile time = 12.509 ms\n"
+        }
+      },
+      "launch": {
+        "node": "matmul",
+        "entry": "k_matmul_2967be",
+        "arg_order": [
+          "x1",
+          "x0",
+          "matmul"
+        ],
+        "grid": [
+          128,
+          1,
+          1
+        ],
+        "block": [
+          512,
+          1,
+          1
+        ],
+        "smem_bytes": 73728,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x1",
+            "dtype": "f32",
+            "shape": [
+              512,
+              512
+            ],
+            "seed": 1
+          },
+          {
+            "name": "x0",
+            "dtype": "f32",
+            "shape": [
+              512,
+              512
+            ],
+            "seed": 0
+          },
+          {
+            "name": "matmul",
+            "dtype": "f32",
+            "shape": [
+              512,
+              512
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/m01_matmul_512.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "m02_matmul_rect",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "e57d1088b559bee561353cc60528c80942eef15571c5dea7e876142345cf1aea",
+      "ir_sha256": "c47bb47c529e7362c9272784ac21a31f2a5d79546cc11b19beff891278d22206",
+      "meta_sha256": "a82fd8d7f5933749868035254537b962d3d0140c8bf3e22f7f8a54a289a9c365",
+      "expected_sha256": "b0a5f6719c01fdc55054d983e7d75f880577e4741c63ae39c9fa704507e58134",
+      "targets": {
+        "sm_90": {
+          "bytes": 4416,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul' for 'sm_90'\nptxas info    : Function properties for k_matmul\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 23 registers, used 1 barriers, 6144 bytes smem\nptxas info    : Compile time = 4.792 ms\n"
+        },
+        "sm_120": {
+          "bytes": 7080,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_matmul' for 'sm_120'\nptxas info    : Function properties for k_matmul\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 29 registers, used 1 barriers, 6144 bytes smem\nptxas info    : Compile time = 5.023 ms\n"
+        }
+      },
+      "launch": {
+        "node": "matmul",
+        "entry": "k_matmul",
+        "arg_order": [
+          "x1",
+          "x0",
+          "matmul"
+        ],
+        "grid": [
+          512,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [
+          "matmul"
+        ],
+        "args": [
+          {
+            "name": "x1",
+            "dtype": "f32",
+            "shape": [
+              256,
+              64
+            ],
+            "seed": 1
+          },
+          {
+            "name": "x0",
+            "dtype": "f32",
+            "shape": [
+              128,
+              256
+            ],
+            "seed": 0
+          },
+          {
+            "name": "matmul",
+            "dtype": "f32",
+            "shape": [
+              128,
+              64
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/m02_matmul_rect.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "p00_scalar_add",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "f2030e536f9c2e174ff5dd3690c4b600db2f6b302687f17dcb86b31b171db6ca",
+      "ir_sha256": "d93c0b232c48f7161c88f0276ea8a69481b06608a24b6e8ed2d5025bd17f4e32",
+      "meta_sha256": "67f4c80a5c78c9fa571f4088633acc56cae0a758d2a65e7c89c07a96e665709c",
+      "expected_sha256": "69e4a749183c5402f03c28a957cb1f523186d16f9b9974c75cd0ebbbfd925478",
+      "targets": {
+        "sm_90": {
+          "bytes": 3392,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_add_pointwise' for 'sm_90'\nptxas info    : Function properties for k_add_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 12 registers, used 0 barriers\nptxas info    : Compile time = 2.279 ms\n"
+        },
+        "sm_120": {
+          "bytes": 5624,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_add_pointwise' for 'sm_120'\nptxas info    : Function properties for k_add_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 12 registers, used 0 barriers\nptxas info    : Compile time = 2.118 ms\n"
+        }
+      },
+      "launch": {
+        "node": "add",
+        "entry": "k_add_pointwise",
+        "arg_order": [
+          "x0",
+          "x1",
+          "add"
+        ],
+        "grid": [
+          1,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x0",
+            "dtype": "f32",
+            "shape": [
+              128
+            ],
+            "seed": 0
+          },
+          {
+            "name": "x1",
+            "dtype": "f32",
+            "shape": [
+              128
+            ],
+            "seed": 1
+          },
+          {
+            "name": "add",
+            "dtype": "f32",
+            "shape": [
+              128
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/p00_scalar_add.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "p01_vector_add",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "25944e5a9827044f7a6f4d80ac0bc3f387515df21944e80cd1498e407f7d8a21",
+      "ir_sha256": "90088bc4c7346b9a5916205fdb96926f52cc0f5e3c5c08527d7b0796b0c47fc5",
+      "meta_sha256": "4607a6a14553ec256b2073ff8fef18a850e315033f4fdace21f26fdcc2a867c6",
+      "expected_sha256": "1a72f87aa3afd4e84746d2c0bfcfde9d024f573ce863322f72d2c6b3bb133086",
+      "targets": {
+        "sm_90": {
+          "bytes": 3392,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_add_pointwise' for 'sm_90'\nptxas info    : Function properties for k_add_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 12 registers, used 0 barriers\nptxas info    : Compile time = 2.330 ms\n"
+        },
+        "sm_120": {
+          "bytes": 5488,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_add_pointwise' for 'sm_120'\nptxas info    : Function properties for k_add_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 12 registers, used 0 barriers\nptxas info    : Compile time = 2.165 ms\n"
+        }
+      },
+      "launch": {
+        "node": "add",
+        "entry": "k_add_pointwise",
+        "arg_order": [
+          "x0",
+          "x1",
+          "add"
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x0",
+            "dtype": "f32",
+            "shape": [
+              1024
+            ],
+            "seed": 0
+          },
+          {
+            "name": "x1",
+            "dtype": "f32",
+            "shape": [
+              1024
+            ],
+            "seed": 1
+          },
+          {
+            "name": "add",
+            "dtype": "f32",
+            "shape": [
+              1024
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/p01_vector_add.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "p02_scale_shift",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "0adced7f348558e7899c6af0f7b58b1d103ae7eac4f166373eed999da7016f52",
+      "ir_sha256": "2bae0a54cbcd037d6c13e70b5c4f5728f2f94af163a53ebe35b88ab8f68ec021",
+      "meta_sha256": "7c1c3ea69e4d61128d72fbaf3a82a76125a5273c3ced6197ac2f150d03d121e1",
+      "expected_sha256": "515539ace84b0cb38ab3e5e6ed20894b774ab428a86be180529d54fd8ad63dd6",
+      "targets": {
+        "sm_90": {
+          "bytes": 3400,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_add_pointwise' for 'sm_90'\nptxas info    : Function properties for k_add_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 18 registers, used 0 barriers\nptxas info    : Compile time = 1.982 ms\n"
+        },
+        "sm_120": {
+          "bytes": 5664,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_add_pointwise' for 'sm_120'\nptxas info    : Function properties for k_add_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 18 registers, used 0 barriers\nptxas info    : Compile time = 1.808 ms\n"
+        }
+      },
+      "launch": {
+        "node": "add",
+        "entry": "k_add_pointwise",
+        "arg_order": [
+          "mul_c1",
+          "add_c1",
+          "x",
+          "add"
+        ],
+        "grid": [
+          4,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "mul_c1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              2.0
+            ]
+          },
+          {
+            "name": "add_c1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              1.0
+            ]
+          },
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              4096
+            ],
+            "seed": 0
+          },
+          {
+            "name": "add",
+            "dtype": "f32",
+            "shape": [
+              4096
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/p02_scale_shift.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "p03_relu_mul",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "241003fde1dcc01801172b7098aa58514cada89a2c497159125266aaa0bc4214",
+      "ir_sha256": "b2429e790dac9fd0db9fafadaa3624cafaeff85c834851a9034a730a1620a892",
+      "meta_sha256": "a2dbbe3a3cec7c45fcdde2c08f0d3276647c2a4b56ede3345be16404d1ded8c9",
+      "expected_sha256": "a0fc97901b28331b29bb5f01cf104944c3376c633dd4cce65d551ad61035e52f",
+      "targets": {
+        "sm_90": {
+          "bytes": 3520,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_mul_pointwise' for 'sm_90'\nptxas info    : Function properties for k_mul_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 22 registers, used 0 barriers\nptxas info    : Compile time = 2.035 ms\n"
+        },
+        "sm_120": {
+          "bytes": 5616,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_mul_pointwise' for 'sm_120'\nptxas info    : Function properties for k_mul_pointwise\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 22 registers, used 0 barriers\nptxas info    : Compile time = 2.231 ms\n"
+        }
+      },
+      "launch": {
+        "node": "mul",
+        "entry": "k_mul_pointwise",
+        "arg_order": [
+          "x",
+          "y",
+          "mul"
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              2048
+            ],
+            "seed": 0
+          },
+          {
+            "name": "y",
+            "dtype": "f32",
+            "shape": [
+              2048
+            ],
+            "seed": 1
+          },
+          {
+            "name": "mul",
+            "dtype": "f32",
+            "shape": [
+              2048
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/p03_relu_mul.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "r01_array_sum",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "9712be485f6532364f5b57cade3a0fe4358e97f84f300c5c0b17705fa7a67b45",
+      "ir_sha256": "a5ad6af023562e1632e929afb8cd6387603c2edcd4d4b1590b1a3b2ee962675f",
+      "meta_sha256": "46cf07073f4e612e811decbc2ca900ea210811194a1e336053a6f179ecb4b00e",
+      "expected_sha256": "899c8058da70456bc3714d71ffc2814dd9777e37d39be7379b359e452924cb5c",
+      "targets": {
+        "sm_90": {
+          "bytes": 4024,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_sum_1_reduce' for 'sm_90'\nptxas info    : Function properties for k_sum_1_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 15 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 3.235 ms\n"
+        },
+        "sm_120": {
+          "bytes": 6440,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_sum_1_reduce' for 'sm_120'\nptxas info    : Function properties for k_sum_1_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 15 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 3.377 ms\n"
+        }
+      },
+      "launch": {
+        "node": "sum_1",
+        "entry": "k_sum_1_reduce",
+        "arg_order": [
+          "x",
+          "sum_1"
+        ],
+        "grid": [
+          1,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              1024
+            ],
+            "seed": 0
+          },
+          {
+            "name": "sum_1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/r01_array_sum.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "r02_big_sum",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "81591753d8d5bc286338675dbedb3823d9ec7585ba4382a20ed12d6b89227703",
+      "ir_sha256": "777e3f2dd170849133e19d303cdb3d273c135c9a9896786ee40fbc6a2ff4ec7c",
+      "meta_sha256": "db364be00e35402a3d6f10fcd55562115c7604dea94f8126a02179a80476d19e",
+      "expected_sha256": "0109852644d0785b770fa38d996b063b156f01e8bfccb303ea0581e42696eec1",
+      "targets": {
+        "sm_90": {
+          "bytes": 6584,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_sum_1_reduce' for 'sm_90'\nptxas info    : Function properties for k_sum_1_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 72 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 9.440 ms\n"
+        },
+        "sm_120": {
+          "bytes": 9104,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_sum_1_reduce' for 'sm_120'\nptxas info    : Function properties for k_sum_1_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 72 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 9.537 ms\n"
+        }
+      },
+      "launch": {
+        "node": "sum_1",
+        "entry": "k_sum_1_reduce",
+        "arg_order": [
+          "x",
+          "sum_1"
+        ],
+        "grid": [
+          1,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              65536
+            ],
+            "seed": 0
+          },
+          {
+            "name": "sum_1",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/r02_big_sum.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "r03_mean",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "4818a78b9092449e03d4d3519d337a652546774614232c1895c96d4608169a14",
+      "ir_sha256": "7eeca2c7869ab2ddf880a0ac7fb689d3ab814d7523eab472ec80ad2458100b86",
+      "meta_sha256": "d7ab661c388ad447f5661a3b36cba448cf5142402756f1e1c35d110db06c84fe",
+      "expected_sha256": "9c53fd65aebbc9b6ca477653643273195149be2d93ab472a135883a0a128c5f7",
+      "targets": {
+        "sm_90": {
+          "bytes": 6720,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_mean_ffcca3' for 'sm_90'\nptxas info    : Function properties for k_mean_ffcca3\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 72 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 9.298 ms\n"
+        },
+        "sm_120": {
+          "bytes": 9296,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_mean_ffcca3' for 'sm_120'\nptxas info    : Function properties for k_mean_ffcca3\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 72 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 9.928 ms\n"
+        }
+      },
+      "launch": {
+        "node": "mean",
+        "entry": "k_mean_ffcca3",
+        "arg_order": [
+          "x",
+          "mean_keepdim_count",
+          "mean"
+        ],
+        "grid": [
+          1,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              32768
+            ],
+            "seed": 0
+          },
+          {
+            "name": "mean_keepdim_count",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "data": [
+              32768.0
+            ]
+          },
+          {
+            "name": "mean",
+            "dtype": "f32",
+            "shape": [
+              1
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/r03_mean.ptx"
+    },
+    {
+      "config": "cli",
+      "problem": "r04_row_sum",
+      "arch": "sm_89",
+      "opt_level": 3,
+      "ptx_sha256": "79827998e543de5576663894db49dac81d0925d3a380f765c62894b5cc6da8de",
+      "ir_sha256": "4c7befc76b72c6c69be4675d69ccd14e336b9139fe22aaec1b94230858c8ab03",
+      "meta_sha256": "803cb710590156ad319eb44b2d2aa6c1ee9b0e3a666ebc09de259e50d83a3ba1",
+      "expected_sha256": "cb724cbe21276b1438add7263e418f52c0eb90c4501954a245678dcc793c895d",
+      "targets": {
+        "sm_90": {
+          "bytes": 4024,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_sum_1_reduce' for 'sm_90'\nptxas info    : Function properties for k_sum_1_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 15 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 2.882 ms\n"
+        },
+        "sm_120": {
+          "bytes": 6456,
+          "ptxas": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'k_sum_1_reduce' for 'sm_120'\nptxas info    : Function properties for k_sum_1_reduce\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 15 registers, used 1 barriers, 16 bytes smem\nptxas info    : Compile time = 2.922 ms\n"
+        }
+      },
+      "launch": {
+        "node": "sum_1",
+        "entry": "k_sum_1_reduce",
+        "arg_order": [
+          "x",
+          "sum_1"
+        ],
+        "grid": [
+          64,
+          1,
+          1
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "smem_bytes": 0,
+        "zero_outputs": [],
+        "args": [
+          {
+            "name": "x",
+            "dtype": "f32",
+            "shape": [
+              64,
+              512
+            ],
+            "seed": 0
+          },
+          {
+            "name": "sum_1",
+            "dtype": "f32",
+            "shape": [
+              64
+            ],
+            "output": true
+          }
+        ],
+        "final": true
+      },
+      "ptx": "/tmp/deuteron-5090-r6/final-audit/cli/r04_row_sum.ptx"
+    }
+  ],
+  "calls": [
+    {
+      "round": 0,
+      "problem": "r03_mean",
+      "started_utc": "2026-10-24T20:12:47.658610+00:00",
+      "entry": "k_mean_ffcca3",
+      "median_us": 23.68,
+      "registers": 72,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mean": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+      },
+      "max_absolute_errors": {
+        "mean": 0.0
+      }
+    },
+    {
+      "round": 0,
+      "problem": "r02_big_sum",
+      "started_utc": "2026-10-24T20:12:48.734283+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 29.696,
+      "registers": 72,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "611f329091b21f8dfd6a863579e2aada0cfc3a5a3a6f7906457abf61460fc72b"
+      },
+      "max_absolute_errors": {
+        "sum_1": 1.52587890625e-05
+      }
+    },
+    {
+      "round": 0,
+      "problem": "f03_l2norm",
+      "started_utc": "2026-10-24T20:12:49.951380+00:00",
+      "entry": "k_div_reduce",
+      "median_us": 14.88,
+      "registers": 22,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "div": "75e8f328631ad9bd1113b45f72239c8346ae94b522d30bad53b5c7e210574482"
+      },
+      "max_absolute_errors": {
+        "div": 1.4901161193847656e-08
+      }
+    },
+    {
+      "round": 0,
+      "problem": "a01_attention",
+      "started_utc": "2026-10-24T20:12:51.721940+00:00",
+      "entry": "k_matmul_softmax_reduce_b55365",
+      "median_us": 15.488,
+      "registers": 118,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "e06197d28b1f086ae182ebe6273c7b26e6abde9916dc35f8aa2983793b41c94a"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 4.172325134277344e-07
+      }
+    },
+    {
+      "round": 0,
+      "problem": "p03_relu_mul",
+      "started_utc": "2026-10-24T20:12:53.484522+00:00",
+      "entry": "k_mul_pointwise",
+      "median_us": 14.944,
+      "registers": 22,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+      },
+      "max_absolute_errors": {
+        "mul": 0.0
+      }
+    },
+    {
+      "round": 0,
+      "problem": "a02_attention_128",
+      "started_utc": "2026-10-24T20:12:54.636181+00:00",
+      "entry": "k_matmul_softmax_reduce_6f0029",
+      "median_us": 16.128,
+      "registers": 80,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "54032cfee371fcf6b59ff8eebce814f4b142eca0eeb7b2f3644a6ece1d51c858"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 1.4901161193847656e-07
+      }
+    },
+    {
+      "round": 0,
+      "problem": "p02_scale_shift",
+      "started_utc": "2026-10-24T20:12:56.112901+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 15.136,
+      "registers": 18,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 0,
+      "problem": "f02_row_softmax",
+      "started_utc": "2026-10-24T20:12:57.439439+00:00",
+      "entry": "k_softmax_05263d",
+      "median_us": 14.72,
+      "registers": 22,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "softmax": "d383fe271924e51aae089550613a5eb97c93731ef146430ffa88201434e76500"
+      },
+      "max_absolute_errors": {
+        "softmax": 7.450580596923828e-09
+      }
+    },
+    {
+      "round": 0,
+      "problem": "p00_scalar_add",
+      "started_utc": "2026-10-24T20:12:59.175454+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 19.936,
+      "registers": 12,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 0,
+      "problem": "p01_vector_add",
+      "started_utc": "2026-10-24T20:13:00.283796+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 19.936,
+      "registers": 12,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 0,
+      "problem": "m01_matmul_512",
+      "started_utc": "2026-10-24T20:13:01.508188+00:00",
+      "entry": "k_matmul_2967be",
+      "median_us": 20.256,
+      "registers": 62,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fbee13c09948cc712f24ea22c02c0c05cd0f9ad00ec81b43f6e2387945679c08"
+      },
+      "max_absolute_errors": {
+        "matmul": 0.0005376338958740234
+      }
+    },
+    {
+      "round": 0,
+      "problem": "m02_matmul_rect",
+      "started_utc": "2026-10-24T20:13:04.161873+00:00",
+      "entry": "k_matmul",
+      "median_us": 14.752,
+      "registers": 27,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": true,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fb7270b2ae814ac598ddb7fa39394ae492e217a3e041e2b75bbd81d92a584739"
+      },
+      "max_absolute_errors": {
+        "matmul": 1.1444091796875e-05
+      }
+    },
+    {
+      "round": 0,
+      "problem": "f01_rmsnorm",
+      "started_utc": "2026-10-24T20:13:05.614152+00:00",
+      "entry": "k_mean_cbd1de",
+      "median_us": 15.2,
+      "registers": 35,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul_1": "f9bd5ba2fa2695cb2f24c9554b9f5c1bb03206710c55a89de2fae582e447fb69"
+      },
+      "max_absolute_errors": {
+        "mul_1": 1.9073486328125e-06
+      }
+    },
+    {
+      "round": 0,
+      "problem": "r04_row_sum",
+      "started_utc": "2026-10-24T20:13:07.563286+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 20.224,
+      "registers": 15,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "1e976bb313f7f47caa9280ae741680733b87626cac3885a50e7a47847d84d891"
+      },
+      "max_absolute_errors": {
+        "sum_1": 5.7220458984375e-06
+      }
+    },
+    {
+      "round": 0,
+      "problem": "r01_array_sum",
+      "started_utc": "2026-10-24T20:13:08.622042+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 20.416,
+      "registers": 15,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+      },
+      "max_absolute_errors": {
+        "sum_1": 3.814697265625e-06
+      }
+    },
+    {
+      "round": 1,
+      "problem": "p00_scalar_add",
+      "started_utc": "2026-10-24T20:13:09.616471+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.712,
+      "registers": 12,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 1,
+      "problem": "p02_scale_shift",
+      "started_utc": "2026-10-24T20:13:10.169364+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 16.16,
+      "registers": 18,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 1,
+      "problem": "m02_matmul_rect",
+      "started_utc": "2026-10-24T20:13:11.060267+00:00",
+      "entry": "k_matmul",
+      "median_us": 16.32,
+      "registers": 27,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": true,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "6fdc4202b1d878434c1714744f4b72841182e2cf180d42b7e9a700676169fb92"
+      },
+      "max_absolute_errors": {
+        "matmul": 1.1444091796875e-05
+      }
+    },
+    {
+      "round": 1,
+      "problem": "r02_big_sum",
+      "started_utc": "2026-10-24T20:13:11.982217+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 26.176,
+      "registers": 72,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "611f329091b21f8dfd6a863579e2aada0cfc3a5a3a6f7906457abf61460fc72b"
+      },
+      "max_absolute_errors": {
+        "sum_1": 1.52587890625e-05
+      }
+    },
+    {
+      "round": 1,
+      "problem": "a02_attention_128",
+      "started_utc": "2026-10-24T20:13:12.498193+00:00",
+      "entry": "k_matmul_softmax_reduce_6f0029",
+      "median_us": 16.16,
+      "registers": 80,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "54032cfee371fcf6b59ff8eebce814f4b142eca0eeb7b2f3644a6ece1d51c858"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 1.4901161193847656e-07
+      }
+    },
+    {
+      "round": 1,
+      "problem": "p03_relu_mul",
+      "started_utc": "2026-10-24T20:13:13.280373+00:00",
+      "entry": "k_mul_pointwise",
+      "median_us": 16.8,
+      "registers": 22,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+      },
+      "max_absolute_errors": {
+        "mul": 0.0
+      }
+    },
+    {
+      "round": 1,
+      "problem": "f01_rmsnorm",
+      "started_utc": "2026-10-24T20:13:14.000962+00:00",
+      "entry": "k_mean_cbd1de",
+      "median_us": 16.64,
+      "registers": 35,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul_1": "f9bd5ba2fa2695cb2f24c9554b9f5c1bb03206710c55a89de2fae582e447fb69"
+      },
+      "max_absolute_errors": {
+        "mul_1": 1.9073486328125e-06
+      }
+    },
+    {
+      "round": 1,
+      "problem": "m01_matmul_512",
+      "started_utc": "2026-10-24T20:13:15.368593+00:00",
+      "entry": "k_matmul_2967be",
+      "median_us": 23.904,
+      "registers": 62,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fbee13c09948cc712f24ea22c02c0c05cd0f9ad00ec81b43f6e2387945679c08"
+      },
+      "max_absolute_errors": {
+        "matmul": 0.0005376338958740234
+      }
+    },
+    {
+      "round": 1,
+      "problem": "r03_mean",
+      "started_utc": "2026-10-24T20:13:17.162584+00:00",
+      "entry": "k_mean_ffcca3",
+      "median_us": 24.192,
+      "registers": 72,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mean": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+      },
+      "max_absolute_errors": {
+        "mean": 0.0
+      }
+    },
+    {
+      "round": 1,
+      "problem": "p01_vector_add",
+      "started_utc": "2026-10-24T20:13:17.705712+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 30.24,
+      "registers": 12,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 1,
+      "problem": "a01_attention",
+      "started_utc": "2026-10-24T20:13:18.357975+00:00",
+      "entry": "k_matmul_softmax_reduce_b55365",
+      "median_us": 16.8,
+      "registers": 118,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "e06197d28b1f086ae182ebe6273c7b26e6abde9916dc35f8aa2983793b41c94a"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 4.172325134277344e-07
+      }
+    },
+    {
+      "round": 1,
+      "problem": "r04_row_sum",
+      "started_utc": "2026-10-24T20:13:19.166253+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 24.384,
+      "registers": 15,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "1e976bb313f7f47caa9280ae741680733b87626cac3885a50e7a47847d84d891"
+      },
+      "max_absolute_errors": {
+        "sum_1": 5.7220458984375e-06
+      }
+    },
+    {
+      "round": 1,
+      "problem": "f03_l2norm",
+      "started_utc": "2026-10-24T20:13:19.716043+00:00",
+      "entry": "k_div_reduce",
+      "median_us": 16.64,
+      "registers": 22,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "div": "75e8f328631ad9bd1113b45f72239c8346ae94b522d30bad53b5c7e210574482"
+      },
+      "max_absolute_errors": {
+        "div": 1.4901161193847656e-08
+      }
+    },
+    {
+      "round": 1,
+      "problem": "r01_array_sum",
+      "started_utc": "2026-10-24T20:13:20.959783+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 23.968,
+      "registers": 15,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+      },
+      "max_absolute_errors": {
+        "sum_1": 3.814697265625e-06
+      }
+    },
+    {
+      "round": 1,
+      "problem": "f02_row_softmax",
+      "started_utc": "2026-10-24T20:13:21.467071+00:00",
+      "entry": "k_softmax_05263d",
+      "median_us": 16.0,
+      "registers": 22,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "softmax": "d383fe271924e51aae089550613a5eb97c93731ef146430ffa88201434e76500"
+      },
+      "max_absolute_errors": {
+        "softmax": 7.450580596923828e-09
+      }
+    },
+    {
+      "round": 2,
+      "problem": "p01_vector_add",
+      "started_utc": "2026-10-24T20:13:22.558766+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.776,
+      "registers": 12,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 2,
+      "problem": "r03_mean",
+      "started_utc": "2026-10-24T20:13:23.274467+00:00",
+      "entry": "k_mean_ffcca3",
+      "median_us": 23.968,
+      "registers": 72,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mean": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+      },
+      "max_absolute_errors": {
+        "mean": 0.0
+      }
+    },
+    {
+      "round": 2,
+      "problem": "r04_row_sum",
+      "started_utc": "2026-10-24T20:13:23.825477+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 24.16,
+      "registers": 15,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "1e976bb313f7f47caa9280ae741680733b87626cac3885a50e7a47847d84d891"
+      },
+      "max_absolute_errors": {
+        "sum_1": 5.7220458984375e-06
+      }
+    },
+    {
+      "round": 2,
+      "problem": "p03_relu_mul",
+      "started_utc": "2026-10-24T20:13:24.334976+00:00",
+      "entry": "k_mul_pointwise",
+      "median_us": 16.448,
+      "registers": 22,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+      },
+      "max_absolute_errors": {
+        "mul": 0.0
+      }
+    },
+    {
+      "round": 2,
+      "problem": "a01_attention",
+      "started_utc": "2026-10-24T20:13:24.999528+00:00",
+      "entry": "k_matmul_softmax_reduce_b55365",
+      "median_us": 16.48,
+      "registers": 118,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "e06197d28b1f086ae182ebe6273c7b26e6abde9916dc35f8aa2983793b41c94a"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 4.172325134277344e-07
+      }
+    },
+    {
+      "round": 2,
+      "problem": "m01_matmul_512",
+      "started_utc": "2026-10-24T20:13:25.785403+00:00",
+      "entry": "k_matmul_2967be",
+      "median_us": 24.032,
+      "registers": 62,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fbee13c09948cc712f24ea22c02c0c05cd0f9ad00ec81b43f6e2387945679c08"
+      },
+      "max_absolute_errors": {
+        "matmul": 0.0005376338958740234
+      }
+    },
+    {
+      "round": 2,
+      "problem": "a02_attention_128",
+      "started_utc": "2026-10-24T20:13:27.567508+00:00",
+      "entry": "k_matmul_softmax_reduce_6f0029",
+      "median_us": 16.608,
+      "registers": 80,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "54032cfee371fcf6b59ff8eebce814f4b142eca0eeb7b2f3644a6ece1d51c858"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 1.4901161193847656e-07
+      }
+    },
+    {
+      "round": 2,
+      "problem": "r02_big_sum",
+      "started_utc": "2026-10-24T20:13:28.363699+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 26.464,
+      "registers": 72,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "611f329091b21f8dfd6a863579e2aada0cfc3a5a3a6f7906457abf61460fc72b"
+      },
+      "max_absolute_errors": {
+        "sum_1": 1.52587890625e-05
+      }
+    },
+    {
+      "round": 2,
+      "problem": "p00_scalar_add",
+      "started_utc": "2026-10-24T20:13:28.867992+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.744,
+      "registers": 12,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 2,
+      "problem": "m02_matmul_rect",
+      "started_utc": "2026-10-24T20:13:29.376789+00:00",
+      "entry": "k_matmul",
+      "median_us": 16.256,
+      "registers": 27,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": true,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "5f9b0b4c3a4a376ca50a3e50ddb2925ca8689252ff60305f76795b7e31659a72"
+      },
+      "max_absolute_errors": {
+        "matmul": 1.1444091796875e-05
+      }
+    },
+    {
+      "round": 2,
+      "problem": "f01_rmsnorm",
+      "started_utc": "2026-10-24T20:13:30.323256+00:00",
+      "entry": "k_mean_cbd1de",
+      "median_us": 16.608,
+      "registers": 35,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul_1": "f9bd5ba2fa2695cb2f24c9554b9f5c1bb03206710c55a89de2fae582e447fb69"
+      },
+      "max_absolute_errors": {
+        "mul_1": 1.9073486328125e-06
+      }
+    },
+    {
+      "round": 2,
+      "problem": "p02_scale_shift",
+      "started_utc": "2026-10-24T20:13:31.729595+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 16.512,
+      "registers": 18,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 2,
+      "problem": "f03_l2norm",
+      "started_utc": "2026-10-24T20:13:32.544815+00:00",
+      "entry": "k_div_reduce",
+      "median_us": 16.96,
+      "registers": 22,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "div": "75e8f328631ad9bd1113b45f72239c8346ae94b522d30bad53b5c7e210574482"
+      },
+      "max_absolute_errors": {
+        "div": 1.4901161193847656e-08
+      }
+    },
+    {
+      "round": 2,
+      "problem": "r01_array_sum",
+      "started_utc": "2026-10-24T20:13:33.793260+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 23.232,
+      "registers": 15,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+      },
+      "max_absolute_errors": {
+        "sum_1": 3.814697265625e-06
+      }
+    },
+    {
+      "round": 2,
+      "problem": "f02_row_softmax",
+      "started_utc": "2026-10-24T20:13:34.299645+00:00",
+      "entry": "k_softmax_05263d",
+      "median_us": 16.16,
+      "registers": 22,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "softmax": "d383fe271924e51aae089550613a5eb97c93731ef146430ffa88201434e76500"
+      },
+      "max_absolute_errors": {
+        "softmax": 7.450580596923828e-09
+      }
+    },
+    {
+      "round": 3,
+      "problem": "p01_vector_add",
+      "started_utc": "2026-10-24T20:13:35.359113+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 22.88,
+      "registers": 12,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 3,
+      "problem": "a02_attention_128",
+      "started_utc": "2026-10-24T20:13:36.011428+00:00",
+      "entry": "k_matmul_softmax_reduce_6f0029",
+      "median_us": 17.568,
+      "registers": 80,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "54032cfee371fcf6b59ff8eebce814f4b142eca0eeb7b2f3644a6ece1d51c858"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 1.4901161193847656e-07
+      }
+    },
+    {
+      "round": 3,
+      "problem": "p02_scale_shift",
+      "started_utc": "2026-10-24T20:13:36.811800+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 16.064,
+      "registers": 18,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 3,
+      "problem": "p00_scalar_add",
+      "started_utc": "2026-10-24T20:13:37.703507+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.776,
+      "registers": 12,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 3,
+      "problem": "r01_array_sum",
+      "started_utc": "2026-10-24T20:13:38.257833+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 23.552,
+      "registers": 15,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+      },
+      "max_absolute_errors": {
+        "sum_1": 3.814697265625e-06
+      }
+    },
+    {
+      "round": 3,
+      "problem": "m01_matmul_512",
+      "started_utc": "2026-10-24T20:13:38.802675+00:00",
+      "entry": "k_matmul_2967be",
+      "median_us": 22.4,
+      "registers": 62,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fbee13c09948cc712f24ea22c02c0c05cd0f9ad00ec81b43f6e2387945679c08"
+      },
+      "max_absolute_errors": {
+        "matmul": 0.0005376338958740234
+      }
+    },
+    {
+      "round": 3,
+      "problem": "r04_row_sum",
+      "started_utc": "2026-10-24T20:13:40.542812+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 24.128,
+      "registers": 15,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "1e976bb313f7f47caa9280ae741680733b87626cac3885a50e7a47847d84d891"
+      },
+      "max_absolute_errors": {
+        "sum_1": 5.7220458984375e-06
+      }
+    },
+    {
+      "round": 3,
+      "problem": "a01_attention",
+      "started_utc": "2026-10-24T20:13:41.093932+00:00",
+      "entry": "k_matmul_softmax_reduce_b55365",
+      "median_us": 16.864,
+      "registers": 118,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "e06197d28b1f086ae182ebe6273c7b26e6abde9916dc35f8aa2983793b41c94a"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 4.172325134277344e-07
+      }
+    },
+    {
+      "round": 3,
+      "problem": "f01_rmsnorm",
+      "started_utc": "2026-10-24T20:13:41.902378+00:00",
+      "entry": "k_mean_cbd1de",
+      "median_us": 17.216,
+      "registers": 35,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul_1": "f9bd5ba2fa2695cb2f24c9554b9f5c1bb03206710c55a89de2fae582e447fb69"
+      },
+      "max_absolute_errors": {
+        "mul_1": 1.9073486328125e-06
+      }
+    },
+    {
+      "round": 3,
+      "problem": "r03_mean",
+      "started_utc": "2026-10-24T20:13:43.312519+00:00",
+      "entry": "k_mean_ffcca3",
+      "median_us": 24.032,
+      "registers": 72,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mean": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+      },
+      "max_absolute_errors": {
+        "mean": 0.0
+      }
+    },
+    {
+      "round": 3,
+      "problem": "r02_big_sum",
+      "started_utc": "2026-10-24T20:13:43.817865+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 26.528,
+      "registers": 72,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "611f329091b21f8dfd6a863579e2aada0cfc3a5a3a6f7906457abf61460fc72b"
+      },
+      "max_absolute_errors": {
+        "sum_1": 1.52587890625e-05
+      }
+    },
+    {
+      "round": 3,
+      "problem": "m02_matmul_rect",
+      "started_utc": "2026-10-24T20:13:44.326107+00:00",
+      "entry": "k_matmul",
+      "median_us": 16.64,
+      "registers": 27,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": true,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "8aa1e009e89a916c61785d6fd8808cc5d8a881862bfeff84538851b811487cc8"
+      },
+      "max_absolute_errors": {
+        "matmul": 9.5367431640625e-06
+      }
+    },
+    {
+      "round": 3,
+      "problem": "f03_l2norm",
+      "started_utc": "2026-10-24T20:13:45.379484+00:00",
+      "entry": "k_div_reduce",
+      "median_us": 16.288,
+      "registers": 22,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "div": "75e8f328631ad9bd1113b45f72239c8346ae94b522d30bad53b5c7e210574482"
+      },
+      "max_absolute_errors": {
+        "div": 1.4901161193847656e-08
+      }
+    },
+    {
+      "round": 3,
+      "problem": "f02_row_softmax",
+      "started_utc": "2026-10-24T20:13:46.643799+00:00",
+      "entry": "k_softmax_05263d",
+      "median_us": 16.224,
+      "registers": 22,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "softmax": "d383fe271924e51aae089550613a5eb97c93731ef146430ffa88201434e76500"
+      },
+      "max_absolute_errors": {
+        "softmax": 7.450580596923828e-09
+      }
+    },
+    {
+      "round": 3,
+      "problem": "p03_relu_mul",
+      "started_utc": "2026-10-24T20:13:47.736032+00:00",
+      "entry": "k_mul_pointwise",
+      "median_us": 16.448,
+      "registers": 22,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+      },
+      "max_absolute_errors": {
+        "mul": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "problem": "r04_row_sum",
+      "started_utc": "2026-10-24T20:13:48.386353+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 23.904,
+      "registers": 15,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "1e976bb313f7f47caa9280ae741680733b87626cac3885a50e7a47847d84d891"
+      },
+      "max_absolute_errors": {
+        "sum_1": 5.7220458984375e-06
+      }
+    },
+    {
+      "round": 4,
+      "problem": "f03_l2norm",
+      "started_utc": "2026-10-24T20:13:48.893376+00:00",
+      "entry": "k_div_reduce",
+      "median_us": 16.64,
+      "registers": 22,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "div": "75e8f328631ad9bd1113b45f72239c8346ae94b522d30bad53b5c7e210574482"
+      },
+      "max_absolute_errors": {
+        "div": 1.4901161193847656e-08
+      }
+    },
+    {
+      "round": 4,
+      "problem": "r03_mean",
+      "started_utc": "2026-10-24T20:13:50.136726+00:00",
+      "entry": "k_mean_ffcca3",
+      "median_us": 23.84,
+      "registers": 72,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mean": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+      },
+      "max_absolute_errors": {
+        "mean": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "problem": "r02_big_sum",
+      "started_utc": "2026-10-24T20:13:50.649580+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 25.568,
+      "registers": 72,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "611f329091b21f8dfd6a863579e2aada0cfc3a5a3a6f7906457abf61460fc72b"
+      },
+      "max_absolute_errors": {
+        "sum_1": 1.52587890625e-05
+      }
+    },
+    {
+      "round": 4,
+      "problem": "f02_row_softmax",
+      "started_utc": "2026-10-24T20:13:51.206886+00:00",
+      "entry": "k_softmax_05263d",
+      "median_us": 16.48,
+      "registers": 22,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "softmax": "d383fe271924e51aae089550613a5eb97c93731ef146430ffa88201434e76500"
+      },
+      "max_absolute_errors": {
+        "softmax": 7.450580596923828e-09
+      }
+    },
+    {
+      "round": 4,
+      "problem": "a01_attention",
+      "started_utc": "2026-10-24T20:13:52.309192+00:00",
+      "entry": "k_matmul_softmax_reduce_b55365",
+      "median_us": 17.44,
+      "registers": 118,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "e06197d28b1f086ae182ebe6273c7b26e6abde9916dc35f8aa2983793b41c94a"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 4.172325134277344e-07
+      }
+    },
+    {
+      "round": 4,
+      "problem": "m02_matmul_rect",
+      "started_utc": "2026-10-24T20:13:53.107390+00:00",
+      "entry": "k_matmul",
+      "median_us": 16.48,
+      "registers": 27,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": true,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "8bf7bc0f77df3d6f0a6fe94855846763c19e8f7204c05d8ce0f535187f6c9a94"
+      },
+      "max_absolute_errors": {
+        "matmul": 1.1444091796875e-05
+      }
+    },
+    {
+      "round": 4,
+      "problem": "r01_array_sum",
+      "started_utc": "2026-10-24T20:13:54.059647+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 23.712,
+      "registers": 15,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+      },
+      "max_absolute_errors": {
+        "sum_1": 3.814697265625e-06
+      }
+    },
+    {
+      "round": 4,
+      "problem": "p02_scale_shift",
+      "started_utc": "2026-10-24T20:13:54.569414+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 16.672,
+      "registers": 18,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "problem": "m01_matmul_512",
+      "started_utc": "2026-10-24T20:13:55.519796+00:00",
+      "entry": "k_matmul_2967be",
+      "median_us": 23.2,
+      "registers": 62,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fbee13c09948cc712f24ea22c02c0c05cd0f9ad00ec81b43f6e2387945679c08"
+      },
+      "max_absolute_errors": {
+        "matmul": 0.0005376338958740234
+      }
+    },
+    {
+      "round": 4,
+      "problem": "f01_rmsnorm",
+      "started_utc": "2026-10-24T20:13:57.346768+00:00",
+      "entry": "k_mean_cbd1de",
+      "median_us": 16.672,
+      "registers": 35,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul_1": "f9bd5ba2fa2695cb2f24c9554b9f5c1bb03206710c55a89de2fae582e447fb69"
+      },
+      "max_absolute_errors": {
+        "mul_1": 1.9073486328125e-06
+      }
+    },
+    {
+      "round": 4,
+      "problem": "p03_relu_mul",
+      "started_utc": "2026-10-24T20:13:58.764136+00:00",
+      "entry": "k_mul_pointwise",
+      "median_us": 16.64,
+      "registers": 22,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+      },
+      "max_absolute_errors": {
+        "mul": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "problem": "p00_scalar_add",
+      "started_utc": "2026-10-24T20:13:59.419184+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.52,
+      "registers": 12,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "problem": "p01_vector_add",
+      "started_utc": "2026-10-24T20:13:59.933163+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.456,
+      "registers": 12,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "problem": "a02_attention_128",
+      "started_utc": "2026-10-24T20:14:00.588142+00:00",
+      "entry": "k_matmul_softmax_reduce_6f0029",
+      "median_us": 18.944,
+      "registers": 80,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "54032cfee371fcf6b59ff8eebce814f4b142eca0eeb7b2f3644a6ece1d51c858"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 1.4901161193847656e-07
+      }
+    },
+    {
+      "round": 5,
+      "problem": "p03_relu_mul",
+      "started_utc": "2026-10-24T20:14:01.416946+00:00",
+      "entry": "k_mul_pointwise",
+      "median_us": 17.088,
+      "registers": 22,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+      },
+      "max_absolute_errors": {
+        "mul": 0.0
+      }
+    },
+    {
+      "round": 5,
+      "problem": "f03_l2norm",
+      "started_utc": "2026-10-24T20:14:02.057670+00:00",
+      "entry": "k_div_reduce",
+      "median_us": 16.864,
+      "registers": 22,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "div": "75e8f328631ad9bd1113b45f72239c8346ae94b522d30bad53b5c7e210574482"
+      },
+      "max_absolute_errors": {
+        "div": 1.4901161193847656e-08
+      }
+    },
+    {
+      "round": 5,
+      "problem": "r04_row_sum",
+      "started_utc": "2026-10-24T20:14:03.462297+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 24.416,
+      "registers": 15,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "1e976bb313f7f47caa9280ae741680733b87626cac3885a50e7a47847d84d891"
+      },
+      "max_absolute_errors": {
+        "sum_1": 5.7220458984375e-06
+      }
+    },
+    {
+      "round": 5,
+      "problem": "p00_scalar_add",
+      "started_utc": "2026-10-24T20:14:03.970431+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.616,
+      "registers": 12,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 5,
+      "problem": "a02_attention_128",
+      "started_utc": "2026-10-24T20:14:04.480173+00:00",
+      "entry": "k_matmul_softmax_reduce_6f0029",
+      "median_us": 16.672,
+      "registers": 80,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "54032cfee371fcf6b59ff8eebce814f4b142eca0eeb7b2f3644a6ece1d51c858"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 1.4901161193847656e-07
+      }
+    },
+    {
+      "round": 5,
+      "problem": "r01_array_sum",
+      "started_utc": "2026-10-24T20:14:05.288126+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 24.128,
+      "registers": 15,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+      },
+      "max_absolute_errors": {
+        "sum_1": 3.814697265625e-06
+      }
+    },
+    {
+      "round": 5,
+      "problem": "p01_vector_add",
+      "started_utc": "2026-10-24T20:14:05.848766+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 23.968,
+      "registers": 12,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 5,
+      "problem": "r02_big_sum",
+      "started_utc": "2026-10-24T20:14:06.569065+00:00",
+      "entry": "k_sum_1_reduce",
+      "median_us": 26.176,
+      "registers": 72,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "sum_1": "611f329091b21f8dfd6a863579e2aada0cfc3a5a3a6f7906457abf61460fc72b"
+      },
+      "max_absolute_errors": {
+        "sum_1": 1.52587890625e-05
+      }
+    },
+    {
+      "round": 5,
+      "problem": "r03_mean",
+      "started_utc": "2026-10-24T20:14:07.079906+00:00",
+      "entry": "k_mean_ffcca3",
+      "median_us": 23.648,
+      "registers": 72,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mean": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+      },
+      "max_absolute_errors": {
+        "mean": 0.0
+      }
+    },
+    {
+      "round": 5,
+      "problem": "f02_row_softmax",
+      "started_utc": "2026-10-24T20:14:07.624718+00:00",
+      "entry": "k_softmax_05263d",
+      "median_us": 16.736,
+      "registers": 22,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "softmax": "d383fe271924e51aae089550613a5eb97c93731ef146430ffa88201434e76500"
+      },
+      "max_absolute_errors": {
+        "softmax": 7.450580596923828e-09
+      }
+    },
+    {
+      "round": 5,
+      "problem": "a01_attention",
+      "started_utc": "2026-10-24T20:14:08.732299+00:00",
+      "entry": "k_matmul_softmax_reduce_b55365",
+      "median_us": 17.024,
+      "registers": 118,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul_1": "e06197d28b1f086ae182ebe6273c7b26e6abde9916dc35f8aa2983793b41c94a"
+      },
+      "max_absolute_errors": {
+        "matmul_1": 4.172325134277344e-07
+      }
+    },
+    {
+      "round": 5,
+      "problem": "m02_matmul_rect",
+      "started_utc": "2026-10-24T20:14:09.545535+00:00",
+      "entry": "k_matmul",
+      "median_us": 16.32,
+      "registers": 27,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": true,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "1389b7ad84a993aca14af1d8dfe6bac2aab1d01c776dc682b1ae70b1f04422ee"
+      },
+      "max_absolute_errors": {
+        "matmul": 1.1444091796875e-05
+      }
+    },
+    {
+      "round": 5,
+      "problem": "m01_matmul_512",
+      "started_utc": "2026-10-24T20:14:10.579497+00:00",
+      "entry": "k_matmul_2967be",
+      "median_us": 22.176,
+      "registers": 62,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "matmul": "fbee13c09948cc712f24ea22c02c0c05cd0f9ad00ec81b43f6e2387945679c08"
+      },
+      "max_absolute_errors": {
+        "matmul": 0.0005376338958740234
+      }
+    },
+    {
+      "round": 5,
+      "problem": "p02_scale_shift",
+      "started_utc": "2026-10-24T20:14:12.377070+00:00",
+      "entry": "k_add_pointwise",
+      "median_us": 16.224,
+      "registers": 18,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "add": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+      },
+      "max_absolute_errors": {
+        "add": 0.0
+      }
+    },
+    {
+      "round": 5,
+      "problem": "f01_rmsnorm",
+      "started_utc": "2026-10-24T20:14:13.278429+00:00",
+      "entry": "k_mean_cbd1de",
+      "median_us": 16.64,
+      "registers": 35,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "arch": "sm_120",
+      "iters": 1,
+      "warmup": 0,
+      "timing_method": "remote_runner",
+      "timing_includes_output_resets": false,
+      "busy_responses": 0,
+      "recompiles": 0,
+      "correct": true,
+      "output_sha256": {
+        "mul_1": "f9bd5ba2fa2695cb2f24c9554b9f5c1bb03206710c55a89de2fae582e447fb69"
+      },
+      "max_absolute_errors": {
+        "mul_1": 1.9073486328125e-06
+      }
+    }
+  ],
+  "compiler_files": {
+    "compiler/__init__.py": "6fa72350ec8ec12bdaf1be03469e2ab5d66ddd77a562dc8ba1c9de181bc66c78",
+    "compiler/_version.py": "20c8e430ededc2143396e553a3c67aac4ec483ef54efdfcb18a31cb162ca0646",
+    "compiler/analysis.py": "3d422a8654595239b38f82bed1e90ff472eeb7ab488cfccfbd65e3ed3f59d265",
+    "compiler/build.py": "41d2519619e99dae19e645968eaab5b7834d3c6e4c31f8bbd50bb11f880b8cf2",
+    "compiler/cache.py": "fcb2d15566d8b1ed82f69f3721b90f21c524170d3df59427f181a197ebe627f7",
+    "compiler/cli.py": "5efc0a9b1f6f8ce4e88ec8d5e6aad502ca2a232cdf96601eb6ef458804305b50",
+    "compiler/codegen/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compiler/codegen/lower.py": "a03462382e875891d07724da295e2713093d79586d0e96c0fdb84a0f99d5e9c4",
+    "compiler/codegen/tensor.py": "159248f3f201e722dcff0c8d7c0fd0f3ae9169c931e7fd7a743e56a0e5215247",
+    "compiler/options.py": "079a274e29dcd4ce2bb84abfc38f097ec198e661358659a32def6c2bd91129ac",
+    "compiler/passes/__init__.py": "4b6bfdba43ce39c14e83c5ae98cdc75b71c2fa94901b922ab09f8e09abac77d8",
+    "compiler/passes/contraction.py": "0634af7933ecf2b14c67b7c6467cadeefb5407cc0c25d004b3512c3018e9b8f4",
+    "compiler/passes/gridfold.py": "b99d3c42e4137f7050d086a4c63b0acbe7977e4ba475814ab53bd663f01e2e16",
+    "compiler/passes/hybrid_normalizer.py": "79704821227efd407210c4aa66219cd6b111bd5c9ed9a2b8c8ac9873b9d35867",
+    "compiler/passes/lifetime.py": "e67e11e3cc25d92ae4ef2ef5c7637c424896a4d31748c0feeb773c93b9c4c2d0",
+    "compiler/passes/recurrence.py": "d648cd5bc580a818b6c63d2746604a4f9f1f0c0237a10f2edbfad883ccc84e5d",
+    "compiler/passes/regforward.py": "2e872f914334c2be776f38bf48afe657607cb4421c62fdc6de60b31d12e1f2fc",
+    "compiler/passes/regstage.py": "36f6217af5bd48b380567d1bb838691a05b227901d95a61e68ff70338f2883e5",
+    "compiler/passes/tailtree.py": "7a53257bfd171249c7c699d4d81fe6bfa7472af27c141f82d64ac41c822f08da",
+    "compiler/passes/vectorize.py": "07cbee6b3c736e792ea101f32980492256e263d9a51753a111cd81e163f3ee63",
+    "compiler/ptx.py": "d99b3e8e7244544746888027a35f5ea8aa74439448e3d9b06932028d8aa47d8a",
+    "compiler/storage.py": "b70c5e58f8ff37f30537b1a7e1374d802989af6f095ee23e03353a503254cc42",
+    "compiler/transforms.py": "890bd0de81870f7b120b008ab62f03b0f90cc744720f5dd1f5f1d060e1e1cb30",
+    "compiler/validation.py": "1b641adcda4009479470eadec0425bf9e9ef04df45a37f371a3028469c582a62"
+  },
+  "harness_sha256": "d904e856a375a13ee4656b34a22f76f618e757121576d85313b9adf94f2b2b28",
+  "benchmark_sha256": "664a14ef60381b6d2a40bebddce47256d6079a74b5e56cd86a4d984ff1091ac1",
+  "summary": {
+    "a01_attention": {
+      "median_us": 16.832,
+      "min_us": 15.488,
+      "max_us": 17.44,
+      "series_us": [
+        15.488,
+        16.8,
+        16.48,
+        16.864,
+        17.44,
+        17.024
+      ]
+    },
+    "a02_attention_128": {
+      "median_us": 16.64,
+      "min_us": 16.128,
+      "max_us": 18.944,
+      "series_us": [
+        16.128,
+        16.16,
+        16.608,
+        17.568,
+        18.944,
+        16.672
+      ]
+    },
+    "f01_rmsnorm": {
+      "median_us": 16.64,
+      "min_us": 15.2,
+      "max_us": 17.216,
+      "series_us": [
+        15.2,
+        16.64,
+        16.608,
+        17.216,
+        16.672,
+        16.64
+      ]
+    },
+    "f02_row_softmax": {
+      "median_us": 16.192,
+      "min_us": 14.72,
+      "max_us": 16.736,
+      "series_us": [
+        14.72,
+        16.0,
+        16.16,
+        16.224,
+        16.48,
+        16.736
+      ]
+    },
+    "f03_l2norm": {
+      "median_us": 16.64,
+      "min_us": 14.88,
+      "max_us": 16.96,
+      "series_us": [
+        14.88,
+        16.64,
+        16.96,
+        16.288,
+        16.64,
+        16.864
+      ]
+    },
+    "m01_matmul_512": {
+      "median_us": 22.799999999999997,
+      "min_us": 20.256,
+      "max_us": 24.032,
+      "series_us": [
+        20.256,
+        23.904,
+        24.032,
+        22.4,
+        23.2,
+        22.176
+      ]
+    },
+    "m02_matmul_rect": {
+      "median_us": 16.32,
+      "min_us": 14.752,
+      "max_us": 16.64,
+      "series_us": [
+        14.752,
+        16.32,
+        16.256,
+        16.64,
+        16.48,
+        16.32
+      ]
+    },
+    "p00_scalar_add": {
+      "median_us": 23.664,
+      "min_us": 19.936,
+      "max_us": 23.776,
+      "series_us": [
+        19.936,
+        23.712,
+        23.744,
+        23.776,
+        23.52,
+        23.616
+      ]
+    },
+    "p01_vector_add": {
+      "median_us": 23.616,
+      "min_us": 19.936,
+      "max_us": 30.24,
+      "series_us": [
+        19.936,
+        30.24,
+        23.776,
+        22.88,
+        23.456,
+        23.968
+      ]
+    },
+    "p02_scale_shift": {
+      "median_us": 16.192,
+      "min_us": 15.136,
+      "max_us": 16.672,
+      "series_us": [
+        15.136,
+        16.16,
+        16.512,
+        16.064,
+        16.672,
+        16.224
+      ]
+    },
+    "p03_relu_mul": {
+      "median_us": 16.544,
+      "min_us": 14.944,
+      "max_us": 17.088,
+      "series_us": [
+        14.944,
+        16.8,
+        16.448,
+        16.448,
+        16.64,
+        17.088
+      ]
+    },
+    "r01_array_sum": {
+      "median_us": 23.631999999999998,
+      "min_us": 20.416,
+      "max_us": 24.128,
+      "series_us": [
+        20.416,
+        23.968,
+        23.232,
+        23.552,
+        23.712,
+        24.128
+      ]
+    },
+    "r02_big_sum": {
+      "median_us": 26.32,
+      "min_us": 25.568,
+      "max_us": 29.696,
+      "series_us": [
+        29.696,
+        26.176,
+        26.464,
+        26.528,
+        25.568,
+        26.176
+      ]
+    },
+    "r03_mean": {
+      "median_us": 23.904,
+      "min_us": 23.648,
+      "max_us": 24.192,
+      "series_us": [
+        23.68,
+        24.192,
+        23.968,
+        24.032,
+        23.84,
+        23.648
+      ]
+    },
+    "r04_row_sum": {
+      "median_us": 24.144,
+      "min_us": 20.224,
+      "max_us": 24.416,
+      "series_us": [
+        20.224,
+        24.384,
+        24.16,
+        24.128,
+        23.904,
+        24.416
+      ]
+    }
+  },
+  "geometric_mean_latency_us": 19.64823411504894,
+  "ended_utc": "2026-10-24T20:14:14.687636+00:00",
+  "compile_records": {
+    "241003fde1dcc01801172b7098aa58514cada89a2c497159125266aaa0bc4214": {
+      "ok": true,
+      "cubin_id": "d848200d55150f65709d248713811bb6183eb696760f00c497ada8bdbf48f372",
+      "bytes": 5640,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_mul_pointwise"
+      ],
+      "registers": {
+        "k_mul_pointwise": 22
+      }
+    },
+    "ed0bf0b2805a108e51a0a2571c5b68ed4174fd29ca33cd261babb8face89c83a": {
+      "ok": true,
+      "cubin_id": "46c3066142a883c95d8c125b3a76c00b7e68c76f2cccc912a2b110d0941dfdce",
+      "bytes": 6424,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_div_reduce"
+      ],
+      "registers": {
+        "k_div_reduce": 22
+      }
+    },
+    "79827998e543de5576663894db49dac81d0925d3a380f765c62894b5cc6da8de": {
+      "ok": true,
+      "cubin_id": "fd3ec064c215dc7fb00af3922cb8d4aae0b354ad1dc51a56e04db9be92e5a26d",
+      "bytes": 6472,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_sum_1_reduce"
+      ],
+      "registers": {
+        "k_sum_1_reduce": 15
+      }
+    },
+    "f2030e536f9c2e174ff5dd3690c4b600db2f6b302687f17dcb86b31b171db6ca": {
+      "ok": true,
+      "cubin_id": "2e418ca2281be535d236da1d83bc32640cb2ecd9c0f6c164fac4cdaf5e93d8b8",
+      "bytes": 5640,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_add_pointwise"
+      ],
+      "registers": {
+        "k_add_pointwise": 12
+      }
+    },
+    "ee7230cd24e29f931b9836e4e1a2c6842264a5ef3864394f60bb8bb2cd1f52a7": {
+      "ok": true,
+      "cubin_id": "108aa04ae8a57dcf9d57d40efb028351c7f7bf53e46e48ffa468234189359464",
+      "bytes": 14304,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_matmul_softmax_reduce_6f0029"
+      ],
+      "registers": {
+        "k_matmul_softmax_reduce_6f0029": 80
+      }
+    },
+    "9712be485f6532364f5b57cade3a0fe4358e97f84f300c5c0b17705fa7a67b45": {
+      "ok": true,
+      "cubin_id": "2e08536017ba369619a5ce916434be03c217116605de14fa6185ec1fc56c8f08",
+      "bytes": 6456,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_sum_1_reduce"
+      ],
+      "registers": {
+        "k_sum_1_reduce": 15
+      }
+    },
+    "25944e5a9827044f7a6f4d80ac0bc3f387515df21944e80cd1498e407f7d8a21": {
+      "ok": true,
+      "cubin_id": "ca72edf189ff67cc3eda5f6345a90ef7afb68c02c6e1ad6247a280bd2cfbf68e",
+      "bytes": 5512,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_add_pointwise"
+      ],
+      "registers": {
+        "k_add_pointwise": 12
+      }
+    },
+    "81591753d8d5bc286338675dbedb3823d9ec7585ba4382a20ed12d6b89227703": {
+      "ok": true,
+      "cubin_id": "d3bff0fc301e44b8374d0a22048cd4b2ee16d48a4d774ed1ec96ba0f6f21217d",
+      "bytes": 9120,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_sum_1_reduce"
+      ],
+      "registers": {
+        "k_sum_1_reduce": 72
+      }
+    },
+    "4818a78b9092449e03d4d3519d337a652546774614232c1895c96d4608169a14": {
+      "ok": true,
+      "cubin_id": "f760a7362a32840c56c9fe0cdcd31cd8a3145758d9f1469a9038abd0790429c6",
+      "bytes": 9312,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_mean_ffcca3"
+      ],
+      "registers": {
+        "k_mean_ffcca3": 72
+      }
+    },
+    "323cd34b380a8b5a2c25edb0e8eb756b53e522107a89e576cb60d51cb58347f7": {
+      "ok": true,
+      "cubin_id": "fbdb7b7757dcf20dd8e4735ac0f36446cf35d1fe78996cbde1c3347b7b407f45",
+      "bytes": 7256,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_softmax_05263d"
+      ],
+      "registers": {
+        "k_softmax_05263d": 22
+      }
+    },
+    "31d1f098b27de3d5331fbd5d28ff5479ddab5b185c7f704ebed87bfbb4514af1": {
+      "ok": true,
+      "cubin_id": "421d543ba10802197be18a3db6e85f28dfd0f961b2fc68b01f4c35f47ec8ac53",
+      "bytes": 33528,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_matmul_softmax_reduce_b55365"
+      ],
+      "registers": {
+        "k_matmul_softmax_reduce_b55365": 118
+      }
+    },
+    "e57d1088b559bee561353cc60528c80942eef15571c5dea7e876142345cf1aea": {
+      "ok": true,
+      "cubin_id": "72c201ff5823cc2c468377eff4c40812a51d051c5f6171da3ee52551c8b433cf",
+      "bytes": 7096,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_matmul"
+      ],
+      "registers": {
+        "k_matmul": 27
+      }
+    },
+    "92ea0a2bfbd2040331f452db2bae643e283837f2f30b7ddb36e5c1b84df41bea": {
+      "ok": true,
+      "cubin_id": "e9accb331f39d6372086499534951c32f583c2c1ac7b999c0d98fb56c76dd406",
+      "bytes": 10904,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_matmul_2967be"
+      ],
+      "registers": {
+        "k_matmul_2967be": 62
+      }
+    },
+    "0adced7f348558e7899c6af0f7b58b1d103ae7eac4f166373eed999da7016f52": {
+      "ok": true,
+      "cubin_id": "a26c10ed8ba106a1b3930e35c48fb9eedcb48728e1027f6b9e2e59e743643305",
+      "bytes": 5688,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_add_pointwise"
+      ],
+      "registers": {
+        "k_add_pointwise": 18
+      }
+    },
+    "70f99cfd38b3df37c4660c8075f3c09a7ebeccb1f0c6de07567f991da59a1b42": {
+      "ok": true,
+      "cubin_id": "764b1478699a27100f9efb07d24fe5f206806f0371a6ddbbc63f681fccce923a",
+      "bytes": 7448,
+      "arch": "sm_120",
+      "flags": [],
+      "entry_points": [
+        "k_mean_cbd1de"
+      ],
+      "registers": {
+        "k_mean_cbd1de": 35
+      }
+    }
+  },
+  "interpretation": "Fixed single-launch profile, warmup=0/iters=1, default CLI SM89/O3 PTX assembled for SM120. Separate from native-SM120 warm compiler comparison; no comparative speedup or significance claim. All 90 calls are retained.",
+  "release_verification": {
+    "code_commit": "eecedf184cce0388ccf3fdc1eb4484a27964852b",
+    "raw_evidence_path": "evidence/cold-profile-final/results.json",
+    "raw_sha256": "528eaacf0825edcacb82f59f8d5e7d3b9e4e82e178929fb101a611382c9d8f47",
+    "compiler_files_match_release": true,
+    "generated_ptx_equivalence_report_sha256": "8183ac45a7043bd52f33416103524d27807cab24debb456581f71c8d0f62efdb"
+  }
+}

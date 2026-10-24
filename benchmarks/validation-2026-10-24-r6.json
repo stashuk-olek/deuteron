@@ -1,0 +1,1836 @@
+{
+  "schema_version": 1,
+  "round": 6,
+  "status": "pass",
+  "recorded_utc": "2026-10-24T20:19:48.428492+00:00",
+  "code_commit": "eecedf184cce0388ccf3fdc1eb4484a27964852b",
+  "code_commit_note": "All compiler, CLI, benchmark, and test source hashes match this local integration commit. Documentation/evidence are committed afterward.",
+  "code_files": {
+    ".github/workflows/cpu.yml": "e01713316dd91c5337bf17b5638f9a5fdd48405a8cf08e2eb5a5bbbd291faa16",
+    "benchmark.py": "664a14ef60381b6d2a40bebddce47256d6079a74b5e56cd86a4d984ff1091ac1",
+    "benchmarks/compare.py": "ed645da18a9e329f313a4ba0a8ae70f4640ef4662585d75f2fd6af7745420843",
+    "benchmarks/prepare.py": "14da46abda96fb6aab0672ff7eff11051e52962fadb85fb23b89ac66efed9594",
+    "benchmarks/triton_kernels.py": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+    "check.py": "ed4c53bb16eec6f8c0230a7fa9ceb4a1fe1b8b92b455fcd8d8b4beb3a2e0c1b6",
+    "compile.py": "78cb3a86dea931ad278f6f7b01851d75560d711b53b00b904c7e582d63285e15",
+    "compiler/__init__.py": "6fa72350ec8ec12bdaf1be03469e2ab5d66ddd77a562dc8ba1c9de181bc66c78",
+    "compiler/_version.py": "20c8e430ededc2143396e553a3c67aac4ec483ef54efdfcb18a31cb162ca0646",
+    "compiler/analysis.py": "3d422a8654595239b38f82bed1e90ff472eeb7ab488cfccfbd65e3ed3f59d265",
+    "compiler/build.py": "41d2519619e99dae19e645968eaab5b7834d3c6e4c31f8bbd50bb11f880b8cf2",
+    "compiler/cache.py": "fcb2d15566d8b1ed82f69f3721b90f21c524170d3df59427f181a197ebe627f7",
+    "compiler/cli.py": "5efc0a9b1f6f8ce4e88ec8d5e6aad502ca2a232cdf96601eb6ef458804305b50",
+    "compiler/codegen/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compiler/codegen/lower.py": "a03462382e875891d07724da295e2713093d79586d0e96c0fdb84a0f99d5e9c4",
+    "compiler/codegen/tensor.py": "159248f3f201e722dcff0c8d7c0fd0f3ae9169c931e7fd7a743e56a0e5215247",
+    "compiler/options.py": "079a274e29dcd4ce2bb84abfc38f097ec198e661358659a32def6c2bd91129ac",
+    "compiler/passes/__init__.py": "4b6bfdba43ce39c14e83c5ae98cdc75b71c2fa94901b922ab09f8e09abac77d8",
+    "compiler/passes/contraction.py": "0634af7933ecf2b14c67b7c6467cadeefb5407cc0c25d004b3512c3018e9b8f4",
+    "compiler/passes/gridfold.py": "b99d3c42e4137f7050d086a4c63b0acbe7977e4ba475814ab53bd663f01e2e16",
+    "compiler/passes/hybrid_normalizer.py": "79704821227efd407210c4aa66219cd6b111bd5c9ed9a2b8c8ac9873b9d35867",
+    "compiler/passes/lifetime.py": "e67e11e3cc25d92ae4ef2ef5c7637c424896a4d31748c0feeb773c93b9c4c2d0",
+    "compiler/passes/recurrence.py": "d648cd5bc580a818b6c63d2746604a4f9f1f0c0237a10f2edbfad883ccc84e5d",
+    "compiler/passes/regforward.py": "2e872f914334c2be776f38bf48afe657607cb4421c62fdc6de60b31d12e1f2fc",
+    "compiler/passes/regstage.py": "36f6217af5bd48b380567d1bb838691a05b227901d95a61e68ff70338f2883e5",
+    "compiler/passes/tailtree.py": "7a53257bfd171249c7c699d4d81fe6bfa7472af27c141f82d64ac41c822f08da",
+    "compiler/passes/vectorize.py": "07cbee6b3c736e792ea101f32980492256e263d9a51753a111cd81e163f3ee63",
+    "compiler/ptx.py": "d99b3e8e7244544746888027a35f5ea8aa74439448e3d9b06932028d8aa47d8a",
+    "compiler/storage.py": "b70c5e58f8ff37f30537b1a7e1374d802989af6f095ee23e03353a503254cc42",
+    "compiler/transforms.py": "890bd0de81870f7b120b008ab62f03b0f90cc744720f5dd1f5f1d060e1e1cb30",
+    "compiler/validation.py": "1b641adcda4009479470eadec0425bf9e9ef04df45a37f371a3028469c582a62",
+    "examples/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "examples/attention.py": "5e266d53ffc93395855e6ecb90a3ed7a0851f1b08e6e9e4b6841d89513ad6725",
+    "examples/f16_storage.py": "104b41f3c26939e0ede4f8067c3c46be99cbad65800d9f598107e198c9a02bf9",
+    "pyproject.toml": "fd4f551a0889c684b1c3022bc2044f2e299d04a6f1f9cd18aab16e2e85dd5ad8",
+    "requirements.txt": "44111693ce27caca52c3bd9966e7eb08bb95fa653eb8adff14c9927171f577ac",
+    "tests/test_attention.py": "a0d7c9ece3be6ebcfb00bbd359899a27b4fe3071c5bb822c6c499b8373c2da4f",
+    "tests/test_cache.py": "c4400a21508e60984c2888f9170582f43aff786b6e0ece6bfdca292461026750",
+    "tests/test_cli.py": "ebfde1badcc41d5740fcff42f079b31b81744fd2ccc10ae4b3a1f5670eacd619",
+    "tests/test_f16_storage.py": "105f6851971dc25cda3718d85fe654739108ddad33380317be94ebe3b271b81c",
+    "tests/test_interface.py": "36e94405e8843059cdc00f0d9128bc5367e97e7f74d8507023fc0d446ce0a4b0",
+    "tests/test_runtime.py": "2eac3809b8294de4f85d898e3273e5798a6426c05acc298874a62b3f42bbdab4",
+    "tests/test_tensor_copy.py": "50666e5b9a9e115ee6f40dd18beb834c0344211f5f9de678f68acb9f015979af",
+    "tests/test_validation.py": "5ad04ceac8b23bad63371795d9e403e38e9017b2c457c8331ac199de0f2d5bcd"
+  },
+  "compiler_tree_sha256": "0a5393d8c93085f36b60efc6e613781c8e63c85e980dc3a1d2baaaa2f7f77942",
+  "environment": {
+    "python": "3.13.13",
+    "package_python_versions": {
+      "python313": "3.13.13 (main, Apr 14 2026, 14:28:56) [Clang 22.1.3 ]",
+      "python312": "3.12.14 (main, Aug 13 2026, 00:00:00) [GCC 11.5.0 20240719 (Red Hat 11.5.0-14)]"
+    },
+    "dependencies": {
+      "emmy-ml": "0.3.11",
+      "llvmlite": "0.50.0",
+      "numpy": "2.5.4",
+      "pyrefly": "1.4.0"
+    },
+    "local_gpu": "NVIDIA H100",
+    "local_devices_used": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "gpu0_used": false,
+    "remote": {
+      "ok": true,
+      "arch_ok": true,
+      "ptxas": "/usr/local/cuda/bin/ptxas",
+      "default_arch": "sm_120",
+      "cache_dir": "/home/riftuser/.cache/ptxserver",
+      "can_compile": true,
+      "can_run": true,
+      "gpu": "NVIDIA GeForce RTX 5090 (compute capability 12.0, sm_120)"
+    }
+  },
+  "public_tests": {
+    "python313_gpu": {
+      "discovered": 103,
+      "passed": 103,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 9.866,
+      "log": {
+        "path": "evidence/validation/unit-gpu7-final/console.log",
+        "sha256": "1d70c87dcdaecd0c0b6774687d95f4632a1411841bc64c71688014db9ec39d8a",
+        "bytes": 13554
+      },
+      "guard": {
+        "command": [
+          "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "cwd": "/home/sashko/emmy/deuteron",
+        "devices": [
+          7
+        ],
+        "started": 1792872733.747351,
+        "status": "complete",
+        "returncode": 0,
+        "ended": 1792872744.278157,
+        "owned_pids": [
+          3583782,
+          3588798,
+          3588800,
+          3588805,
+          3588806,
+          3591452,
+          3594394
+        ],
+        "clean": true,
+        "foreign": [],
+        "monitor_errors": [],
+        "status_file": {
+          "path": "evidence/validation/unit-gpu7-final/status.json",
+          "sha256": "605f9d80b59564f033c8253a904f6c41b2e02d2c2221f3e594e496d2d4261db2",
+          "bytes": 500
+        },
+        "occupancy_file": {
+          "path": "evidence/validation/unit-gpu7-final/occupancy.json",
+          "sha256": "ce16231a80d8c4da88a6782d57542d7b87cb0e6ffde895a3c69cd58908f7e0cd",
+          "bytes": 1492
+        }
+      }
+    },
+    "python312_cpu": {
+      "discovered": 103,
+      "passed": 92,
+      "skipped": 11,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.709,
+      "log": {
+        "path": "evidence/root/unit-python312-final.log",
+        "sha256": "85f9a00b93b8ffda41c5795c31ee71d769bb7d78458de19c7af5a4ae39ea30eb",
+        "bytes": 14237
+      },
+      "python_executable": "/tmp/deuteron-5090-r6/package-evidence/wheel-venv312/bin/python",
+      "environment": {
+        "DEUTERON_TEST_DEVICE": "",
+        "CUDA_VISIBLE_DEVICES": "",
+        "PTXAS": null,
+        "PYTHONPATH": null
+      }
+    }
+  },
+  "original_workloads": {
+    "o3": {
+      "passed": 15,
+      "failed": 0,
+      "arch": "sm_89",
+      "opt_level": 3,
+      "guard": {
+        "command": [
+          "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+          "benchmark.py",
+          "--problems-dir",
+          "/home/sashko/emmy/emmy-hackathon-2026/problems",
+          "--devices",
+          "1,2,3",
+          "--artifacts",
+          "/tmp/deuteron-5090-r6/validation/original-o3-final",
+          "--arch",
+          "sm_89",
+          "--opt-level",
+          "3"
+        ],
+        "cwd": "/home/sashko/emmy/deuteron",
+        "devices": [
+          1,
+          2,
+          3
+        ],
+        "started": 1792872733.7369552,
+        "status": "complete",
+        "returncode": 0,
+        "ended": 1792872738.9569333,
+        "owned_pids": [
+          3583777,
+          3583960,
+          3583961,
+          3583966,
+          3583969
+        ],
+        "clean": true,
+        "foreign": [],
+        "monitor_errors": [],
+        "status_file": {
+          "path": "evidence/validation/original-o3-final-guard/status.json",
+          "sha256": "d6e0e790c738a2811589b87642a62030e0d589ec55f7fc604757c814b04b3838",
+          "bytes": 673
+        },
+        "occupancy_file": {
+          "path": "evidence/validation/original-o3-final-guard/occupancy.json",
+          "sha256": "4ee823271afb6ebab14b2037a945c0f7ad3fa7662476834e52dd75eea0dfe9df",
+          "bytes": 922
+        }
+      },
+      "results_file": {
+        "path": "evidence/validation/original-o3-final/results.json",
+        "sha256": "0ad4bbdf5fe46c874516b7f3e80dea0cd8966657b6a3f0b3b7d31876bee927ed",
+        "bytes": 64480
+      },
+      "results": [
+        {
+          "problem": "a01_attention",
+          "passed": true,
+          "max_abs_error": {
+            "matmul_1": 4.172325134277344e-07
+          },
+          "device": {
+            "ordinal": 1,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:26:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul_softmax_reduce_b55365",
+              "median_us": 3.088639974594116,
+              "min_us": 3.0846399068832397,
+              "samples_us": [
+                3.0952000617980957,
+                3.088639974594116,
+                3.086720108985901,
+                3.08896005153656,
+                3.0846399068832397,
+                3.088800013065338,
+                3.0847999453544617
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 88,
+              "static_smem_bytes": 32768,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0004573073238134384,
+              "compile_seconds": 0.2698733676224947,
+              "ptx_sha256": "31d1f098b27de3d5331fbd5d28ff5479ddab5b185c7f704ebed87bfbb4514af1",
+              "ir_sha256": "0a6925795c1b8e108befbdc3300c722ea5a7fb19d2337597eca860e9c36eff9a"
+            }
+          ]
+        },
+        {
+          "problem": "a02_attention_128",
+          "passed": true,
+          "max_abs_error": {
+            "matmul_1": 1.4901161193847656e-07
+          },
+          "device": {
+            "ordinal": 2,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:46:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul_softmax_reduce_6f0029",
+              "median_us": 2.5017601251602173,
+              "min_us": 2.500639855861664,
+              "samples_us": [
+                2.5152000784873962,
+                2.5046399235725403,
+                2.5017601251602173,
+                2.5035199522972107,
+                2.5014400482177734,
+                2.5011199712753296,
+                2.500639855861664
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 64,
+              "static_smem_bytes": 512,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0003536473959684372,
+              "compile_seconds": 0.07714988477528095,
+              "ptx_sha256": "ee7230cd24e29f931b9836e4e1a2c6842264a5ef3864394f60bb8bb2cd1f52a7",
+              "ir_sha256": "a51792c9e4d920a493054fb2a6986d87766cc1b3717078f8e631a45d1b0bf1dd"
+            }
+          ]
+        },
+        {
+          "problem": "f01_rmsnorm",
+          "passed": true,
+          "max_abs_error": {
+            "mul_1": 1.9073486328125e-06
+          },
+          "device": {
+            "ordinal": 3,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:66:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_mean_cbd1de",
+              "median_us": 1.3040000200271606,
+              "min_us": 1.3023999333381653,
+              "samples_us": [
+                1.3156799972057343,
+                1.3099199533462524,
+                1.302880048751831,
+                1.3046400249004364,
+                1.3023999333381653,
+                1.3040000200271606,
+                1.3035200536251068
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 32,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0002825334668159485,
+              "compile_seconds": 0.020313236862421036,
+              "ptx_sha256": "70f99cfd38b3df37c4660c8075f3c09a7ebeccb1f0c6de07567f991da59a1b42",
+              "ir_sha256": "a8e6819e3144b942d8983b52b6865fa692868105b20de30f6ba4df424a07862a"
+            }
+          ]
+        },
+        {
+          "problem": "f02_row_softmax",
+          "passed": true,
+          "max_abs_error": {
+            "softmax": 7.450580596923828e-09
+          },
+          "device": {
+            "ordinal": 1,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:26:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_softmax_05263d",
+              "median_us": 1.3044799864292145,
+              "min_us": 1.3023999333381653,
+              "samples_us": [
+                1.3158400356769562,
+                1.3075199723243713,
+                1.3044799864292145,
+                1.3023999333381653,
+                1.3036799430847168,
+                1.3048000633716583,
+                1.303039938211441
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 18,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00028069503605365753,
+              "compile_seconds": 0.017701176926493645,
+              "ptx_sha256": "323cd34b380a8b5a2c25edb0e8eb756b53e522107a89e576cb60d51cb58347f7",
+              "ir_sha256": "d48b030e9d9a765aa631287f72935bc59f20926f3ccb09dc7f7932106770af03"
+            }
+          ]
+        },
+        {
+          "problem": "f03_l2norm",
+          "passed": true,
+          "max_abs_error": {
+            "div": 1.4901161193847656e-08
+          },
+          "device": {
+            "ordinal": 2,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:46:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_div_reduce",
+              "median_us": 1.2292800098657608,
+              "min_us": 1.2272000312805176,
+              "samples_us": [
+                1.2353599816560745,
+                1.2294399738311768,
+                1.2283200025558472,
+                1.2272000312805176,
+                1.2292800098657608,
+                1.228960007429123,
+                1.231679990887642
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 22,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00023296475410461426,
+              "compile_seconds": 0.009729944169521332,
+              "ptx_sha256": "ed0bf0b2805a108e51a0a2571c5b68ed4174fd29ca33cd261babb8face89c83a",
+              "ir_sha256": "34abdb33fe950100029930242777d0b22a12e523117de21bc9d78b43310c567d"
+            }
+          ]
+        },
+        {
+          "problem": "m01_matmul_512",
+          "passed": true,
+          "max_abs_error": {
+            "matmul": 0.0005376338958740234
+          },
+          "device": {
+            "ordinal": 3,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:66:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul_2967be",
+              "median_us": 7.9710400104522705,
+              "min_us": 7.969599962234497,
+              "samples_us": [
+                7.9791998863220215,
+                7.972639799118042,
+                7.969920039176941,
+                7.972000241279602,
+                7.969759702682495,
+                7.969599962234497,
+                7.9710400104522705
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 62,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 73728,
+              "jit_seconds": 0.0003591645509004593,
+              "compile_seconds": 0.08091220259666443,
+              "ptx_sha256": "92ea0a2bfbd2040331f452db2bae643e283837f2f30b7ddb36e5c1b84df41bea",
+              "ir_sha256": "ed9ab32776ce0de8b0d1f0367da54c586bf993c964efc01482666247a976dc02"
+            }
+          ]
+        },
+        {
+          "problem": "m02_matmul_rect",
+          "passed": true,
+          "max_abs_error": {
+            "matmul": 1.1444091796875e-05
+          },
+          "device": {
+            "ordinal": 1,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:26:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul",
+              "median_us": 2.6552000641822815,
+              "min_us": 2.653599977493286,
+              "samples_us": [
+                2.664160132408142,
+                2.659359872341156,
+                2.654240131378174,
+                2.65392005443573,
+                2.653599977493286,
+                2.6552000641822815,
+                2.656799852848053
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": true,
+              "registers": 23,
+              "static_smem_bytes": 6144,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00028967298567295074,
+              "compile_seconds": 0.02474788948893547,
+              "ptx_sha256": "e57d1088b559bee561353cc60528c80942eef15571c5dea7e876142345cf1aea",
+              "ir_sha256": "c47bb47c529e7362c9272784ac21a31f2a5d79546cc11b19beff891278d22206"
+            }
+          ]
+        },
+        {
+          "problem": "p00_scalar_add",
+          "passed": true,
+          "max_abs_error": {
+            "add": 0.0
+          },
+          "device": {
+            "ordinal": 2,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:46:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_add_pointwise",
+              "median_us": 0.9848000109195709,
+              "min_us": 0.9836799651384354,
+              "samples_us": [
+                0.9923200309276581,
+                0.9867200255393982,
+                0.9836799651384354,
+                0.9852799773216248,
+                0.9848000109195709,
+                0.9848000109195709,
+                0.9841600060462952
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 12,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00025499798357486725,
+              "compile_seconds": 0.007062587887048721,
+              "ptx_sha256": "f2030e536f9c2e174ff5dd3690c4b600db2f6b302687f17dcb86b31b171db6ca",
+              "ir_sha256": "d93c0b232c48f7161c88f0276ea8a69481b06608a24b6e8ed2d5025bd17f4e32"
+            }
+          ]
+        },
+        {
+          "problem": "p01_vector_add",
+          "passed": true,
+          "max_abs_error": {
+            "add": 0.0
+          },
+          "device": {
+            "ordinal": 3,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:66:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_add_pointwise",
+              "median_us": 0.9985599666833878,
+              "min_us": 0.997920036315918,
+              "samples_us": [
+                1.0073599964380264,
+                1.0001599788665771,
+                0.997920036315918,
+                0.9993600100278854,
+                0.9985599666833878,
+                0.9982399642467499,
+                0.9982399642467499
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 12,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00019210204482078552,
+              "compile_seconds": 0.006746949627995491,
+              "ptx_sha256": "25944e5a9827044f7a6f4d80ac0bc3f387515df21944e80cd1498e407f7d8a21",
+              "ir_sha256": "90088bc4c7346b9a5916205fdb96926f52cc0f5e3c5c08527d7b0796b0c47fc5"
+            }
+          ]
+        },
+        {
+          "problem": "p02_scale_shift",
+          "passed": true,
+          "max_abs_error": {
+            "add": 0.0
+          },
+          "device": {
+            "ordinal": 1,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:26:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_add_pointwise",
+              "median_us": 1.0168000310659409,
+              "min_us": 1.014079973101616,
+              "samples_us": [
+                1.0289599746465683,
+                1.021919995546341,
+                1.0168000310659409,
+                1.0148800164461136,
+                1.0155200213193893,
+                1.0172799974679947,
+                1.014079973101616
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 18,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00023568794131278992,
+              "compile_seconds": 0.00874791294336319,
+              "ptx_sha256": "0adced7f348558e7899c6af0f7b58b1d103ae7eac4f166373eed999da7016f52",
+              "ir_sha256": "2bae0a54cbcd037d6c13e70b5c4f5728f2f94af163a53ebe35b88ab8f68ec021"
+            }
+          ]
+        },
+        {
+          "problem": "p03_relu_mul",
+          "passed": true,
+          "max_abs_error": {
+            "mul": 0.0
+          },
+          "device": {
+            "ordinal": 2,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:46:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_mul_pointwise",
+              "median_us": 1.0236799716949463,
+              "min_us": 1.0227199643850327,
+              "samples_us": [
+                1.0339199751615524,
+                1.0275200009346008,
+                1.0236799716949463,
+                1.024319976568222,
+                1.0230399668216705,
+                1.0236799716949463,
+                1.0227199643850327
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 22,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00026381202042102814,
+              "compile_seconds": 0.012362174689769745,
+              "ptx_sha256": "241003fde1dcc01801172b7098aa58514cada89a2c497159125266aaa0bc4214",
+              "ir_sha256": "b2429e790dac9fd0db9fafadaa3624cafaeff85c834851a9034a730a1620a892"
+            }
+          ]
+        },
+        {
+          "problem": "r01_array_sum",
+          "passed": true,
+          "max_abs_error": {
+            "sum_1": 3.814697265625e-06
+          },
+          "device": {
+            "ordinal": 3,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:66:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_sum_1_reduce",
+              "median_us": 1.1259199678897858,
+              "min_us": 1.1244799941778183,
+              "samples_us": [
+                1.1324799805879593,
+                1.1273600161075592,
+                1.1259199678897858,
+                1.12527996301651,
+                1.1244799941778183,
+                1.1324799805879593,
+                1.125440001487732
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 15,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00021471641957759857,
+              "compile_seconds": 0.009485812857747078,
+              "ptx_sha256": "9712be485f6532364f5b57cade3a0fe4358e97f84f300c5c0b17705fa7a67b45",
+              "ir_sha256": "a5ad6af023562e1632e929afb8cd6387603c2edcd4d4b1590b1a3b2ee962675f"
+            }
+          ]
+        },
+        {
+          "problem": "r02_big_sum",
+          "passed": true,
+          "max_abs_error": {
+            "sum_1": 1.52587890625e-05
+          },
+          "device": {
+            "ordinal": 1,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:26:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_sum_1_reduce",
+              "median_us": 4.249919950962067,
+              "min_us": 4.245760142803192,
+              "samples_us": [
+                4.259839951992035,
+                4.251520037651062,
+                4.2555201053619385,
+                4.249280095100403,
+                4.249919950962067,
+                4.245760142803192,
+                4.248479902744293
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 72,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00020419061183929443,
+              "compile_seconds": 0.007633628323674202,
+              "ptx_sha256": "81591753d8d5bc286338675dbedb3823d9ec7585ba4382a20ed12d6b89227703",
+              "ir_sha256": "777e3f2dd170849133e19d303cdb3d273c135c9a9896786ee40fbc6a2ff4ec7c"
+            }
+          ]
+        },
+        {
+          "problem": "r03_mean",
+          "passed": true,
+          "max_abs_error": {
+            "mean": 0.0
+          },
+          "device": {
+            "ordinal": 2,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:46:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_mean_ffcca3",
+              "median_us": 2.905920147895813,
+              "min_us": 2.9025599360466003,
+              "samples_us": [
+                2.9153600335121155,
+                2.905440032482147,
+                2.9027199745178223,
+                2.9100799560546875,
+                2.9070401191711426,
+                2.9025599360466003,
+                2.905920147895813
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 72,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00021987594664096832,
+              "compile_seconds": 0.00816081091761589,
+              "ptx_sha256": "4818a78b9092449e03d4d3519d337a652546774614232c1895c96d4608169a14",
+              "ir_sha256": "7eeca2c7869ab2ddf880a0ac7fb689d3ab814d7523eab472ec80ad2458100b86"
+            }
+          ]
+        },
+        {
+          "problem": "r04_row_sum",
+          "passed": true,
+          "max_abs_error": {
+            "sum_1": 5.7220458984375e-06
+          },
+          "device": {
+            "ordinal": 3,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:66:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_sum_1_reduce",
+              "median_us": 1.2680000066757202,
+              "min_us": 1.2624000012874603,
+              "samples_us": [
+                1.2724800407886505,
+                1.2665599584579468,
+                1.2692800164222717,
+                1.2695999443531036,
+                1.2680000066757202,
+                1.2654399871826172,
+                1.2624000012874603
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 15,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00021333619952201843,
+              "compile_seconds": 0.00881500355899334,
+              "ptx_sha256": "79827998e543de5576663894db49dac81d0925d3a380f765c62894b5cc6da8de",
+              "ir_sha256": "4c7befc76b72c6c69be4675d69ccd14e336b9139fe22aaec1b94230858c8ab03"
+            }
+          ]
+        }
+      ]
+    },
+    "o2": {
+      "passed": 15,
+      "failed": 0,
+      "arch": "sm_89",
+      "opt_level": 2,
+      "guard": {
+        "command": [
+          "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+          "benchmark.py",
+          "--problems-dir",
+          "/home/sashko/emmy/emmy-hackathon-2026/problems",
+          "--devices",
+          "4,5,6",
+          "--artifacts",
+          "/tmp/deuteron-5090-r6/validation/original-o2-final",
+          "--arch",
+          "sm_89",
+          "--opt-level",
+          "2"
+        ],
+        "cwd": "/home/sashko/emmy/deuteron",
+        "devices": [
+          4,
+          5,
+          6
+        ],
+        "started": 1792872733.7292066,
+        "status": "complete",
+        "returncode": 0,
+        "ended": 1792872738.9567997,
+        "owned_pids": [
+          3583776,
+          3583962,
+          3583965,
+          3583971,
+          3583974
+        ],
+        "clean": true,
+        "foreign": [],
+        "monitor_errors": [],
+        "status_file": {
+          "path": "evidence/validation/original-o2-final-guard/status.json",
+          "sha256": "7ab261a49aa2362ae786c6ca9c97ab00ebb08f8a4233c6fc7076fb22e3e15020",
+          "bytes": 673
+        },
+        "occupancy_file": {
+          "path": "evidence/validation/original-o2-final-guard/occupancy.json",
+          "sha256": "ecc07a088073259bbcbdc0a72ee051b9122f7576fcf1bc5af92054f93747077a",
+          "bytes": 924
+        }
+      },
+      "results_file": {
+        "path": "evidence/validation/original-o2-final/results.json",
+        "sha256": "41c02fd18959c89cfbcbfe32c4eba0f57043b1dc897b4adcd75c44e0d4bc4a3f",
+        "bytes": 64465
+      },
+      "results": [
+        {
+          "problem": "a01_attention",
+          "passed": true,
+          "max_abs_error": {
+            "matmul_1": 4.172325134277344e-07
+          },
+          "device": {
+            "ordinal": 4,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:86:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul_softmax_reduce_b55365",
+              "median_us": 3.105440139770508,
+              "min_us": 3.1036800146102905,
+              "samples_us": [
+                3.112959861755371,
+                3.105759918689728,
+                3.1036800146102905,
+                3.105440139770508,
+                3.1040000915527344,
+                3.1041601300239563,
+                3.1060799956321716
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 88,
+              "static_smem_bytes": 32768,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00045567192137241364,
+              "compile_seconds": 0.272792836651206,
+              "ptx_sha256": "d1788476689618f56653476cbeb12e9cfa329d0e2394b5459b626bccd419ac3f",
+              "ir_sha256": "0a6925795c1b8e108befbdc3300c722ea5a7fb19d2337597eca860e9c36eff9a"
+            }
+          ]
+        },
+        {
+          "problem": "a02_attention_128",
+          "passed": true,
+          "max_abs_error": {
+            "matmul_1": 1.4901161193847656e-07
+          },
+          "device": {
+            "ordinal": 5,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:A6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul_softmax_reduce_6f0029",
+              "median_us": 2.5145599246025085,
+              "min_us": 2.5115200877189636,
+              "samples_us": [
+                2.521919906139374,
+                2.5174400210380554,
+                2.5140801072120667,
+                2.5145599246025085,
+                2.5150400400161743,
+                2.513599991798401,
+                2.5115200877189636
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 64,
+              "static_smem_bytes": 512,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0003079194575548172,
+              "compile_seconds": 0.06493904441595078,
+              "ptx_sha256": "ee7230cd24e29f931b9836e4e1a2c6842264a5ef3864394f60bb8bb2cd1f52a7",
+              "ir_sha256": "a51792c9e4d920a493054fb2a6986d87766cc1b3717078f8e631a45d1b0bf1dd"
+            }
+          ]
+        },
+        {
+          "problem": "f01_rmsnorm",
+          "passed": true,
+          "max_abs_error": {
+            "mul_1": 1.9073486328125e-06
+          },
+          "device": {
+            "ordinal": 6,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:C6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_mean_cbd1de",
+              "median_us": 1.3036799430847168,
+              "min_us": 1.3022400438785553,
+              "samples_us": [
+                1.313920021057129,
+                1.3036799430847168,
+                1.3022400438785553,
+                1.3038399815559387,
+                1.3022400438785553,
+                1.302880048751831,
+                1.3036799430847168
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 32,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00026605650782585144,
+              "compile_seconds": 0.019709380343556404,
+              "ptx_sha256": "70f99cfd38b3df37c4660c8075f3c09a7ebeccb1f0c6de07567f991da59a1b42",
+              "ir_sha256": "a8e6819e3144b942d8983b52b6865fa692868105b20de30f6ba4df424a07862a"
+            }
+          ]
+        },
+        {
+          "problem": "f02_row_softmax",
+          "passed": true,
+          "max_abs_error": {
+            "softmax": 7.450580596923828e-09
+          },
+          "device": {
+            "ordinal": 4,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:86:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_softmax_05263d",
+              "median_us": 1.3043199479579926,
+              "min_us": 1.303199976682663,
+              "samples_us": [
+                1.3140800595283508,
+                1.305920034646988,
+                1.3040000200271606,
+                1.3043199479579926,
+                1.303199976682663,
+                1.3052800297737122,
+                1.3043199479579926
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 18,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00031713955104351044,
+              "compile_seconds": 0.016106432303786278,
+              "ptx_sha256": "323cd34b380a8b5a2c25edb0e8eb756b53e522107a89e576cb60d51cb58347f7",
+              "ir_sha256": "d48b030e9d9a765aa631287f72935bc59f20926f3ccb09dc7f7932106770af03"
+            }
+          ]
+        },
+        {
+          "problem": "f03_l2norm",
+          "passed": true,
+          "max_abs_error": {
+            "div": 1.4901161193847656e-08
+          },
+          "device": {
+            "ordinal": 5,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:A6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_div_reduce",
+              "median_us": 1.2318400293588638,
+              "min_us": 1.2305600196123123,
+              "samples_us": [
+                1.2359999865293503,
+                1.2331199645996094,
+                1.231520026922226,
+                1.2324800342321396,
+                1.231359988451004,
+                1.2318400293588638,
+                1.2305600196123123
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 22,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00020547211170196533,
+              "compile_seconds": 0.00928557850420475,
+              "ptx_sha256": "ed0bf0b2805a108e51a0a2571c5b68ed4174fd29ca33cd261babb8face89c83a",
+              "ir_sha256": "34abdb33fe950100029930242777d0b22a12e523117de21bc9d78b43310c567d"
+            }
+          ]
+        },
+        {
+          "problem": "m01_matmul_512",
+          "passed": true,
+          "max_abs_error": {
+            "matmul": 0.0005376338958740234
+          },
+          "device": {
+            "ordinal": 6,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:C6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul_2967be",
+              "median_us": 7.982400059700012,
+              "min_us": 7.979040145874023,
+              "samples_us": [
+                7.989599704742432,
+                7.983199954032898,
+                7.982400059700012,
+                7.983840107917786,
+                7.979040145874023,
+                7.979999780654907,
+                7.980960011482239
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 62,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 73728,
+              "jit_seconds": 0.0003586225211620331,
+              "compile_seconds": 0.07664361596107483,
+              "ptx_sha256": "92ea0a2bfbd2040331f452db2bae643e283837f2f30b7ddb36e5c1b84df41bea",
+              "ir_sha256": "ed9ab32776ce0de8b0d1f0367da54c586bf993c964efc01482666247a976dc02"
+            }
+          ]
+        },
+        {
+          "problem": "m02_matmul_rect",
+          "passed": true,
+          "max_abs_error": {
+            "matmul": 1.1444091796875e-05
+          },
+          "device": {
+            "ordinal": 4,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:86:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_matmul",
+              "median_us": 2.6596799492836,
+              "min_us": 2.656320035457611,
+              "samples_us": [
+                2.6841598749160767,
+                2.661919891834259,
+                2.659519910812378,
+                2.6603201031684875,
+                2.6596799492836,
+                2.656480073928833,
+                2.656320035457611
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": true,
+              "registers": 23,
+              "static_smem_bytes": 6144,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00027784332633018494,
+              "compile_seconds": 0.02401680126786232,
+              "ptx_sha256": "e57d1088b559bee561353cc60528c80942eef15571c5dea7e876142345cf1aea",
+              "ir_sha256": "c47bb47c529e7362c9272784ac21a31f2a5d79546cc11b19beff891278d22206"
+            }
+          ]
+        },
+        {
+          "problem": "p00_scalar_add",
+          "passed": true,
+          "max_abs_error": {
+            "add": 0.0
+          },
+          "device": {
+            "ordinal": 5,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:A6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_add_pointwise",
+              "median_us": 0.9809599816799164,
+              "min_us": 0.9784000366926193,
+              "samples_us": [
+                0.9849599748849869,
+                0.9814400225877762,
+                0.9809599816799164,
+                0.9809599816799164,
+                0.9784000366926193,
+                0.979359969496727,
+                0.979359969496727
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 12,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0001662224531173706,
+              "compile_seconds": 0.005228932946920395,
+              "ptx_sha256": "f2030e536f9c2e174ff5dd3690c4b600db2f6b302687f17dcb86b31b171db6ca",
+              "ir_sha256": "d93c0b232c48f7161c88f0276ea8a69481b06608a24b6e8ed2d5025bd17f4e32"
+            }
+          ]
+        },
+        {
+          "problem": "p01_vector_add",
+          "passed": true,
+          "max_abs_error": {
+            "add": 0.0
+          },
+          "device": {
+            "ordinal": 6,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:C6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_add_pointwise",
+              "median_us": 0.9982399642467499,
+              "min_us": 0.9971199929714203,
+              "samples_us": [
+                1.0081599652767181,
+                0.9995199739933014,
+                0.9972800314426422,
+                0.9982399642467499,
+                0.997920036315918,
+                0.9971199929714203,
+                0.9993600100278854
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 12,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0002120230346918106,
+              "compile_seconds": 0.006392741575837135,
+              "ptx_sha256": "25944e5a9827044f7a6f4d80ac0bc3f387515df21944e80cd1498e407f7d8a21",
+              "ir_sha256": "90088bc4c7346b9a5916205fdb96926f52cc0f5e3c5c08527d7b0796b0c47fc5"
+            }
+          ]
+        },
+        {
+          "problem": "p02_scale_shift",
+          "passed": true,
+          "max_abs_error": {
+            "add": 0.0
+          },
+          "device": {
+            "ordinal": 4,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:86:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_add_pointwise",
+              "median_us": 1.0208000242710114,
+              "min_us": 1.016160026192665,
+              "samples_us": [
+                1.024319976568222,
+                1.029599979519844,
+                1.0251200199127197,
+                1.016480028629303,
+                1.016160026192665,
+                1.0208000242710114,
+                1.0198400169610977
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 18,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0002693682909011841,
+              "compile_seconds": 0.008681239560246468,
+              "ptx_sha256": "0adced7f348558e7899c6af0f7b58b1d103ae7eac4f166373eed999da7016f52",
+              "ir_sha256": "2bae0a54cbcd037d6c13e70b5c4f5728f2f94af163a53ebe35b88ab8f68ec021"
+            }
+          ]
+        },
+        {
+          "problem": "p03_relu_mul",
+          "passed": true,
+          "max_abs_error": {
+            "mul": 0.0
+          },
+          "device": {
+            "ordinal": 5,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:A6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_mul_pointwise",
+              "median_us": 1.0358399897813797,
+              "min_us": 1.0344000160694122,
+              "samples_us": [
+                1.042720004916191,
+                1.0380800068378448,
+                1.0358399897813797,
+                1.034879982471466,
+                1.03472001850605,
+                1.0344000160694122,
+                1.0360000282526016
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 22,
+              "static_smem_bytes": 0,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0002018362283706665,
+              "compile_seconds": 0.009247923269867897,
+              "ptx_sha256": "241003fde1dcc01801172b7098aa58514cada89a2c497159125266aaa0bc4214",
+              "ir_sha256": "b2429e790dac9fd0db9fafadaa3624cafaeff85c834851a9034a730a1620a892"
+            }
+          ]
+        },
+        {
+          "problem": "r01_array_sum",
+          "passed": true,
+          "max_abs_error": {
+            "sum_1": 3.814697265625e-06
+          },
+          "device": {
+            "ordinal": 6,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:C6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_sum_1_reduce",
+              "median_us": 1.1255999654531479,
+              "min_us": 1.1231999844312668,
+              "samples_us": [
+                1.1351999640464783,
+                1.1267200112342834,
+                1.1246400326490402,
+                1.12527996301651,
+                1.128000020980835,
+                1.1255999654531479,
+                1.1231999844312668
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 15,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00019106827676296234,
+              "compile_seconds": 0.008757967501878738,
+              "ptx_sha256": "9712be485f6532364f5b57cade3a0fe4358e97f84f300c5c0b17705fa7a67b45",
+              "ir_sha256": "a5ad6af023562e1632e929afb8cd6387603c2edcd4d4b1590b1a3b2ee962675f"
+            }
+          ]
+        },
+        {
+          "problem": "r02_big_sum",
+          "passed": true,
+          "max_abs_error": {
+            "sum_1": 1.52587890625e-05
+          },
+          "device": {
+            "ordinal": 4,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:86:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_sum_1_reduce",
+              "median_us": 4.251840114593506,
+              "min_us": 4.248000085353851,
+              "samples_us": [
+                4.2609599232673645,
+                4.249440133571625,
+                4.251840114593506,
+                4.256959855556488,
+                4.2555201053619385,
+                4.2502400279045105,
+                4.248000085353851
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 72,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00019120052456855774,
+              "compile_seconds": 0.007685726508498192,
+              "ptx_sha256": "81591753d8d5bc286338675dbedb3823d9ec7585ba4382a20ed12d6b89227703",
+              "ir_sha256": "777e3f2dd170849133e19d303cdb3d273c135c9a9896786ee40fbc6a2ff4ec7c"
+            }
+          ]
+        },
+        {
+          "problem": "r03_mean",
+          "passed": true,
+          "max_abs_error": {
+            "mean": 0.0
+          },
+          "device": {
+            "ordinal": 5,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:A6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_mean_ffcca3",
+              "median_us": 2.8747200965881348,
+              "min_us": 2.8723201155662537,
+              "samples_us": [
+                2.884800136089325,
+                2.874560058116913,
+                2.8747200965881348,
+                2.876160144805908,
+                2.8760001063346863,
+                2.8724798560142517,
+                2.8723201155662537
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 72,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.00015185028314590454,
+              "compile_seconds": 0.006770255044102669,
+              "ptx_sha256": "4818a78b9092449e03d4d3519d337a652546774614232c1895c96d4608169a14",
+              "ir_sha256": "7eeca2c7869ab2ddf880a0ac7fb689d3ab814d7523eab472ec80ad2458100b86"
+            }
+          ]
+        },
+        {
+          "problem": "r04_row_sum",
+          "passed": true,
+          "max_abs_error": {
+            "sum_1": 5.7220458984375e-06
+          },
+          "device": {
+            "ordinal": 6,
+            "name": "NVIDIA H100",
+            "pci_bus_id": "0000:C6:00.0",
+            "arch": "sm_90"
+          },
+          "kernels": [
+            {
+              "entry": "k_sum_1_reduce",
+              "median_us": 1.2619200348854065,
+              "min_us": 1.2585599720478058,
+              "samples_us": [
+                1.274079978466034,
+                1.263040006160736,
+                1.2619200348854065,
+                1.2622399628162384,
+                1.2585599720478058,
+                1.2591999769210815,
+                1.2590399384498596
+              ],
+              "iters": 200,
+              "samples": 7,
+              "warmup": 20,
+              "timing_method": "cuda_graph_batch_events",
+              "timing_includes_output_resets": false,
+              "registers": 15,
+              "static_smem_bytes": 16,
+              "dynamic_smem_bytes": 0,
+              "jit_seconds": 0.0002700984477996826,
+              "compile_seconds": 0.009403970092535019,
+              "ptx_sha256": "79827998e543de5576663894db49dac81d0925d3a380f765c62894b5cc6da8de",
+              "ir_sha256": "4c7befc76b72c6c69be4675d69ccd14e336b9139fe22aaec1b94230858c8ab03"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "emission_equivalence": {
+    "started_utc": "2026-10-24T20:13:04.030717+00:00",
+    "ended_utc": "2026-10-24T20:13:07.330337+00:00",
+    "source_root": "/home/sashko/emmy/deuteron",
+    "source_git_head_before": "3863f46396b822d037877a7ad3a5edf92b47674d",
+    "source_git_head_after": "3863f46396b822d037877a7ad3a5edf92b47674d",
+    "compiler_tree_sha256": "0a5393d8c93085f36b60efc6e613781c8e63c85e980dc3a1d2baaaa2f7f77942",
+    "compiler_files": 25,
+    "compiler_sources_unchanged": true,
+    "packaging_sources_unchanged": true,
+    "original_input_files": 60,
+    "original_inputs_unchanged": true,
+    "prior_evidence_files": 439,
+    "prior_evidence_unchanged": true,
+    "python": "3.13.13 (main, Apr 14 2026, 14:28:56) [Clang 22.1.3 ]",
+    "python_executable": "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+    "dependencies": {
+      "emmy-ml": "0.3.11",
+      "llvmlite": "0.50.0",
+      "numpy": "2.5.4"
+    },
+    "configurations": [
+      {
+        "name": "cli",
+        "arch": "sm_89",
+        "opt_level": 3,
+        "workloads": 15
+      },
+      {
+        "name": "native",
+        "arch": "sm_120",
+        "opt_level": 3,
+        "workloads": 15
+      },
+      {
+        "name": "legacy",
+        "arch": "sm_89",
+        "opt_level": 2,
+        "workloads": 15
+      }
+    ],
+    "compilations": 45,
+    "successful_compilations": 45,
+    "ptx_outputs": 45,
+    "llvm_stages": 90,
+    "ptx_identical_to_both_audits": 45,
+    "llvm_stages_identical_to_both_audits": 90,
+    "prior_suite_input_checks": 90,
+    "all_prior_suite_input_checks_pass": true,
+    "existing_cubins_compared": 75,
+    "existing_cubins_identical": 75,
+    "existing_cubin_sizes_match_suites": true,
+    "measured_deuteron_native_ptx": 15,
+    "measured_deuteron_calls_mapped": 90,
+    "all_measured_native_checks_pass": true,
+    "original_reference_hashes_match_measurements": true,
+    "new_gpu_calls": 0,
+    "new_runner_calls": 0,
+    "new_ptxas_calls": 0,
+    "check_py_executed": false,
+    "passed": true,
+    "report": {
+      "path": "evidence/final-source-equivalence/REPORT.md",
+      "sha256": "8183ac45a7043bd52f33416103524d27807cab24debb456581f71c8d0f62efdb",
+      "bytes": 5774
+    },
+    "manifest": {
+      "path": "evidence/final-source-equivalence/manifest.json",
+      "sha256": "0a5b351dc73893bdb384c0edab4cd00fddc752f137b01f0cc97f1e81e6c69595",
+      "bytes": 19641
+    }
+  },
+  "measurements": {
+    "warm": {
+      "file": "rtx5090-2026-10-24-r6.json",
+      "sha256": "8f4d78d39e141047ec51af47764a586eefef90b6a807db5836de5a7e58bd19bb",
+      "calls": 270,
+      "all_outputs_correct": true,
+      "geometric_mean_latency_us": {
+        "Deuteron": 3.7524296525759135,
+        "NVCC12.8.93": 6.216321014781055,
+        "Triton3.6.0": 4.332038064959309
+      }
+    },
+    "single_launch": {
+      "file": "cold-rtx5090-2026-10-24-r6.json",
+      "sha256": "216476544415cb1506e29831abd3500bd22fc1328de8c6fc421047ee841fcfbf",
+      "calls": 90,
+      "all_outputs_correct": true,
+      "geometric_mean_latency_us": 19.64823411504894
+    },
+    "features": {
+      "file": "features-rtx5090-2026-10-24-r6.json",
+      "sha256": "8b3d37195c5b102ee4c3ee0d5cb5b2291dd4221536ffa6bd5ac67c197703736e",
+      "calls": 11,
+      "all_outputs_correct": true
+    }
+  },
+  "type_checks": [
+    {
+      "preset": "default",
+      "scope": [
+        "compiler",
+        "compile.py",
+        "benchmark.py",
+        "tests/test_cli.py",
+        "tests/test_runtime.py",
+        "tests/test_validation.py"
+      ],
+      "diagnostics": 0,
+      "command": [
+        "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+        "-m",
+        "pyrefly",
+        "check",
+        "--preset",
+        "default",
+        "--min-severity",
+        "warn",
+        "--python-interpreter-path",
+        "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+        "compiler",
+        "compile.py",
+        "benchmark.py",
+        "tests/test_cli.py",
+        "tests/test_runtime.py",
+        "tests/test_validation.py"
+      ],
+      "log": {
+        "path": "evidence/root/pyrefly-release-default.log",
+        "sha256": "f20d4658c052b9c8ca08301ff789870ccb1f222df818718fe0497768cd88d01f",
+        "bytes": 20
+      }
+    },
+    {
+      "preset": "basic",
+      "scope": [
+        "compiler",
+        "compile.py",
+        "benchmark.py",
+        "check.py",
+        "examples",
+        "tests"
+      ],
+      "diagnostics": 0,
+      "command": [
+        "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+        "-m",
+        "pyrefly",
+        "check",
+        "--preset",
+        "basic",
+        "--min-severity",
+        "warn",
+        "--python-interpreter-path",
+        "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+        "compiler",
+        "compile.py",
+        "benchmark.py",
+        "check.py",
+        "examples",
+        "tests"
+      ],
+      "log": {
+        "path": "evidence/root/pyrefly-release-basic.log",
+        "sha256": "f20d4658c052b9c8ca08301ff789870ccb1f222df818718fe0497768cd88d01f",
+        "bytes": 20
+      }
+    }
+  ],
+  "packaging": {
+    "status": "pass",
+    "completed_utc": "2026-10-24T20:16:53.412810+00:00",
+    "wheel": {
+      "wheel": "/tmp/deuteron-5090-r6/package-evidence/final/readme-final/wheelhouse/deuteron_compiler-0.1.0-py3-none-any.whl",
+      "bytes": 77434,
+      "sha256": "f718f4b2decde644a927d796697ada3e0b641a3987f7446d33764e2ba7c8be8d",
+      "metadata_sha256": "6febab20b7228b143fa584318ef65f1a9dbc4248309d038322e4d2ac846b0cf7",
+      "readme_sha256": "bf3da0fbc4ed74217bb0948aafda3c7ae74c5d7ebd66d70b163c4aa913ee8dec"
+    },
+    "snapshot": "/tmp/deuteron-5090-r6/package-evidence/final/readme-final/snapshot.json",
+    "source_git_head_at_snapshot": "eecedf184cce0388ccf3fdc1eb4484a27964852b",
+    "source_git_head_at_completion": "eecedf184cce0388ccf3fdc1eb4484a27964852b",
+    "module_count": 25,
+    "module_manifest_sha256": "0a5393d8c93085f36b60efc6e613781c8e63c85e980dc3a1d2baaaa2f7f77942",
+    "installed_modules_match_snapshot_and_current_main": true,
+    "readme_current_matches_wheel": true,
+    "python_versions": {
+      "python313": "3.13.13 (main, Apr 14 2026, 14:28:56) [Clang 22.1.3 ]",
+      "python312": "3.12.14 (main, Aug 13 2026, 00:00:00) [GCC 11.5.0 20240719 (Red Hat 11.5.0-14)]"
+    },
+    "compile_cases_per_python": 10,
+    "compile_outputs_identical_between_python_versions": true,
+    "compile_outputs_identical_to_initial_wheel": true,
+    "pip_check_both_pass": true,
+    "both_environments_no_torch_no_triton": true,
+    "spawn_jobs_per_python": 2,
+    "only_readme_description_and_record_changed": true,
+    "initial_evidence_preserved": "/tmp/deuteron-5090-r6/package-evidence/final",
+    "wheel_audit": {
+      "status": "pass",
+      "wheel": "/tmp/deuteron-5090-r6/package-evidence/final/readme-final/wheelhouse/deuteron_compiler-0.1.0-py3-none-any.whl",
+      "sha256": "f718f4b2decde644a927d796697ada3e0b641a3987f7446d33764e2ba7c8be8d",
+      "bytes": 77434,
+      "snapshot": "/tmp/deuteron-5090-r6/package-evidence/final/readme-final/snapshot.json",
+      "module_count": 25,
+      "module_hashes": {
+        "compile.py": "78cb3a86dea931ad278f6f7b01851d75560d711b53b00b904c7e582d63285e15",
+        "compiler/__init__.py": "6fa72350ec8ec12bdaf1be03469e2ab5d66ddd77a562dc8ba1c9de181bc66c78",
+        "compiler/_version.py": "20c8e430ededc2143396e553a3c67aac4ec483ef54efdfcb18a31cb162ca0646",
+        "compiler/analysis.py": "3d422a8654595239b38f82bed1e90ff472eeb7ab488cfccfbd65e3ed3f59d265",
+        "compiler/build.py": "41d2519619e99dae19e645968eaab5b7834d3c6e4c31f8bbd50bb11f880b8cf2",
+        "compiler/cache.py": "fcb2d15566d8b1ed82f69f3721b90f21c524170d3df59427f181a197ebe627f7",
+        "compiler/cli.py": "5efc0a9b1f6f8ce4e88ec8d5e6aad502ca2a232cdf96601eb6ef458804305b50",
+        "compiler/codegen/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "compiler/codegen/lower.py": "a03462382e875891d07724da295e2713093d79586d0e96c0fdb84a0f99d5e9c4",
+        "compiler/codegen/tensor.py": "159248f3f201e722dcff0c8d7c0fd0f3ae9169c931e7fd7a743e56a0e5215247",
+        "compiler/options.py": "079a274e29dcd4ce2bb84abfc38f097ec198e661358659a32def6c2bd91129ac",
+        "compiler/passes/__init__.py": "4b6bfdba43ce39c14e83c5ae98cdc75b71c2fa94901b922ab09f8e09abac77d8",
+        "compiler/passes/contraction.py": "0634af7933ecf2b14c67b7c6467cadeefb5407cc0c25d004b3512c3018e9b8f4",
+        "compiler/passes/gridfold.py": "b99d3c42e4137f7050d086a4c63b0acbe7977e4ba475814ab53bd663f01e2e16",
+        "compiler/passes/hybrid_normalizer.py": "79704821227efd407210c4aa66219cd6b111bd5c9ed9a2b8c8ac9873b9d35867",
+        "compiler/passes/lifetime.py": "e67e11e3cc25d92ae4ef2ef5c7637c424896a4d31748c0feeb773c93b9c4c2d0",
+        "compiler/passes/recurrence.py": "d648cd5bc580a818b6c63d2746604a4f9f1f0c0237a10f2edbfad883ccc84e5d",
+        "compiler/passes/regforward.py": "2e872f914334c2be776f38bf48afe657607cb4421c62fdc6de60b31d12e1f2fc",
+        "compiler/passes/regstage.py": "36f6217af5bd48b380567d1bb838691a05b227901d95a61e68ff70338f2883e5",
+        "compiler/passes/tailtree.py": "7a53257bfd171249c7c699d4d81fe6bfa7472af27c141f82d64ac41c822f08da",
+        "compiler/passes/vectorize.py": "07cbee6b3c736e792ea101f32980492256e263d9a51753a111cd81e163f3ee63",
+        "compiler/ptx.py": "d99b3e8e7244544746888027a35f5ea8aa74439448e3d9b06932028d8aa47d8a",
+        "compiler/storage.py": "b70c5e58f8ff37f30537b1a7e1374d802989af6f095ee23e03353a503254cc42",
+        "compiler/transforms.py": "890bd0de81870f7b120b008ab62f03b0f90cc744720f5dd1f5f1d060e1e1cb30",
+        "compiler/validation.py": "1b641adcda4009479470eadec0425bf9e9ef04df45a37f371a3028469c582a62"
+      },
+      "module_manifest_sha256": "0a5393d8c93085f36b60efc6e613781c8e63c85e980dc3a1d2baaaa2f7f77942",
+      "metadata_sha256": "6febab20b7228b143fa584318ef65f1a9dbc4248309d038322e4d2ac846b0cf7",
+      "readme_sha256": "bf3da0fbc4ed74217bb0948aafda3c7ae74c5d7ebd66d70b163c4aa913ee8dec",
+      "readme_bytes": 24009,
+      "requires_python": ">=3.12",
+      "requires_dist": [
+        "emmy-ml==0.3.11",
+        "llvmlite==0.50.0",
+        "numpy==2.5.4",
+        "pyrefly==1.4.0; extra == \"dev\""
+      ],
+      "entry_points": "[console_scripts]\ndeuteron = compile:main\n",
+      "wheel_metadata": "Wheel-Version: 1.0\nGenerator: setuptools (81.0.0)\nRoot-Is-Purelib: true\nTag: py3-none-any\n\n",
+      "record_entries_verified": 31,
+      "all_source_modules_byte_identical": true
+    },
+    "report": {
+      "path": "evidence/package-evidence/final/FINAL-WHEEL-REPORT.md",
+      "sha256": "40d5cfb6edcfea4ffe2ff89a54718904eb5987fc76556e944539b26697b2b924",
+      "bytes": 3955
+    }
+  },
+  "preserved_initial_failures": [
+    {
+      "issue": "Original scalar references were saved as zero-dimensional arrays for metadata-declared one-element buffers.",
+      "resolution": "Require the produced shape to match metadata, then accept only this specific scalar-reference convention; regression added.",
+      "initial_results": {
+        "path": "evidence/validation/original-o3/results.json",
+        "sha256": "1ba61bc5fe7903845ddddaf3809c6d60afad731e60bfbfaba77d01086f307ba1",
+        "bytes": 64520
+      },
+      "failures": [
+        {
+          "problem": "r01_array_sum",
+          "reported_error": "r01_array_sum/sum_1: output shape (1,) does not match ()",
+          "saved_output_passes_original_tolerances_with_scalar_format_fix": true,
+          "max_abs_error": {
+            "sum_1": 3.814697265625e-06
+          }
+        },
+        {
+          "problem": "r02_big_sum",
+          "reported_error": "r02_big_sum/sum_1: output shape (1,) does not match ()",
+          "saved_output_passes_original_tolerances_with_scalar_format_fix": true,
+          "max_abs_error": {
+            "sum_1": 1.52587890625e-05
+          }
+        },
+        {
+          "problem": "r03_mean",
+          "reported_error": "r03_mean/mean: output shape (1,) does not match ()",
+          "saved_output_passes_original_tolerances_with_scalar_format_fix": true,
+          "max_abs_error": {
+            "mean": 0.0
+          }
+        }
+      ],
+      "stopped_single_launch_attempt": {
+        "path": "evidence/cold-profile/results.json",
+        "sha256": "a06c2ba13f68d6f5699967f4524ef1449adbe4f622c54a7370efbc5e1116b1dc",
+        "bytes": 41231
+      },
+      "single_launch_resolution": "Repeat the full same predeclared 90-call schedule after the format fix; all new calls pass."
+    },
+    {
+      "issue": "An empty DEUTERON_TEST_DEVICE was treated as enabled by the half-storage CUDA test class.",
+      "resolution": "Use a truthy opt-in value, consistent with the other CUDA tests and the CI configuration.",
+      "initial_log": {
+        "path": "evidence/root/unit-python312.log",
+        "sha256": "4b2cbcda84cd39cc94a9d18ef3e3f537d1bc9fd0cc9b8284331f06e06308f32b",
+        "bytes": 13461
+      }
+    }
+  ],
+  "original_inputs": {
+    "path": "evidence/original-problems/INPUTS.json",
+    "sha256": "8405b24e555826d071d02dd0624f569d7c91606072b05fc4afddfde2ca8df10c",
+    "bytes": 16975
+  },
+  "constraints": {
+    "original_ir_metadata_references_unchanged": true,
+    "check_py_executed": false,
+    "gpu0_used": false,
+    "foreign_gpu_processes_killed": false,
+    "pushed": false,
+    "github_ci_executed": false
+  },
+  "scope": "Scheduled Emmy Kernel IR subset documented in README.md and docs/production.md. No hidden-set, universal IEEE, complete memory-safety, arbitrary graph, or fully tuned vendor-library comparison claim."
+}

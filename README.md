@@ -7,19 +7,22 @@ Features to look for in this submission:
 | Feature | Implementation and example |
 |---|---|
 | Tensor cores | Compensated **BF16x3 and TF32x3** products with FP32 accumulation; packed BF16 operands, `ldmatrix`, and `mma.sync`. See [tiled matrix multiplication](examples/tensor_matmul/README.md). |
-| Asynchronous copies | Global-to-shared `cp.async` transfers of 4,8, or 16 bytes, commit/wait groups, and CTA/warp barriers. The matrix example's `f32` and `tf32x3` modes retain this path. |
+| Asynchronous copies | Global-to-shared `cp.async` transfers of 4, 8, or 16 bytes, commit/wait groups, and CTA/warp barriers. The matrix example's `f32` and `tf32x3` modes retain this path. |
 | FP16 storage | Scalar/vector `f16` loads and stores, exact widening, and round-to-nearest-even narrowing, with explicit FP32 arithmetic. See [half-storage examples](examples/f16_storage.py). |
 | Reductions and attention | Cooperative dot products, coalesced reductions, register forwarding, staged softmax recurrences, warp maximum reduction, shared-storage reuse, and vectorized probability–value reduction. |
 | Inspectable compilation | PTX and LLVM IR before/after optimization, source-based caching, standalone examples, and CPU/optional CUDA tests. |
+| Deployment | Installable `deuteron` command, restricted IR parsing, validated options/launches, bounded memory cache, atomic persistent cache, runtime error checks, and CPU CI. See the [deployment contract](docs/production.md). |
 
 [SUBMISSION.md](SUBMISSION.md) gives a short feature checklist. The [performance comparison](#rtx-5090-performance) includes NVCC and Triton baselines, source, and raw measurements.
 
 ## Build and run
 
-Requires Python 3.12 or newer:
+Requires Python 3.12 or newer; Python 3.12/3.13 are covered by the CPU CI configuration:
 
 ```sh
-python -m pip install -r requirements.txt
+python -m pip install .
+deuteron --version
+deuteron examples/vector_add/vector_add.ir.json --arch sm_120 > /tmp/vector_add_5090.ptx
 python compile.py examples/vector_add/vector_add.ir.json > /tmp/vector_add.ptx
 python compile.py examples/tensor_matmul/matmul_tiled_128.ir.json --arch sm_120 > /tmp/matmul.ptx
 ```
@@ -48,7 +51,7 @@ result = compile_kernel(
 print(result.ptx)
 ```
 
-`compile_many()` compiles independent jobs in worker processes. Results are cached in memory; set `DEUTERON_CACHE` to a directory for persistence. Cache keys include compiler source, Emmy/llvmlite versions, IR and metadata bytes, target, optimization level, and every compiler option.
+`compile_many()` compiles independent jobs in worker processes; calls in one process serialize LLVM work. The memory cache is bounded, and `clear_cache()` clears it. Set `DEUTERON_CACHE` to a directory for persistence. Versioned records use integrity checks and atomic writes; corrupt or inaccessible caches fall back to compilation. Cache keys include compiler source, dependency versions, IR and metadata bytes, target, optimization level, and every compiler option. Restart the process after editing compiler source.
 
 ## Examples and tests
 
@@ -68,7 +71,7 @@ python -m unittest discover -s tests -v
 PTXAS=/usr/local/cuda/bin/ptxas python -m unittest discover -s tests -v
 ```
 
-CPU tests check compilation, ABI validation, pass legality, and semantic counterexamples. CUDA tests are opt-in; choose an available GPU explicitly:
+CPU tests check restricted parsing, options and ABI validation, concurrent/corrupt cache behavior, CLI file handling, pass legality, runtime failures, and semantic counterexamples. CUDA tests are opt-in; choose an available GPU explicitly:
 
 ```sh
 DEUTERON_TEST_DEVICE=1 python -m unittest discover -s tests -v
@@ -78,7 +81,14 @@ python benchmark.py vector_add tensor_matmul --problems-dir examples --devices 1
 
 The half tests cover all 65,536 bit patterns for raw copies and widening, and 190,468 FP32 inputs at and around half rounding boundaries. They also check unaligned half/float vector accesses and explicit FP32 intermediates. Tensor tests check emitted instructions, assembly, all three precision modes, and a wrong-prefetch-phase counterexample. Attention tests check ownership, guard rejection, and suffix replay, including an assignment that overwrites the denominator.
 
-[Recorded validation](benchmarks/validation-2026-10-24.json): all 36 public tests pass with CUDA and assembly enabled, all 75 original-workload assemblies pass, and all 11 native RTX 5090 feature examples pass. The full original suite also passes on the available H100s and in the RTX 5090 comparison below.
+| Interface tests | What they check |
+|---|---|
+| [Validation](tests/test_validation.py) | Constructor escapes never execute; malformed IR, options, launch dimensions, duplicate ABI entries, and writes to readonly buffers fail explicitly. |
+| [Cache](tests/test_cache.py) | Bounded memory use, corruption recovery, atomic disk records, threaded compilation, spawned workers, and validated batch jobs. |
+| [Runtime](tests/test_runtime.py) | Context ownership, input/response validation, bounded busy retries, stale-cubin recovery, scalar-buffer handling, and preservation of earlier artifacts. |
+| [CLI](tests/test_cli.py) | Command options/defaults, diagnostics, dump-path collisions, atomic output handling, broken pipes, and package dependency consistency. |
+
+[Release validation](benchmarks/validation-2026-10-24-r6.json) passes **103/103 public tests on Python 3.13**, with CUDA and assembly enabled and no skips. Python 3.12 CPU discovery runs 103 tests with 11 expected CUDA/assembly skips and no failures. The original workloads pass 15/15 at O3 and 15/15 at O2; local suites use GPUs 1–7 with clean occupancy checks, excluding GPU 0. All [11 native SM120 RTX 5090 feature examples](benchmarks/features-rtx5090-2026-10-24-r6.json) also pass. The final source reproduces all 45 audited PTX files and 90 LLVM stages byte for byte, and all 75 assembled cubins match. [Earlier validation](benchmarks/validation-2026-10-24.json) remains available. The fresh comparison below has completed all 270 calls with correct outputs.
 
 ## How compilation works
 
@@ -86,14 +96,14 @@ The input already describes a GPU schedule: tile/loop axes, scalar operations, e
 
 ```mermaid
 flowchart LR
-    A["Scheduled Emmy IR + meta.json"] --> B["Validation and structural passes"]
+    A["Scheduled Emmy IR + meta.json"] --> B["Restricted parser + validation + structural passes"]
     B --> C["Typed LLVM IR + NVVM / PTX instructions"]
     C --> D["SROA + LLVM optimization + cleanup"]
     D --> E["NVPTX emission + PTX rewrites"]
     E --> F["CUDA assembler / driver → GPU"]
 ```
 
-1. [build.py](compiler/build.py) parses one `KernelOp`, matches its launch metadata, validates storage types, and applies vectorization, load forwarding, recurrence reordering, and split-K folding.
+1. [build.py](compiler/build.py) reads one `KernelOp` through a restricted constructor parser, matches and validates its launch metadata/options/storage types, and applies vectorization, load forwarding, recurrence reordering, and split-K folding. Serialized IR is never evaluated as arbitrary Python.
 2. [lower.py](compiler/codegen/lower.py) recognizes specialized normalizers, packed matrix staging, and reductions. It builds typed global/shared pointers and lowers ordinary operations or certified tensor/recurrence plans. NVVM intrinsics and small inline PTX operations express shuffles, barriers, copies, and tensor instructions.
 3. LLVM verifies the IR. SROA promotes temporary scalar slots; the selected LLVM pipeline performs scalar and loop optimization. Final cleanup runs loop strength reduction for striped reductions, NewGVN, instruction combining, and CFG simplification.
 4. NVPTX emits assembly. [ptx.py](compiler/ptx.py) performs the final atomic, block-contract, and optional division rewrites. Assembly and GPU execution happen separately.
@@ -138,7 +148,7 @@ The explicit LLVM stages are **SROA**, the LLVM O0–O3 pipeline, optional loop/
 
 ## Types, precision, and supported scope
 
-The full scheduled backend uses FP32 global/shared values. Buffer arguments use distinct, 16-byte-aligned allocations and must follow the metadata's argument order and launch geometry. FP16 global storage supports `Tile`, `Loop`, `StridedLoop`, scalar/vector loads, explicit `Assign(dtype=F32)`, and ordinary stores. Mixed half/float accesses use conservative scalar alignment, including vectors with unaligned origins within those buffers. Raw half copies preserve bits; widening is exact; narrowing rounds to nearest with ties to even. Converted NaN payloads are unspecified.
+The full scheduled backend uses FP32 global/shared values. Buffer arguments use distinct, 16-byte-aligned allocations and must follow the metadata's argument order and launch geometry. Full-FP32 vector offsets must be naturally aligned to the vector width. FP16 global storage supports `Tile`, `Loop`, `StridedLoop`, scalar/vector loads, explicit `Assign(dtype=F32)`, and ordinary stores. Mixed half/float accesses use conservative scalar alignment, including vectors with unaligned origins within those buffers. Raw half copies preserve bits; widening is exact; narrowing rounds to nearest with ties to even. Converted NaN payloads are unspecified. The [deployment contract](docs/production.md) spells out caller obligations and validation limits.
 
 BF16 and TF32 are **internal tensor operand formats**. Each FP32 operand is split into a rounded high part and residual; three products—low×high, high×low, high×high—accumulate into FP32. The low×low term is omitted. These modes approximate FP32 multiplication and do not change benchmark tolerances. Select `--contraction-precision f32` for ordinary FP32 products, or `tf32x3` for the alternative tensor mode.
 
@@ -148,36 +158,38 @@ Public BF16 buffers, native half arithmetic/atomics, half shared-memory/tensor p
 
 ## RTX 5090 performance
 
-On these 15 workloads, Deuteron achieves **1.66× the speed of generated CUDA/NVCC** and **1.15× the speed of this Triton baseline**, using the equal-weight geometric mean of warm latency. Measurements below are in **microseconds; lower is better**, on the RTX 5090 on 2026-10-24. Deuteron targets native SM120/O3.
+On these 15 workloads, Deuteron achieves **1.66× the speed of generated CUDA/NVCC** and **1.15× the speed of this Triton baseline**, using the equal-weight geometric mean of warm latency. Measurements below are in **microseconds; lower is better**, remeasured on the RTX 5090 on 2026-10-24 in round 6. Deuteron targets native SM120/O3.
 
 | Workload | Deuteron | NVCC 12.8.93 | Triton 3.6 |
 |---|---:|---:|---:|
-| p00 Add, 128 | 2.976 | 2.984 | 3.104 |
-| p01 Add, 1024 | 2.984 | 2.976 | 3.136 |
+| p00 Add, 128 | 2.976 | 2.976 | 3.104 |
+| p01 Add, 1024 | 2.976 | 2.976 | 3.104 |
 | p02 Affine, 4096 | 3.040 | 3.040 | 3.200 |
-| p03 ReLU × multiply, 2048 | 2.992 | 2.976 | 3.104 |
-| r01 Sum, 1024 | 2.952 | 2.976 | 3.088 |
-| r02 Sum, 65536 | 6.816 | 10.784 | 8.864 |
-| r03 Mean, 32768 | 4.768 | 6.816 | 4.832 |
-| r04 Row sum, 64 × 512 | 2.960 | 3.072 | 3.056 |
+| p03 ReLU × multiply, 2048 | 2.976 | 2.992 | 3.104 |
+| r01 Sum, 1024 | 2.960 | 2.976 | 3.048 |
+| r02 Sum, 65536 | 6.816 | 10.728 | 8.880 |
+| r03 Mean, 32768 | 4.784 | 6.848 | 4.832 |
+| r04 Row sum, 64 × 512 | 2.960 | 3.040 | 3.096 |
 | m01 Matmul, 512³ | 8.896 | 15.040 | 12.992 |
-| m02 Matmul, 128 × 256 × 64 | 3.184 | 5.088 | 6.848 |
-| f01 RMSNorm, 64 × 1024 | 3.176 | 6.816 | 3.264 |
+| m02 Matmul, 128 × 256 × 64 | 3.144 | 5.088 | 6.848 |
+| f01 RMSNorm, 64 × 1024 | 3.152 | 6.848 | 3.280 |
 | f02 Softmax, 64 × 256 | 2.976 | 2.976 | 3.072 |
-| f03 L2Norm, 64 × 512 | 2.976 | 4.768 | 3.104 |
-| a01 Attention, 64 rows / 64 depth | 4.776 | 66.208 | 4.800 |
-| a02 Attention, 128 rows / 32 depth | 4.800 | 31.400 | 6.816 |
-| **Geometric mean** | **3.757** | **6.232** | **4.331** |
+| f03 L2Norm, 64 × 512 | 2.976 | 4.744 | 3.104 |
+| a01 Attention, 64 rows / 64 depth | 4.800 | 64.256 | 4.832 |
+| a02 Attention, 128 rows / 32 depth | 4.800 | 31.424 | 6.816 |
+| **Geometric mean** | **3.752** | **6.216** | **4.332** |
 
-Where we stand: the largest gains over direct NVCC references are attention (13.86× and 6.54×). Against this Triton baseline, rectangular matmul is 2.15× faster, 512³ matmul 1.46×, and the 128-row attention case 1.42×. Many pointwise and short-row kernels sit near the roughly 3 µs launch floor; differences of a few hundredths of a microsecond should be treated as ties. This establishes competitive performance on the open set, not peak throughput or a ranking against fully tuned libraries.
+Where we stand: the largest gains over direct NVCC references are attention (13.39× and 6.55×). Against this Triton baseline, rectangular matmul is 2.18× faster, 512³ matmul 1.46×, and the 128-row attention case 1.42×. Many pointwise and short-row kernels sit near the roughly 3 µs launch floor; differences of a few hundredths of a microsecond should be treated as ties. This establishes competitive performance on the open set, not peak throughput or a ranking against fully tuned libraries.
 
 All compilers use the same original inputs, constants, expected outputs, and tolerances. Deuteron and NVCC preserve supplied launches; Triton uses independently written kernels and its own launch geometry. NVCC compiles Emmy's generated CUDA references at O3 with default math. Triton 3.6 uses FP32 buffers, BF16x3 dot products, and default FP fusion. Deuteron uses its default guarded tensor/approximate-math policies. Attention therefore uses different dot-product policies across implementations. Only the original atomic rectangular matmul requires output resets.
 
 Each value is the median of six held-out hosted-runner measurements at 20 warmups and 200 iterations. Every problem sees all six compiler execution orders; configuration-screen samples are excluded and no timing sample is deleted. Every call checks the complete original output. Compilation, transport, and assembly time are excluded. These are **warm kernel timings**, not the competition's cold-launch score or an end-to-end model benchmark. Differences near the runner's timing granularity are not significance claims.
 
-Triton screens three predeclared configurations for each attention/matmul and one for other kernels. This is a reproducible baseline, not an exhaustive Triton autotune or a comparison against cuBLAS/cuDNN. See [benchmark reproduction and limitations](benchmarks/README.md) and [raw results](benchmarks/rtx5090-2026-10-24.json).
+The initial Triton screen used three predeclared configurations for each attention/matmul and one for other kernels. Round 6 keeps those selected configurations and exact PTX frozen, then measures a new balanced schedule. This is a reproducible baseline, not an exhaustive Triton autotune or a comparison against cuBLAS/cuDNN. See [benchmark reproduction and limitations](benchmarks/README.md), [new raw results](benchmarks/rtx5090-2026-10-24-r6.json), and the preserved [previous measurements](benchmarks/rtx5090-2026-10-24.json). The hardening changes retain identical generated kernels; small differences between measurement rounds are not new optimization gains.
 
-The latest attention pass reduces the SM120 cubin assembled from default SM89/O3 CLI PTX from 15,144 to 14,280 bytes and registers from 167 to 80. A separate fixed 100-call RTX 5090 confirmation found warm latency unchanged at 4.800 µs. The cold effect estimate was +0.0067 µs with a 95% randomization interval of [−0.2027, +0.2920] µs: a measured resource reduction, with no confirmed latency gain.
+The attention pass added in round 5 reduces the SM120 cubin assembled from default SM89/O3 CLI PTX from 15,144 to 14,280 bytes and registers from 167 to 80. Its [historical fixed 100-call RTX 5090 confirmation](benchmarks/attention-confirmation-2026-10-24.json) found warm latency unchanged at 4.800 µs. The cold effect estimate was +0.0067 µs with a 95% randomization interval of [−0.2027, +0.2920] µs: a measured resource reduction, with no confirmed latency gain.
+
+The separate [round-6 single-launch profile](benchmarks/cold-rtx5090-2026-10-24-r6.json) retains 90 correct calls at zero warmups and one iteration, using default CLI SM89/O3 PTX assembled for SM120. Its geometric mean of per-workload medians is 19.648 µs. This profile uses a different launch regime from the warm table and makes no comparative speedup claim.
 
 ## Benchmark your checkout
 
@@ -186,6 +198,8 @@ python benchmark.py --problems-dir /path/to/emmy-hackathon-2026/problems --devic
 python benchmark.py --problems-dir /path/to/emmy-hackathon-2026/problems --remote --arch sm_120
 ```
 
-Local execution needs an NVIDIA GPU and CUDA driver; remote execution needs `curl`. Add problem names to select a subset. Results include timings, source hashes, PTX, both LLVM stages, and actual GPU outputs in `benchmark-results/`. Keep local H100 and hosted RTX 5090 measurements separate, and choose a local target matching your GPU.
+Local execution needs an NVIDIA GPU and CUDA driver; remote execution needs `curl`. Add problem names to select a subset. Results include timings, source hashes, PTX, both LLVM stages, and actual GPU outputs in `benchmark-results/`. Each run requires a new artifact directory to preserve earlier results. Keep local H100 and hosted RTX 5090 measurements separate, and choose a local target matching your GPU.
+
+The runtime validates inputs before device/network work, checks remote outputs and timings, bounds busy retries, and recompiles once for an explicitly expired cubin. A local runner must be used and closed by its creating process and thread. See the [runtime and deployment contract](docs/production.md#runtime-and-measurements) for ownership, reset, and error-handling requirements.
 
 The compiler reuses LLVM for optimization and code generation. Eligibility under the hackathon's broad prohibition on existing compilers remains unconfirmed. The validated benchmark scope is the 15 open problems; hidden-set support is not claimed.
