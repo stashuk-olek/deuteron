@@ -7,7 +7,6 @@ import json
 import math
 from pathlib import Path
 import random
-import re
 import secrets
 import statistics
 import sys
@@ -16,7 +15,7 @@ import time
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from benchmark import RemoteRunner, compare_outputs
+from benchmark import RemoteRunner, compare_outputs, write_json
 
 
 def sha(data):
@@ -24,24 +23,12 @@ def sha(data):
 
 
 def save(path, data):
-    temporary = path.with_suffix(path.suffix + '.tmp')
-    temporary.write_text(json.dumps(data, indent=2) + '\n')
-    temporary.replace(path)
+    write_json(path, data)
 
 
 class CachedRunner(RemoteRunner):
     def __init__(self, server):
-        super().__init__(server)
-        self.cache = {}
-
-    def request(self, endpoint, body):
-        if endpoint != '/compile':
-            return super().request(endpoint, body)
-        key = sha(body['ptx'].encode())
-        if key not in self.cache:
-            target = re.search(r'^\.target\s+(sm_[0-9]+a?)', body['ptx'], re.M).group(1)
-            self.cache[key] = super().request(endpoint, {**body, 'arch': target if target.endswith('a') else 'sm_120'})
-        return self.cache[key]
+        super().__init__(server, compile_cache_size=128, arch='sm_120')
 
 
 def measure(runner, item, problems):

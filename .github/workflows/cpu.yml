@@ -36,7 +36,7 @@ jobs:
       - name: CPU tests
         run: python -m unittest discover -s tests -v
       - name: Type check
-        run: python -m pyrefly check --preset default --python-interpreter-path "$(command -v python)" compiler compile.py tests/test_cli.py
+        run: python -m pyrefly check --preset default --python-interpreter-path "$(command -v python)" compiler compile.py benchmark.py tests/test_cli.py tests/test_runtime.py tests/test_validation.py
       - name: Compile supported targets without a GPU
         run: |
           for arch in sm_80 sm_86 sm_89 sm_90 sm_100 sm_110 sm_120; do

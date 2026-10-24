@@ -8,3 +8,6 @@ results.json
 *.ptx
 *.ll
 *.cubin
+build/
+dist/
+*.egg-info/

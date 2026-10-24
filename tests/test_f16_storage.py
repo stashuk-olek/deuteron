@@ -96,7 +96,7 @@ class StorageTypingTests(unittest.TestCase):
             compile_example(graph, meta)
 
 
-@unittest.skipUnless('DEUTERON_TEST_DEVICE' in os.environ, 'set DEUTERON_TEST_DEVICE to run CUDA correctness tests')
+@unittest.skipUnless(os.environ.get('DEUTERON_TEST_DEVICE'), 'set DEUTERON_TEST_DEVICE to run CUDA correctness tests')
 class StorageCudaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

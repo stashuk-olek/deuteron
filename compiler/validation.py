@@ -1,4 +1,5 @@
 import ast
+from collections.abc import Callable
 import json
 import math
 from typing import Any
@@ -14,7 +15,7 @@ from emmy.compiler.ir.kernel.ir import CpAsyncCommit, CpAsyncCopy, CpAsyncWait, 
 from emmy.compiler.ir.stmt import Accum, Assign, Body, Cond, Init, Let, Load, Loop, Select, SelectBranch, StridedLoop, Write
 
 _DTYPES = {'f16': 2, 'f32': 4, 'f64': 8, 'i32': 4, 'i64': 8}
-_CONSTRUCTORS = {cls.__name__: cls for cls in (Dim, DataType, StructuredType, Axis, Window, BinaryExpr, Builtin, CastExpr, FlatIndex, FuncCallExpr, Literal, TernaryExpr, Var, CpAsyncCommit, CpAsyncCopy, CpAsyncWait, Smem, Sync, Tile, TreeHalve, WarpShuffle, Accum, Assign, Body, Cond, Init, Let, Load, Loop, Select, SelectBranch, StridedLoop, Write, ElementwiseImpl)}
+_CONSTRUCTORS: dict[str, Callable[..., Any]] = {cls.__name__: cls for cls in (Dim, DataType, StructuredType, Axis, Window, BinaryExpr, Builtin, CastExpr, FlatIndex, FuncCallExpr, Literal, TernaryExpr, Var, CpAsyncCommit, CpAsyncCopy, CpAsyncWait, Smem, Sync, Tile, TreeHalve, WarpShuffle, Accum, Assign, Body, Cond, Init, Let, Load, Loop, Select, SelectBranch, StridedLoop, Write, ElementwiseImpl)}
 _CONSTRUCTORS['dtype'] = np.dtype
 
 
@@ -36,14 +37,16 @@ def validate_workers(workers: Any) -> None:
         raise ValueError('workers must be a positive integer or None')
 
 
-def _name(value: Any, label: str) -> None:
+def _name(value: Any, label: str) -> str:
     if type(value) is not str or not value or '\x00' in value:
         raise ValueError(f'{label} must be a nonempty string without NUL bytes')
+    return value
 
 
-def _sequence(value: Any, label: str) -> None:
+def _sequence(value: Any, label: str) -> list[Any] | tuple[Any, ...]:
     if not isinstance(value, (list, tuple)):
         raise ValueError(f'{label} must be a list or tuple')
+    return value
 
 
 def validate_launch(launch: Any) -> dict[str, Any]:
@@ -51,8 +54,7 @@ def validate_launch(launch: Any) -> dict[str, Any]:
         raise ValueError('launch metadata must be an object')
     _name(launch.get('entry'), 'launch entry')
     for name, limits in (('grid', (2**31 - 1, 65535, 65535)), ('block', (1024, 1024, 64))):
-        dimensions = launch.get(name)
-        _sequence(dimensions, name)
+        dimensions = _sequence(launch.get(name), name)
         if len(dimensions) != 3 or any(type(n) is not int or not 1 <= n <= limit for n, limit in zip(dimensions, limits)):
             raise ValueError(f'{name} must contain three positive integer CUDA dimensions within {limits}')
     if math.prod(launch['block']) > 1024:
@@ -60,15 +62,13 @@ def validate_launch(launch: Any) -> dict[str, Any]:
     smem = launch.get('smem_bytes', 0)
     if type(smem) is not int or not 0 <= smem < 2**32:
         raise ValueError('smem_bytes must be a nonnegative 32-bit integer')
-    arguments, order = launch.get('args'), launch.get('arg_order')
-    _sequence(arguments, 'args')
-    _sequence(order, 'arg_order')
-    specs = {}
+    arguments = _sequence(launch.get('args'), 'args')
+    order = _sequence(launch.get('arg_order'), 'arg_order')
+    specs: dict[str, Any] = {}
     for arg in arguments:
         if not isinstance(arg, dict):
             raise ValueError('each argument must be an object')
-        name = arg.get('name')
-        _name(name, 'argument name')
+        name = _name(arg.get('name'), 'argument name')
         if name in specs:
             raise ValueError('meta.json args and arg_order disagree: duplicate argument name')
         specs[name] = arg
@@ -81,8 +81,7 @@ def validate_launch(launch: Any) -> dict[str, Any]:
             if arg.get('output') or arg.get('intermediate'):
                 raise ValueError('scalar arguments cannot be output or intermediate buffers')
         else:
-            shape = arg.get('shape')
-            _sequence(shape, f'{name} shape')
+            shape = _sequence(arg.get('shape'), f'{name} shape')
             if any(type(extent) is not int or not 0 <= extent < 2**63 for extent in shape):
                 raise ValueError('buffer shapes require nonnegative 64-bit integer extents')
             if math.prod(shape) * _DTYPES[arg['dtype']] >= 2**64:
@@ -91,8 +90,7 @@ def validate_launch(launch: Any) -> dict[str, Any]:
         _name(name, 'arg_order name')
     if len(order) != len(specs) or len(set(order)) != len(order) or set(order) != set(specs):
         raise ValueError('meta.json args and arg_order disagree')
-    resets = launch.get('zero_outputs', ())
-    _sequence(resets, 'zero_outputs')
+    resets = _sequence(launch.get('zero_outputs', ()), 'zero_outputs')
     for name in resets:
         _name(name, 'zero_outputs name')
         if name not in specs or not specs[name].get('output') or specs[name].get('scalar'):

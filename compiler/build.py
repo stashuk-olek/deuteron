@@ -1,14 +1,12 @@
 from __future__ import annotations
 import hashlib
-import json
 import multiprocessing
 import os
-import re
+import sys
 import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from emmy.compiler.graph import Graph
 from llvmlite import binding as llvm
 from llvmlite import ir
 from compiler.cache import CompilationCache
@@ -20,6 +18,7 @@ from compiler.passes.recurrence import reorder_recurrences
 from compiler.passes.vectorize import vectorize_elementwise
 from compiler.ptx import rewrite_ptx
 from compiler.storage import half_storage_types
+from compiler.validation import parse_kernel, validate_compile_arguments
 
 @dataclass(frozen=True)
 class Compilation:
@@ -36,9 +35,11 @@ def _stamp() -> Any:
     global _STAMP
     if _STAMP is None:
         digest = hashlib.sha256()
-        import emmy, llvmlite
+        import emmy, llvmlite, numpy
         digest.update(emmy.__version__.encode() if hasattr(emmy, '__version__') else b'emmy')
         digest.update(llvmlite.__version__.encode())
+        digest.update(numpy.__version__.encode())
+        digest.update((sys.implementation.cache_tag or 'python').encode())
         digest.update(repr(llvm.llvm_version_info).encode())
         for name in sorted((Path(__file__).parent).rglob('*.py')):
             digest.update(name.relative_to(Path(__file__).parent).as_posix().encode() + b'\0')
@@ -79,25 +80,11 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
         return _compile_kernel(path, arch=arch, opt_level=opt_level, options=options)
 
 def _compile_kernel(path: Path, *, arch: Any, opt_level: int, options: Options | None) -> Compilation:
-    if not re.fullmatch('sm_(?:8[069]|9[0]|1[012][0])', arch):
-        raise ValueError(f'unsupported target {arch}; use sm_80, sm_86, sm_89, sm_90, sm_100, sm_110, or sm_120')
-    if opt_level not in (0, 1, 2, 3):
-        raise ValueError('optimization level must be 0, 1, 2, or 3')
-    if options is None:
-        options = Options()
+    options = validate_compile_arguments(arch, opt_level, options)
     path = Path(path)
     payload = path.read_bytes()
     meta_payload = path.with_name('meta.json').read_bytes()
-    graph = Graph.from_dict(json.loads(payload))
-    kernels: list[Any] = [n.op for n in graph.nodes.values() if type(n.op).__name__ == 'KernelOp']
-    if len(kernels) != 1:
-        raise ValueError('expected exactly one KernelOp in the input graph')
-    kernel = kernels[0]
-    metadata = json.loads(meta_payload)
-    launches = [k for k in metadata['kernels'] if k['entry'] == kernel.name]
-    if len(launches) != 1:
-        raise ValueError(f'meta.json must contain exactly one launch for {kernel.name}')
-    launch = launches[0]
+    kernel, launch = parse_kernel(payload, meta_payload)
     half_storage_types(kernel, launch)
     digest = hashlib.sha256(_stamp())
     for field in (payload, meta_payload, arch.encode(), bytes((opt_level,)), repr(sorted(options.__dict__.items())).encode()):
