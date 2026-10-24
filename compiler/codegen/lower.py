@@ -6,6 +6,7 @@ from compiler.analysis import STATIC_SHARED_LIMIT, walk
 from compiler.codegen.tensor import TensorEmitter
 from compiler.options import Options
 from compiler.passes import run_passes
+from compiler.passes.regstage import stage_register_loads
 from compiler.passes.tailtree import linearize_small_trees
 from compiler.passes.regforward import _no_writes_to
 from compiler.passes.recurrence import RecurrenceEmitter
@@ -23,6 +24,10 @@ def integer(value: Any) -> Any:
 class Lowering:
 
     def __init__(self, kernel: Any, launch: Any, module: Any, options: Options) -> None:
+        self.packed_operands: tuple = ()
+        staged = stage_register_loads(kernel, launch) if options.contraction_precision == 'bf16x3' else None
+        if staged is not None:
+            kernel, self.packed_operands = staged
         self.coalesced: set[int] = {id(loop) for tile in kernel.body if type(tile).__name__ == 'Tile' for loop in tile.body if options.coalesced_reductions and striped_reduction(loop, tile, launch['block'][0])}
         if options.tail_linearize:
             kernel = linearize_small_trees(kernel, launch, options) or kernel
@@ -584,6 +589,8 @@ class Lowering:
             elif kind == 'Write':
                 if stmt.swizzle != 'NONE':
                     raise NotImplementedError('swizzled writes are outside the open set')
+                if not stmt.atomic and any(emitter.packed_store(stmt.output, [self.expression(v) for v in stmt.index], [self.get(v) for v in stmt.values]) for emitter in self.tensors):
+                    continue
                 count = len(stmt.values)
                 pointer = self.address(stmt.output, stmt.index)
                 if stmt.atomic:
