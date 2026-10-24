@@ -80,7 +80,7 @@ def _fold(kernel: Any, launch: Any) -> Any:
         role = roles[copy.smem]
         if shape[role] != p.depth or shape[1 - role] != lengths[copy.smem] or loop.axis.extent.value * 4 != math.prod(shape):
             return kernel
-        indices = (Var(loop.axis.name) * 4 / shape[1], Var(loop.axis.name) * 4 % shape[1])
+        indices = (Var(loop.axis.name) * Literal(4, dtype='int') / shape[1], Var(loop.axis.name) * Literal(4, dtype='int') % shape[1])
         if tuple(map(canonical, copy.smem_index)) != tuple(map(canonical, indices)) or len(copy.src_index) != 2:
             return kernel
         origins = [difference(canonical(a), canonical(b)) for a, b in zip(copy.src_index, indices)]
@@ -108,7 +108,7 @@ def _fold(kernel: Any, launch: Any) -> Any:
         role = roles[copy.smem]
         shape[role] *= factor
         origins[role][('var', split.name)] *= factor
-        indices = (Var(loop.axis.name) * 4 / shape[1], Var(loop.axis.name) * 4 % shape[1])
+        indices = (Var(loop.axis.name) * Literal(4, dtype='int') / shape[1], Var(loop.axis.name) * Literal(4, dtype='int') % shape[1])
         src = tuple(_affine(origin) + index for origin, index in zip(origins, indices))
         values = tuple(f'{prefix}_{i}_{j}' for j in range(4))
         copies = (Load(names=values, input=copy.src, index=src, dtype=F32), Write(output=copy.smem, index=indices, values=values, value_dtype=F32))

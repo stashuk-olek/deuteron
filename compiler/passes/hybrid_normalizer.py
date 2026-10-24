@@ -1,6 +1,7 @@
 import math
 from dataclasses import replace
 from typing import Any
+from emmy.compiler.ir.elementwise import ElementwiseImpl
 from emmy.compiler.ir.expr import BinaryExpr, Literal, Var
 from emmy.compiler.ir.kernel.ir import WarpShuffle
 from emmy.compiler.ir.stmt.body import Body
@@ -157,20 +158,20 @@ def _hybrid(kernel: Any, launch: Any) -> Any:
     cached = []
     for group in range(threads // 32):
         values = tuple(f'{prefix}_{group}_{i}' for i in range(width))
-        coordinate = Var('lane') * width + group * 32 * width
+        coordinate = Var('lane') * Literal(width, dtype='int') + Literal(group * 32 * width, dtype='int')
         output.append(replace(load, names=values, index=(*load.index[:-1], coordinate)))
-        output.extend(Assign(m, 'maximum', (m, value), dtype) for value in values)
+        output.extend(Assign(m, ElementwiseImpl('maximum'), (m, value), dtype) for value in values)
         cached.append(values)
-    maximum_combine = Assign(m, 'maximum', (m, n), dtype)
+    maximum_combine = Assign(m, ElementwiseImpl('maximum'), (m, n), dtype)
     maximum_shuffle = WarpShuffle(state=(m,), state_b=(n,), combine_states=(maximum_combine,), length=32, dtype=dtype)
     output.extend((maximum_shuffle, Init(s, 0.0, dtype=dtype)))
     values = []
     for i in range(width):
         selected, difference, value = (f'{prefix}_{tag}_{i}' for tag in ('owned', 'delta', 'exp'))
         branches = tuple(SelectBranch(value=row[i], select=BinaryExpr('==', Var('warp'), Literal(group, dtype='int'))) for group, row in enumerate(cached))
-        output.extend((Select(selected, branches), Assign(difference, 'subtract', (selected, m), dtype), Assign(value, 'exp', (difference,), dtype), Assign(s, 'add', (s, value), dtype)))
+        output.extend((Select(selected, branches), Assign(difference, ElementwiseImpl('subtract'), (selected, m), dtype), Assign(value, ElementwiseImpl('exp'), (difference,), dtype), Assign(s, ElementwiseImpl('add'), (s, value), dtype)))
         values.append(value)
-    sum_combine = Assign(s, 'add', (s, t), dtype)
+    sum_combine = Assign(s, ElementwiseImpl('add'), (s, t), dtype)
     output.extend((WarpShuffle(state=(s,), state_b=(t,), combine_states=(sum_combine,), length=32, dtype=dtype), replace(store, body=Body((store.body[component],))), sync))
     scalar = replace(tree, state=(s,), state_b=(t,), bufs=(tree.bufs[component],), combine_states=(sum_combine,))
     tail = _scalar_tree(scalar, 6, bound)
@@ -178,6 +179,6 @@ def _hybrid(kernel: Any, launch: Any) -> Any:
         return None
     output.extend((*tail, reciprocal))
     products = tuple(f'{prefix}_output_{i}' for i in range(width))
-    output.extend(Assign(name, 'multiply', (reciprocal.name, value), dtype) for name, value in zip(products, values, strict=True))
-    output.append(replace(write, values=products, index=(*write.index[:-1], Var('lane') * width + Var('warp') * (32 * width))))
+    output.extend(Assign(name, ElementwiseImpl('multiply'), (reciprocal.name, value), dtype) for name, value in zip(products, values, strict=True))
+    output.append(replace(write, values=products, index=(*write.index[:-1], Var('lane') * Literal(width, dtype='int') + Var('warp') * Literal(32 * width, dtype='int'))))
     return replace(kernel, body=Body((replace(tile, body=Body(output)),))), maximum_shuffle

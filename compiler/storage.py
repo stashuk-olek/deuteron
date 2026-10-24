@@ -31,6 +31,7 @@ def half_storage_types(kernel: Any, launch: Any) -> Any:
         if any(not index(e) for e in exprs(stmt)):
             raise NotImplementedError('f16 storage requires integer control-only indices')
         names: tuple = ()
+        dtype: str | None = None
         if tag == 'Load':
             if stmt.input not in specs:
                 raise NotImplementedError('f16 storage loads require a global buffer')
@@ -49,6 +50,8 @@ def half_storage_types(kernel: Any, launch: Any) -> Any:
                 raise NotImplementedError('f16 storage requires ordinary global stores')
             if any(n not in types or stmt.value_dtype is not None and stmt.value_dtype.name != types[n] for n in stmt.values):
                 raise ValueError('Write value dtype disagrees with its floating values')
+        if dtype is None:
+            continue
         for name in names:
             if name in controls or name in specs or name in types and types[name] != dtype:
                 raise ValueError(f'inconsistent f16 storage value {name}')

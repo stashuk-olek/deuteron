@@ -355,6 +355,7 @@ class Lowering:
             step = integer(cooperative)
         coalesced = self.tile_stmt is not None and id(stmt) in self.coalesced
         width = 4
+        trips = 0
         count: Any = None
         if coalesced:
             count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)

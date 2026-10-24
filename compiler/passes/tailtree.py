@@ -4,6 +4,7 @@ from typing import Any
 
 from emmy.compiler.ir.expr import BinaryExpr, Literal, Var
 from emmy.compiler.ir.kernel.ir import WarpShuffle
+from emmy.compiler.ir.stmt.base import Stmt
 from emmy.compiler.ir.stmt.body import Body
 from emmy.compiler.ir.stmt.leaves import Load
 from compiler.analysis import kind, walk
@@ -97,6 +98,7 @@ def linearize_small_trees(kernel: Any, launch: Any, options: Any) -> Any:
             if not any(kind(s) == 'Sync' and not s.warp and not s.barrier_id for s in body[last_write + 1:at]):
                 continue
             scalar = len(states) == len(stmt.combine_states) == 1 and stmt.combine_states[0].op.name == 'add' and set(stmt.combine_states[0].args) == states | others
+            stmts: list[Stmt]
             if scalar:
                 stmts = _scalar_tree(stmt, at, _bound_names(tile))
                 if stmts is None:
