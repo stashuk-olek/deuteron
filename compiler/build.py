@@ -4,12 +4,14 @@ import json
 import multiprocessing
 import os
 import re
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from emmy.compiler.graph import Graph
 from llvmlite import binding as llvm
 from llvmlite import ir
+from compiler.cache import CompilationCache
 from compiler.codegen.lower import Lowering
 from compiler.options import Options
 from compiler.passes.regforward import forward_reduction_loads_register
@@ -25,8 +27,10 @@ class Compilation:
     unoptimized: str
     optimized: str
 
-_MEMORY: dict[str, Compilation] = {}
+_CACHE = CompilationCache()
+_COMPILE_LOCK = threading.RLock()
 _STAMP: bytes | None = None
+_LLVM_READY = False
 
 def _stamp() -> Any:
     global _STAMP
@@ -35,53 +39,46 @@ def _stamp() -> Any:
         import emmy, llvmlite
         digest.update(emmy.__version__.encode() if hasattr(emmy, '__version__') else b'emmy')
         digest.update(llvmlite.__version__.encode())
+        digest.update(repr(llvm.llvm_version_info).encode())
         for name in sorted((Path(__file__).parent).rglob('*.py')):
+            digest.update(name.relative_to(Path(__file__).parent).as_posix().encode() + b'\0')
             digest.update(name.read_bytes())
+            digest.update(b'\0')
         _STAMP = digest.digest()
     return _STAMP
 
-def _entry(key: str) -> Any:
-    hit = _MEMORY.get(key)
-    if hit is not None:
-        return hit
-    root = os.environ.get('DEUTERON_CACHE')
-    if root:
-        blob = Path(root) / (key + '.json')
-        if blob.is_file():
-            data = json.loads(blob.read_text())
-            hit = Compilation(data['ptx'], data['unoptimized'], data['optimized'])
-            _MEMORY[key] = hit
-            return hit
-    return None
-
-def _store(key: str, result: Compilation) -> None:
-    _MEMORY[key] = result
-    root = os.environ.get('DEUTERON_CACHE')
-    if root:
-        blob = Path(root) / (key + '.json')
-        blob.parent.mkdir(parents=True, exist_ok=True)
-        tmp = blob.with_suffix('.json.tmp')
-        tmp.write_text(json.dumps({'ptx': result.ptx, 'unoptimized': result.unoptimized, 'optimized': result.optimized}))
-        os.replace(tmp, blob)
+def clear_cache() -> None:
+    with _COMPILE_LOCK:
+        _CACHE.clear()
 
 def _compile_one(job: Any) -> Compilation:
     path, arch, opt_level, options = job
     return compile_kernel(path, arch=arch, opt_level=opt_level, options=options)
 
 def compile_many(jobs: Any, workers: int | None = None) -> list[Compilation]:
-    jobs = list(jobs)
+    if workers is not None and (type(workers) is not int or workers < 1):
+        raise ValueError('workers must be a positive integer or None')
+    try:
+        jobs = list(jobs)
+    except TypeError as exc:
+        raise ValueError('jobs must be an iterable of (path, arch, opt_level, options)') from exc
+    for index, job in enumerate(jobs):
+        if not isinstance(job, (tuple, list)) or len(job) != 4:
+            raise ValueError(f'job {index}: expected (path, arch, opt_level, options)')
     if not jobs:
         return []
     if workers is None:
         workers = min(len(jobs), os.cpu_count() or 1)
-    if workers < 1:
-        raise ValueError('workers must be >= 1')
     if len(jobs) == 1 or workers == 1:
         return [_compile_one(job) for job in jobs]
     with multiprocessing.get_context('spawn').Pool(processes=min(workers, len(jobs))) as pool:
         return pool.map(_compile_one, jobs)
 
 def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, options: Options | None = None) -> Compilation:
+    with _COMPILE_LOCK:
+        return _compile_kernel(path, arch=arch, opt_level=opt_level, options=options)
+
+def _compile_kernel(path: Path, *, arch: Any, opt_level: int, options: Options | None) -> Compilation:
     if not re.fullmatch('sm_(?:8[069]|9[0]|1[012][0])', arch):
         raise ValueError(f'unsupported target {arch}; use sm_80, sm_86, sm_89, sm_90, sm_100, sm_110, or sm_120')
     if opt_level not in (0, 1, 2, 3):
@@ -91,16 +88,6 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
     path = Path(path)
     payload = path.read_bytes()
     meta_payload = path.with_name('meta.json').read_bytes()
-    digest = hashlib.sha256(_stamp())
-    digest.update(payload)
-    digest.update(meta_payload)
-    digest.update(arch.encode())
-    digest.update(bytes((opt_level,)))
-    digest.update(repr(sorted(options.__dict__.items())).encode())
-    key = digest.hexdigest()
-    hit = _entry(key)
-    if hit is not None:
-        return hit
     graph = Graph.from_dict(json.loads(payload))
     kernels: list[Any] = [n.op for n in graph.nodes.values() if type(n.op).__name__ == 'KernelOp']
     if len(kernels) != 1:
@@ -110,29 +97,47 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
     launches = [k for k in metadata['kernels'] if k['entry'] == kernel.name]
     if len(launches) != 1:
         raise ValueError(f'meta.json must contain exactly one launch for {kernel.name}')
-    half_storage_types(kernel, launches[0])
+    launch = launches[0]
+    half_storage_types(kernel, launch)
+    digest = hashlib.sha256(_stamp())
+    for field in (payload, meta_payload, arch.encode(), bytes((opt_level,)), repr(sorted(options.__dict__.items())).encode()):
+        digest.update(len(field).to_bytes(8, 'big'))
+        digest.update(field)
+    key = digest.hexdigest()
+    root = os.environ.get('DEUTERON_CACHE')
+    hit = _CACHE.get(key, root)
+    if hit is not None:
+        return Compilation(*hit)
+    result = _compile_uncached(kernel, launch, arch, opt_level, options)
+    _CACHE.put(key, (result.ptx, result.unoptimized, result.optimized), root)
+    return result
+
+def _compile_uncached(kernel: Any, launch: Any, arch: str, opt_level: int, options: Options) -> Compilation:
+    global _LLVM_READY
     if options.elementwise_vectorize:
-        vectorized = vectorize_elementwise(kernel, launches[0])
+        vectorized = vectorize_elementwise(kernel, launch)
         if vectorized is not None:
             kernel = vectorized
     if options.register_forwarding:
-        forwarded = forward_reduction_loads_register(kernel, launches[0])
+        forwarded = forward_reduction_loads_register(kernel, launch)
         if forwarded is not None:
             kernel = forwarded
     if options.recurrence_staging:
-        kernel = reorder_recurrences(kernel, launches[0])
-    kernel = fold_grid_contractions(kernel, launches[0])
-    llvm.initialize_all_targets()
-    llvm.initialize_all_asmprinters()
+        kernel = reorder_recurrences(kernel, launch)
+    kernel = fold_grid_contractions(kernel, launch)
+    if not _LLVM_READY:
+        llvm.initialize_all_targets()
+        llvm.initialize_all_asmprinters()
+        _LLVM_READY = True
     features = '+ptx90' if arch == 'sm_110' else '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'
     target = llvm.Target.from_triple('nvptx64-nvidia-cuda')
     machine = target.create_target_machine(cpu=arch, features=features, opt=opt_level)
     module: Any = ir.Module(name=kernel.name)
     module.triple = 'nvptx64-nvidia-cuda'
     module.data_layout = str(machine.target_data)
-    lowering = Lowering(kernel, launches[0], module, options)
+    lowering = Lowering(kernel, launch, module, options)
     unoptimized = lowering.generate()
-    with llvm.parse_assembly(unoptimized) as lowered:
+    with llvm.create_context() as context, llvm.parse_assembly(unoptimized, context=context) as lowered:
         lowered.verify()
         tuning = llvm.PipelineTuningOptions(speed_level=opt_level)
         tuning.loop_vectorization = options.vector_width > 1
@@ -154,6 +159,4 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
         lowered.verify()
         optimized = str(lowered)
         ptx = rewrite_ptx(machine.emit_assembly(lowered), options.approximate_math)
-    result = Compilation(ptx, unoptimized, optimized)
-    _store(key, result)
-    return result
+    return Compilation(ptx, unoptimized, optimized)
