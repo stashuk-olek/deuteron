@@ -5,6 +5,7 @@ from llvmlite import ir
 from emmy.compiler.ir.stmt.body import Body
 from compiler.analysis import STATIC_SHARED_LIMIT, canonical, exprs, free_variables, index_variables, integer, kind, uses, walk
 from compiler.options import Recurrence
+from compiler.passes.lifetime import recurrence_storage_is_warp_private
 from compiler.transforms import SCALAR_OPS, sharing_width, symbolic, uniform_prefix_values
 I1: Any = ir.IntType(1)
 I8: Any = ir.IntType(8)
@@ -426,6 +427,11 @@ class RecurrenceEmitter:
             lowering.shapes[key] = lowering.shapes[name]
             lowering.allocate(f'__copy_{plan.tag}_{index}', I32)
             self.operands[name] = key
+        gathered = {load.input for load in plan.gather}
+        for name, nbytes in plan.staged:
+            if name not in gathered and nbytes >= count * 4 and recurrence_storage_is_warp_private(plan, lowering.launch, name, lowering.shapes[name], count):
+                lowering.buffers[self.staged] = lowering.buffers[self.operands[name]]
+                break
 
     def stage_copy(self, source: Any, scratch: Any, nbytes: Any, index: Any) -> None:
         lowering = self.lowering
@@ -495,6 +501,8 @@ class RecurrenceEmitter:
 
     def reduce(self, value: Any, width: Any, op: Any) -> Any:
         lowering = self.lowering
+        if op == 'maximum' and width == 32 and lowering.launch['block'][0] > 32:
+            return lowering.ordered_maximum(value)
         distance = width // 2
         while distance:
             bits = lowering.builder.bitcast(value, I32)
