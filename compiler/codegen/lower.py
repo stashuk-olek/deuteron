@@ -394,6 +394,8 @@ class Lowering:
         latch = self.builder.branch(header)
         if not coalesced:
             count = self.options.unroll or default_unroll(stmt, self.tile_stmt, self.uniform_axes)
+        if not self.options.unroll and any(t.packed_shared and t.plan.outer is stmt for t in self.tensors):
+            count = 2
         hint = ['llvm.loop.unroll.count', integer(count)] if count > 1 else ['llvm.loop.unroll.disable']
         metadata: Any = ir.MDValue(self.module, (), name=str(len(self.module.metadata)))
         hints = [self.module.add_metadata(hint)]
