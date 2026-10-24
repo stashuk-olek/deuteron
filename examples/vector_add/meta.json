@@ -1,0 +1,52 @@
+{
+  "rtol": 0.0,
+  "atol": 0.0,
+  "kernels": [
+    {
+      "entry": "vector_add",
+      "arg_order": [
+        "lhs",
+        "rhs",
+        "sum"
+      ],
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "smem_bytes": 0,
+      "zero_outputs": [],
+      "args": [
+        {
+          "name": "lhs",
+          "dtype": "f32",
+          "shape": [
+            1030
+          ],
+          "seed": 21
+        },
+        {
+          "name": "rhs",
+          "dtype": "f32",
+          "shape": [
+            1030
+          ],
+          "seed": 22
+        },
+        {
+          "name": "sum",
+          "dtype": "f32",
+          "shape": [
+            1030
+          ],
+          "output": true
+        }
+      ]
+    }
+  ]
+}

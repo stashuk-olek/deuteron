@@ -124,7 +124,7 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
     kernel = fold_grid_contractions(kernel, launches[0])
     llvm.initialize_all_targets()
     llvm.initialize_all_asmprinters()
-    features = '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'
+    features = '+ptx90' if arch == 'sm_110' else '+ptx87' if int(arch[3:]) >= 100 else '+ptx80'
     target = llvm.Target.from_triple('nvptx64-nvidia-cuda')
     machine = target.create_target_machine(cpu=arch, features=features, opt=opt_level)
     module: Any = ir.Module(name=kernel.name)

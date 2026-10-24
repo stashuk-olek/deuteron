@@ -1,0 +1,66 @@
+{
+  "id": "tensor_matmul",
+  "code": "left @ right",
+  "rtol": 0.001,
+  "atol": 0.001,
+  "graph_inputs": [
+    "left",
+    "right"
+  ],
+  "graph_outputs": [
+    "result"
+  ],
+  "kernels": [
+    {
+      "node": "result",
+      "entry": "matmul_tiled_128",
+      "arg_order": [
+        "right",
+        "left",
+        "result"
+      ],
+      "grid": [
+        8,
+        1,
+        1
+      ],
+      "block": [
+        512,
+        1,
+        1
+      ],
+      "smem_bytes": 73728,
+      "zero_outputs": [],
+      "args": [
+        {
+          "name": "right",
+          "dtype": "f32",
+          "shape": [
+            128,
+            128
+          ],
+          "seed": 11
+        },
+        {
+          "name": "left",
+          "dtype": "f32",
+          "shape": [
+            128,
+            128
+          ],
+          "seed": 7
+        },
+        {
+          "name": "result",
+          "dtype": "f32",
+          "shape": [
+            128,
+            128
+          ],
+          "output": true
+        }
+      ],
+      "final": true
+    }
+  ]
+}

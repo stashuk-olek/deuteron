@@ -1,0 +1,63 @@
+{
+  "inputs": [
+    "lhs",
+    "rhs"
+  ],
+  "outputs": [
+    "sum"
+  ],
+  "nodes": {
+    "lhs": {
+      "op": "InputOp",
+      "op_fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "lhs",
+          "shape": [
+            1030
+          ],
+          "dtype": "f32"
+        }
+      ]
+    },
+    "rhs": {
+      "op": "InputOp",
+      "op_fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "rhs",
+          "shape": [
+            1030
+          ],
+          "dtype": "f32"
+        }
+      ]
+    },
+    "sum": {
+      "op": "KernelOp",
+      "op_fields": {
+        "body": [
+          "Tile(axes=(Axis(name='item', extent=Dim(515), window=None),), body=(Load(names=('left0', 'left1'), input='lhs', index=(BinaryExpr(op='*', left=Var(name='item'), right=Literal(value=2, dtype='int')),), dtype=DataType(name='f32', np=dtype('float32'), nbytes=4)), Load(names=('right0', 'right1'), input='rhs', index=(BinaryExpr(op='*', left=Var(name='item'), right=Literal(value=2, dtype='int')),), dtype=DataType(name='f32', np=dtype('float32'), nbytes=4)), Assign(name='sum0', op=ElementwiseImpl('add'), args=('left0', 'right0'), dtype=DataType(name='f32', np=dtype('float32'), nbytes=4)), Assign(name='sum1', op=ElementwiseImpl('add'), args=('left1', 'right1'), dtype=DataType(name='f32', np=dtype('float32'), nbytes=4)), Write(output='sum', index=(BinaryExpr(op='*', left=Var(name='item'), right=Literal(value=2, dtype='int')),), values=('sum0', 'sum1'), value_dtype=DataType(name='f32', np=dtype('float32'), nbytes=4), atomic=False, swizzle='NONE')), block_threads=128, aux_threads=0, raster_axes=None, raster_group=None, raster_orient='m')"
+        ],
+        "name": "vector_add",
+        "zero_delegated": [],
+        "serial": []
+      },
+      "inputs": [
+        "lhs",
+        "rhs"
+      ],
+      "outputs": [
+        {
+          "name": "sum",
+          "shape": [
+            1030
+          ],
+          "dtype": "f32"
+        }
+      ]
+    }
+  }
+}
