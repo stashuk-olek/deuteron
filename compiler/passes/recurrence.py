@@ -387,6 +387,54 @@ def _recurrence(tile: Any, outer: Any, at: Any, launch: Any, readonly: Any, tag:
     staged = _stage_operands(tile, outer, reductions[0], launch, (varying[0], *invariant, *gather), width, extent, parts, count * 4)
     return Recurrence(tile, outer, prefix, suffix, reductions, tuple(invariant), tuple(varying), scale, width, extent, tuple(components), tuple(gather), next(iter(identities)), tag, staged)
 
+def _grouped_value_axis(plan: Any, launch: Any, shapes: Any) -> Any:
+    try:
+        if plan.width != 32 or launch['block'] != [32, 1, 1] or len(plan.reductions) != 1 or len(plan.components) != 1 or len(plan.gather) != 1 or plan.staged:
+            return None
+        tile = plan.tile
+        names = [a.name for a in tile.axes]
+        controls = names + [plan.loop.axis.name, plan.reductions[0].axis.name]
+        ranges = {a.name: a.extent.value for a in tile.axes}
+        if tile.aux_threads or len(set(controls)) != len(controls) or any(type(n) is not int or n <= 0 for n in ranges.values()) or math.prod(ranges.values()) != launch['grid'][0] * 32 or not 0 < math.prod(ranges.values()) < 2**31 or ranges[names[-1]] != 32:
+            return None
+        if any(n in ('lane', 'warp') or n.startswith(('threadIdx.', 'blockIdx.', 'blockDim.', 'gridDim.')) for n in controls):
+            return None
+        if any(a['dtype'] != 'f32' for a in launch['args']) or tuple(s.op.name for s in plan.reductions[0].body[2:]) != ('multiply', 'add'):
+            return None
+        available = set(plan.components[0][2:4])
+        for statement in plan.suffix:
+            if kind(statement) == 'Assign':
+                if set(statement.args) - available:
+                    return None
+                available.add(statement.name)
+        axis = names[-1]
+        if tile.raster_group and axis in tile.raster_axes:
+            return None
+        load = plan.gather[0]
+        writes = [s for s in plan.suffix if kind(s) == 'Write']
+        if len(load.names) != 1 or len(load.index) != 2 or shapes[load.input] != (plan.extent, 32) or len(writes) != 1 or plan.extent % 4:
+            return None
+        write = writes[0]
+        shape = shapes[write.output]
+        if len(write.index) != 2 or len(write.values) != 1 or shape[-1] != 32 or math.prod(shape) != math.prod(ranges.values()) or axis in free_variables(write.index[0]):
+            return None
+        pending = list((*load.index, *write.index))
+        while pending:
+            expression = pending.pop()
+            if kind(expression) == 'BinaryExpr' and expression.op in ('+', '-', '*'):
+                pending.extend((expression.left, expression.right))
+            elif kind(expression) not in ('Var', 'Literal') and type(expression) is not int:
+                return None
+        def terms(expr: Any) -> Any:
+            return {term: coefficient for term, coefficient in canonical(expr).items() if not (len(term) == 2 and term[0] == 'var' and ranges.get(term[1]) == 1)}
+        if terms(load.index[0]) != {('var', plan.loop.axis.name): 1} or terms(load.index[1]) != {('var', axis): 1} or terms(write.index[1]) != {('var', axis): 1}:
+            return None
+        if not _full_cover(replace(load, input=write.output, index=write.index), shape, ranges):
+            return None
+        return axis
+    except (ArithmeticError, AttributeError, IndexError, KeyError, TypeError, ValueError):
+        return None
+
 class RecurrenceEmitter:
 
     def __init__(self, lowering: Any, plan: Recurrence) -> None:
@@ -432,6 +480,8 @@ class RecurrenceEmitter:
             if name not in gathered and nbytes >= count * 4 and recurrence_storage_is_warp_private(plan, lowering.launch, name, lowering.shapes[name], count):
                 lowering.buffers[self.staged] = lowering.buffers[self.operands[name]]
                 break
+        self.grouped_axis = _grouped_value_axis(plan, lowering.launch, lowering.shapes) if len(lowering.kernel.body) == 1 and lowering.kernel.body[0] is plan.tile else None
+        self.grouped_sum = lowering.builder.alloca(ir.VectorType(F32, 4)) if self.grouped_axis is not None else None
 
     def stage_copy(self, source: Any, scratch: Any, nbytes: Any, index: Any) -> None:
         lowering = self.lowering
@@ -511,6 +561,51 @@ class RecurrenceEmitter:
             distance //= 2
         return value
 
+    def grouped_values(self) -> None:
+        lowering, p = self.lowering, self.plan
+        b = lowering.builder
+        vector = ir.VectorType(F32, 4)
+        keyaxis = p.loop.axis.name
+        load = p.gather[0]
+        saved = lowering.get(self.grouped_axis)
+        column = b.mul(b.and_(lowering.tid, integer(7)), integer(4))
+        group = b.lshr(lowering.tid, integer(3))
+        lowering.put(self.grouped_axis, column)
+        lowering.put(keyaxis, group)
+        base = lowering.address(load.input, load.index)
+        b.store(ir.Constant(vector, [0.0] * 4), self.grouped_sum)
+
+        def step() -> None:
+            ticket = lowering.get(keyaxis)
+            key = b.add(b.mul(ticket, integer(4)), group)
+            offset = b.mul(b.zext(ticket, I64), ir.Constant(I64, 128))
+            pointer = b.bitcast(b.gep(base, [offset]), vector.as_pointer(1))
+            values = lowering.load(pointer, load.input, 16)
+            weight = b.load(lowering.address(self.staged, (key,)), align=4)
+            weights = ir.Constant(vector, ir.Undefined)
+            for i in range(4):
+                weights = b.insert_element(weights, weight, integer(i))
+            product = b.fmul(weights, values, flags=('contract',))
+            b.store(b.fadd(b.load(self.grouped_sum), product, flags=('reassoc', 'nsz', 'contract')), self.grouped_sum)
+        self.loop_n(keyaxis, p.extent // 4, step, unroll=64)
+        sums = b.load(self.grouped_sum)
+        totals = []
+        for i in range(4):
+            value = b.extract_element(sums, integer(i))
+            for distance in (16, 8):
+                other = lowering.intrinsic('llvm.nvvm.shfl.sync.bfly.i32', I32, [integer(-1), b.bitcast(value, I32), integer(distance), integer(31)])
+                value = b.fadd(value, b.bitcast(other, F32), flags=('reassoc', 'nsz', 'contract'))
+            totals.append(value)
+        _, _, n, y, _ = p.components[0]
+        with b.if_then(b.icmp_unsigned('<', lowering.tid, integer(8))):
+            for i, value in enumerate(totals):
+                lowering.put(n, lowering.get(f'{self.normalizer}_0'))
+                lowering.put(self.grouped_axis, b.add(column, integer(i)))
+                lowering.put(y, value)
+                lowering.body(p.suffix)
+        lowering.put(self.grouped_axis, saved)
+        lowering.put(keyaxis, integer(p.extent))
+
     def emit(self) -> None:
         lowering = self.lowering
         p = self.plan
@@ -568,6 +663,10 @@ class RecurrenceEmitter:
             mass = self.reduce(mass, p.width, 'add')
             lowering.put(f'{self.normalizer}_{part}', mass)
         lowering.intrinsic('llvm.nvvm.bar.warp.sync', VOID, [integer(-1)])
+        if self.grouped_axis is not None:
+            self.grouped_values()
+            lowering.striped = True
+            return
         for _part, _m, _n, y, _name_in in p.components:
             lowering.put(y, ir.Constant(F32, 0.0))
 
