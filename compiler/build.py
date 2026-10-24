@@ -17,6 +17,7 @@ from compiler.passes.gridfold import fold_grid_contractions
 from compiler.passes.recurrence import reorder_recurrences
 from compiler.passes.vectorize import vectorize_elementwise
 from compiler.ptx import rewrite_ptx
+from compiler.storage import half_storage_types
 
 @dataclass(frozen=True)
 class Compilation:
@@ -109,6 +110,7 @@ def compile_kernel(path: Path, *, arch: Any = 'sm_89', opt_level: int = 2, optio
     launches = [k for k in metadata['kernels'] if k['entry'] == kernel.name]
     if len(launches) != 1:
         raise ValueError(f'meta.json must contain exactly one launch for {kernel.name}')
+    half_storage_types(kernel, launches[0])
     if options.elementwise_vectorize:
         vectorized = vectorize_elementwise(kernel, launches[0])
         if vectorized is not None:

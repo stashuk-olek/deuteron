@@ -11,12 +11,14 @@ from compiler.passes.hybrid_normalizer import hybrid_normalizer
 from compiler.passes.tailtree import linearize_small_trees
 from compiler.passes.regforward import _no_writes_to
 from compiler.passes.recurrence import RecurrenceEmitter
+from compiler.storage import half_storage_types
 from compiler.transforms import default_unroll, plain_reduction, reciprocal_sqrt_source, sharing_width, striped_reduction
 I1: Any = ir.IntType(1)
 I8: Any = ir.IntType(8)
 I32: Any = ir.IntType(32)
 I64: Any = ir.IntType(64)
 F32: Any = ir.FloatType()
+F16: Any = ir.HalfType()
 VOID: Any = ir.VoidType()
 
 def integer(value: Any) -> Any:
@@ -25,6 +27,7 @@ def integer(value: Any) -> Any:
 class Lowering:
 
     def __init__(self, kernel: Any, launch: Any, module: Any, options: Options) -> None:
+        self.storage_types = half_storage_types(kernel, launch)
         self.hybrid_max: Any = None
         hybrid = hybrid_normalizer(kernel, launch) if options.approximate_math else None
         if hybrid is not None:
@@ -55,13 +58,13 @@ class Lowering:
         if len(specs) != len(launch['args']) or set(specs) != set(launch['arg_order']):
             raise ValueError('meta.json args and arg_order disagree')
         for a in specs.values():
-            if a['dtype'] != 'f32' or a.get('scalar'):
-                raise NotImplementedError('the open-set backend accepts f32 buffer arguments')
+            if a['dtype'] not in ('f16', 'f32') or a.get('scalar'):
+                raise NotImplementedError('the backend accepts f16/f32 buffer arguments')
         if kernel.serial:
             raise NotImplementedError('serial launch axes are outside the open set')
         if launch['block'][1:] != [1, 1] or launch['grid'][1:] != [1, 1]:
             raise NotImplementedError('only linear launches are supported')
-        signature = ir.FunctionType(VOID, [F32.as_pointer(1)] * len(specs))
+        signature = ir.FunctionType(VOID, [(F16 if specs[name]['dtype'] == 'f16' else F32).as_pointer(1) for name in launch['arg_order']])
         self.function: Any = ir.Function(module, signature, kernel.name)
         self.function.calling_convention = 'ptx_kernel'
         module.add_named_metadata('nvvm.annotations', [self.function, 'kernel', integer(1)])
@@ -71,18 +74,18 @@ class Lowering:
             arg.name = name
             arg.attributes.add('noalias')
             arg.attributes.align = 16
-            arg.attributes.dereferenceable = math.prod(specs[name]['shape']) * 4
+            arg.attributes.dereferenceable = math.prod(specs[name]['shape']) * (2 if specs[name]['dtype'] == 'f16' else 4)
             self.buffers[name] = arg
             self.shapes[name] = tuple(specs[name]['shape'])
         for stmt in walk(kernel.body):
             kind = type(stmt).__name__
             if kind in ('Load', 'Assign', 'Accum', 'Init', 'Let', 'Select'):
                 dtype = getattr(stmt, 'dtype', None)
-                if dtype is not None and dtype.name != 'f32':
+                if dtype is not None and dtype.name != 'f32' and not (kind == 'Load' and dtype.name == 'f16' and self.storage_types is not None):
                     raise NotImplementedError(f'{kind}: unsupported dtype {dtype.name}')
                 names = stmt.names if kind == 'Load' else (stmt.name,)
                 for name in names:
-                    self.allocate(name, F32)
+                    self.allocate(name, F16 if self.storage_types is not None and self.storage_types.get(name) == 'f16' else F32)
             if kind in ('WarpShuffle', 'TreeHalve'):
                 for name in (*stmt.state, *stmt.state_b):
                     self.allocate(name, F32)
@@ -250,6 +253,15 @@ class Lowering:
         if buffer in self.readonly:
             value.set_metadata('invariant.load', self.module.add_metadata([]))
         return value
+
+    def convert(self, value: Any, dtype: Any) -> Any:
+        if value.type == dtype:
+            return value
+        if value.type == F16 and dtype == F32:
+            return self.builder.fpext(value, F32)
+        if value.type == F32 and dtype == F16:
+            return self.builder.fptrunc(value, F16)
+        raise NotImplementedError(f'unsupported value conversion {value.type} to {dtype}')
 
     def arithmetic(self, op: Any, args: Any) -> Any:
         method = {'add': 'fadd', 'subtract': 'fsub', 'multiply': 'fmul', 'divide': 'fdiv'}.get(op)
@@ -595,12 +607,14 @@ class Lowering:
             elif kind == 'Load':
                 count = len(stmt.names)
                 pointer = self.address(stmt.input, stmt.index)
+                dtype = pointer.type.pointee
+                alignment = (2 if dtype == F16 else 4) if self.storage_types is not None else 4 * count
                 if count == 1:
-                    self.put(stmt.names[0], self.load(pointer, stmt.input, 4))
+                    self.put(stmt.names[0], self.load(pointer, stmt.input, alignment))
                 elif count in (2, 4):
-                    vector = ir.VectorType(F32, count)
+                    vector = ir.VectorType(dtype, count)
                     pointer = self.builder.bitcast(pointer, vector.as_pointer(pointer.type.addrspace))
-                    value = self.load(pointer, stmt.input, 4 * count)
+                    value = self.load(pointer, stmt.input, alignment)
                     for i, name in enumerate(stmt.names):
                         self.put(name, self.builder.extract_element(value, integer(i)))
                 else:
@@ -612,28 +626,30 @@ class Lowering:
                     continue
                 count = len(stmt.values)
                 pointer = self.address(stmt.output, stmt.index)
+                dtype = pointer.type.pointee
+                alignment = (2 if dtype == F16 else 4) if self.storage_types is not None else 4 * count
                 if stmt.atomic:
                     for i, name in enumerate(stmt.values):
                         pointer = self.address(stmt.output, stmt.index, i)
                         self.builder.atomic_rmw('fadd', pointer, self.get(name), 'monotonic')
                 elif count == 1:
-                    self.builder.store(self.get(stmt.values[0]), pointer, align=4)
+                    self.builder.store(self.convert(self.get(stmt.values[0]), dtype), pointer, align=alignment)
                 elif count in (2, 4):
-                    vector = ir.VectorType(F32, count)
+                    vector = ir.VectorType(dtype, count)
                     pointer = self.builder.bitcast(pointer, vector.as_pointer(pointer.type.addrspace))
                     value = ir.Constant(vector, ir.Undefined)
                     for i, name in enumerate(stmt.values):
-                        value = self.builder.insert_element(value, self.get(name), integer(i))
-                    self.builder.store(value, pointer, align=4 * count)
+                        value = self.builder.insert_element(value, self.convert(self.get(name), dtype), integer(i))
+                    self.builder.store(value, pointer, align=alignment)
                 else:
                     raise NotImplementedError(f'store width {count}')
             elif kind == 'Assign':
                 previous = body[position - 1] if position else None
                 source = reciprocal_sqrt_source(stmt, previous) if self.options.approximate_math else None
                 if source is not None:
-                    value = self.intrinsic('llvm.nvvm.rsqrt.approx.ftz.f', F32, [self.get(source)])
+                    value = self.intrinsic('llvm.nvvm.rsqrt.approx.ftz.f', F32, [self.convert(self.get(source), F32)])
                 else:
-                    value = self.arithmetic(stmt.op.name, [self.get(a) for a in stmt.args])
+                    value = self.arithmetic(stmt.op.name, [self.convert(self.get(a), F32) for a in stmt.args])
                 self.put(stmt.name, value)
             elif kind == 'Accum':
                 base = self.get(stmt.base if stmt.base is not None else stmt.name)
