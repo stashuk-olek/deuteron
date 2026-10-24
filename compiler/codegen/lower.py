@@ -12,6 +12,7 @@ from compiler.passes.tailtree import linearize_small_trees
 from compiler.passes.regforward import _no_writes_to
 from compiler.passes.recurrence import RecurrenceEmitter
 from compiler.storage import half_storage_types
+from compiler.validation import validate_kernel_launch
 from compiler.transforms import default_unroll, plain_reduction, reciprocal_sqrt_source, sharing_width, striped_reduction
 I1: Any = ir.IntType(1)
 I8: Any = ir.IntType(8)
@@ -27,6 +28,7 @@ def integer(value: Any) -> Any:
 class Lowering:
 
     def __init__(self, kernel: Any, launch: Any, module: Any, options: Options) -> None:
+        specs = validate_kernel_launch(kernel, launch)
         self.storage_types = half_storage_types(kernel, launch)
         self.hybrid_max: Any = None
         hybrid = hybrid_normalizer(kernel, launch) if options.approximate_math else None
@@ -53,17 +55,7 @@ class Lowering:
         self.slots: dict[str, Any] = {}
         self.buffers: dict[str, Any] = {}
         self.shapes: dict[str, Any] = {}
-        specs = {a['name']: a for a in launch['args']}
         self.readonly = {a['name'] for a in launch['args'] if not a.get('output')}
-        if len(specs) != len(launch['args']) or set(specs) != set(launch['arg_order']):
-            raise ValueError('meta.json args and arg_order disagree')
-        for a in specs.values():
-            if a['dtype'] not in ('f16', 'f32') or a.get('scalar'):
-                raise NotImplementedError('the backend accepts f16/f32 buffer arguments')
-        if kernel.serial:
-            raise NotImplementedError('serial launch axes are outside the open set')
-        if launch['block'][1:] != [1, 1] or launch['grid'][1:] != [1, 1]:
-            raise NotImplementedError('only linear launches are supported')
         signature = ir.FunctionType(VOID, [(F16 if specs[name]['dtype'] == 'f16' else F32).as_pointer(1) for name in launch['arg_order']])
         self.function: Any = ir.Function(module, signature, kernel.name)
         self.function.calling_convention = 'ptx_kernel'
