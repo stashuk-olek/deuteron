@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools==81.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deuteron-compiler"
+dynamic = ["version"]
+description = "Compile scheduled Emmy Kernel IR to NVIDIA PTX"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+dependencies = [
+    "emmy-ml==0.3.11",
+    "llvmlite==0.50.0",
+    "numpy==2.5.4",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+dev = ["pyrefly==1.4.0"]
+
+[project.scripts]
+deuteron = "compile:main"
+
+[tool.setuptools]
+py-modules = ["compile"]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["compiler", "compiler.*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "compiler._version.__version__"}
