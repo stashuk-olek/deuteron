@@ -7,6 +7,7 @@ from compiler.codegen.tensor import TensorEmitter
 from compiler.options import Options
 from compiler.passes import run_passes
 from compiler.passes.regstage import stage_register_loads
+from compiler.passes.hybrid_normalizer import hybrid_normalizer
 from compiler.passes.tailtree import linearize_small_trees
 from compiler.passes.regforward import _no_writes_to
 from compiler.passes.recurrence import RecurrenceEmitter
@@ -24,6 +25,10 @@ def integer(value: Any) -> Any:
 class Lowering:
 
     def __init__(self, kernel: Any, launch: Any, module: Any, options: Options) -> None:
+        self.hybrid_max: Any = None
+        hybrid = hybrid_normalizer(kernel, launch) if options.approximate_math else None
+        if hybrid is not None:
+            kernel, self.hybrid_max = hybrid
         self.packed_operands: tuple = ()
         staged = stage_register_loads(kernel, launch) if options.contraction_precision == 'bf16x3' else None
         if staged is not None:
@@ -495,9 +500,21 @@ class Lowering:
         else:
             self.intrinsic('llvm.nvvm.barrier0', VOID, [])
 
+    def ordered_maximum(self, value: Any) -> Any:
+        bits = self.builder.bitcast(value, I32)
+        mask = self.builder.lshr(self.builder.ashr(bits, integer(31)), integer(1))
+        ordered = self.builder.xor(bits, mask)
+        result = self.assembly('redux.sync.max.s32 $0, $1, $2;', '=r,r,r', I32, (ordered, integer(-1)))
+        result.attributes.add('convergent')
+        mask = self.builder.lshr(self.builder.ashr(result, integer(31)), integer(1))
+        return self.builder.bitcast(self.builder.xor(result, mask), F32)
+
     def shuffle(self, stmt: Any) -> None:
         if stmt.length < 1 or stmt.length > 32 or stmt.length & stmt.length - 1:
             raise ValueError('shuffle length must be a power of two up to 32')
+        if stmt is self.hybrid_max:
+            self.put(stmt.state[0], self.ordered_maximum(self.get(stmt.state[0])))
+            return
         mask = self.intrinsic('llvm.nvvm.activemask', I32, [])
         distance = stmt.length // 2
         while distance:
