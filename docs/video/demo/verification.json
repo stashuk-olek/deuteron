@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "compile_exit_zero": true,
+    "ptx_hash_matches": true,
+    "release_source_matches": true,
+    "sources_and_inputs_unchanged": true,
+    "native_sm120": true,
+    "fixed_512_thread_launch": true,
+    "snippets_are_exact_emitted_lines": true,
+    "transcript_is_only_command_and_two_instructions": true,
+    "no_assembly_gpu_correctness_or_timing": true,
+    "all_claim_evidence_hashes_match": true,
+    "all_claim_sources_and_json_pointers_resolve": true,
+    "existing_output_refused_before_compilation": true,
+    "existing_capture_preserved": true
+  },
+  "passed": true,
+  "existing_output_refusal": {
+    "exit_code": 2,
+    "stderr": "usage: run.py [-h] --output OUTPUT\nrun.py: error: choose a fresh output directory: /home/sashko/emmy/deuteron/docs/video/demo/capture\n"
+  },
+  "run_script_sha256": "16a2646088eac1fa3a91368479bb544a58c4b2d5f00feab1fcbc0f79bdec74ab",
+  "claims_sha256": "ffbb9e1ea51de7b637a75ad498b5f194da751b2061aa904618ca996a562fdfc7",
+  "capture_ptx_sha256": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1",
+  "gpu_execution_performed": false,
+  "ptx_reqntid_dimensions": [
+    512,
+    1,
+    1
+  ],
+  "initial_check_resolution": "The initial checker required explicit .reqntid x,y,z. The real PTX uses legal .reqntid 512, whose omitted y/z dimensions default to 1. The checker now normalizes those defaults; emitted PTX and demo capture are unchanged.",
+  "initial_check_evidence": "verification-initial.json"
+}

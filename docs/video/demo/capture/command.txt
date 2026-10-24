@@ -1,0 +1,1 @@
+env -u PYTHONPATH -u DEUTERON_CACHE -u DEUTERON_TEST_DEVICE -u PTXAS PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= /home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python compile.py examples/tensor_matmul/matmul_tiled_128.ir.json --arch sm_120 --opt-level 3 --contraction-precision tf32x3 > docs/video/demo/capture/kernel.ptx

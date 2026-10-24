@@ -1,0 +1,56 @@
+{
+  "title": "Deuteron: a three-minute compiler presentation",
+  "language": "en",
+  "target_seconds": 180,
+  "segments": [
+    {
+      "slide": 1,
+      "start_seconds": 0,
+      "end_seconds": 20,
+      "title": "Scheduled IR to RTX 5090",
+      "spoken": "A fast GPU still needs a good schedule. We built Deuteron to compile scheduled Emmy Kernel IR into PTX for the RTX 5090. We reduce repeated work and memory traffic while preserving each workload's original launch, inputs, and numerical tolerances.",
+      "visual_cue": "Show Deuteron, Scheduled Emmy Kernel IR → PTX, and RTX 5090. Reveal a short line: same launch, inputs, and tolerances. Keep the opening uncluttered."
+    },
+    {
+      "slide": 2,
+      "start_seconds": 20,
+      "end_seconds": 50,
+      "title": "Structure, guards, and LLVM",
+      "spoken": "First, we validate the kernel and launch metadata. Custom passes then recognize reusable loads, cooperative reductions, and matrix pipelines. Each rewrite checks shapes, ownership, and dependencies; if its proof fails, supported code keeps the generic path. We lower the result into typed LLVM IR. LLVM supplies optimization and the NVPTX backend; our contribution is the GPU analysis, guarded transformations, and lowering.",
+      "visual_cue": "Reveal the pipeline left to right: IR + launch metadata → validation and custom GPU passes → typed LLVM IR → LLVM optimization and NVPTX → PTX. Highlight reuse, reductions, and matrix staging. Keep the LLVM/NVPTX credit visible."
+    },
+    {
+      "slide": 3,
+      "start_seconds": 50,
+      "end_seconds": 85,
+      "title": "Tensor cores, copies, and types",
+      "spoken": "For matrix multiplication, we use compensated BF16x3 or TF32x3 tensor products. Buffers and accumulation stay FP32; lower precision is internal, and these modes remain approximations. Ordinary FP32 multiplication is available too. Asynchronous global-to-shared copies, with explicit waits and barriers, let computation overlap data movement. A separate FP16 storage path provides exact widening and nearest-even narrowing, with explicit FP32 arithmetic. The focus is reducing memory traffic and feeding the hardware effectively.",
+      "visual_cue": "Use three columns: BF16x3 / TF32x3 tensor products, cp.async + waits/barriers, and FP16 storage → FP32 arithmetic. Label tensor buffers and accumulation FP32, internal approximate operands, and the ordinary FP32 option. Optional small copy label: 4 / 8 / 16 bytes."
+    },
+    {
+      "slide": 4,
+      "start_seconds": 85,
+      "end_seconds": 110,
+      "title": "Compile it, inspect it",
+      "spoken": "Let's compile the standalone matrix example in TF32x3 mode for the 5090. Compilation runs on the CPU, using only the scheduled IR and its adjacent launch metadata. The generated PTX contains mma.sync tensor instructions and cp.async copies. These are actual compiler outputs. This command only compiles; GPU correctness is tested separately.",
+      "visual_cue": "Show the real terminal capture from docs/video/demo/capture/transcript.txt. Recording command: python docs/video/demo/run.py --output /tmp/deuteron-video-demo. Highlight the emitted mma.sync.aligned.m16n8k8.row.col.f32.tf32.tf32.f32 and cp.async.cg.shared.global instructions. Keep a Compile-only · SM120/O3 · TF32x3 label visible; do not imply live GPU execution or numerical checking."
+    },
+    {
+      "slide": 5,
+      "start_seconds": 110,
+      "end_seconds": 150,
+      "title": "Measured on the open set",
+      "spoken": "Across fifteen open workloads, Deuteron's geometric mean warm latency is three point seven five microseconds. That's a one point six six times speedup over generated CUDA compiled with NVCC, and one point one five times over the tested Triton baseline. We used two hundred seventy calls with balanced execution order, checking every output against the original references and tolerances. Raw samples and artifacts are included. Compilation, assembly, and network time are excluded. These are warm kernel timings on this set, with a limited Triton search.",
+      "visual_cue": "Show warm geometric-mean latency bars: Deuteron 3.752 µs, NVCC 6.216 µs, tested Triton 4.332 µs. Headline Deuteron speedups: 1.66× / 1.15×. Footer: 15 open workloads · 270 balanced warm calls · all original output checks pass. Small method detail: 20 warmups / 200 iterations per call. Link the round-6 raw results; do not mix in the separate cold profile."
+    },
+    {
+      "slide": 6,
+      "start_seconds": 150,
+      "end_seconds": 175,
+      "title": "Reliability and an explicit scope",
+      "spoken": "We also ship an installable command, restricted parsing, validated interfaces, and corruption-tolerant caches. All one hundred and three tests passed with GPU checks enabled on H100; eleven feature examples passed on the 5090. Scope stays explicit: supported scheduled IR and documented numerical modes. Deuteron makes GPU compiler decisions visible, reproducible, and measurable.",
+      "visual_cue": "Show restricted parsing, validated interfaces, bounded memory cache, and atomic checked disk records. Separate validation labels: 103 tests with GPU checks enabled on H100; 11 native RTX 5090 examples. Close with Supported scheduled IR · Reproducible evidence and a readable repository label. Keep this slide unchanged for the five-second silent end hold."
+    }
+  ],
+  "end_hold_seconds": 5
+}

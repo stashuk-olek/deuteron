@@ -1,0 +1,3 @@
+$ env -u PYTHONPATH -u DEUTERON_CACHE -u DEUTERON_TEST_DEVICE -u PTXAS PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= /home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python compile.py examples/tensor_matmul/matmul_tiled_128.ir.json --arch sm_120 --opt-level 3 --contraction-precision tf32x3 > docs/video/demo/capture/kernel.ptx
+mma.sync.aligned.m16n8k8.row.col.f32.tf32.tf32.f32 {%r27,%r28,%r29,%r30}, {%r21,%r22,%r23,%r24}, {%r25,%r26}, {%r27,%r28,%r29,%r30};
+cp.async.cg.shared.global [%r1], [%rd1], 16;

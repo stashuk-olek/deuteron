@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "source_paths_relative_to": "repository root",
+  "release": {
+    "commit": "efb728d9106d864bb5f35efc95bfb5f01d95646a",
+    "compiler_tree_sha256": "0a5393d8c93085f36b60efc6e613781c8e63c85e980dc3a1d2baaaa2f7f77942",
+    "compiler_files_match_release": true,
+    "source": {
+      "path": "docs/video/demo/capture/provenance.json"
+    }
+  },
+  "facts": [
+    {
+      "id": "compiler_architecture",
+      "claim": "Scheduled Emmy Kernel IR to PTX through guarded GPU transformations, typed LLVM IR, and LLVM NVPTX.",
+      "sources": [
+        {
+          "path": "README.md",
+          "anchor": "how-compilation-works"
+        },
+        {
+          "path": "compiler/build.py"
+        },
+        {
+          "path": "compiler/codegen/lower.py"
+        }
+      ],
+      "qualification": "LLVM supplies optimization and code generation; Deuteron is a scheduled-IR backend, not a general graph compiler."
+    },
+    {
+      "id": "pass_inventory",
+      "claim": "27 documented pass, analysis, policy, and lowering entries.",
+      "count": 27,
+      "sources": [
+        {
+          "path": "README.md",
+          "anchor": "compiler-passes"
+        }
+      ],
+      "qualification": "Counts the 27 source-linked rows in the Compiler passes inventory, including lowering mechanisms and analyses. LLVM internal passes are separate; this is not a claim of 27 independent pass modules.",
+      "entry_names": [
+        "Symbolic index and effect analysis",
+        "Storage typing",
+        "Elementwise vectorization",
+        "Reduction load forwarding",
+        "Recurrence-axis reordering",
+        "Split-K grid folding",
+        "Cooperative dot reduction",
+        "Coalesced sum/square reduction",
+        "Small-tree elimination",
+        "Warp tree specialization",
+        "Contraction tensorization",
+        "Tensor shared-memory layout",
+        "Packed register staging",
+        "Tensor fragment pipelining",
+        "Pipeline drain",
+        "Staged online recurrence",
+        "Blocked recurrence loads and address hoisting",
+        "Warp-distributed vector PV reduction",
+        "Recurrence shared-storage reuse",
+        "Hybrid row normalizer",
+        "Ordered hardware warp maximum",
+        "CTA/thread address factoring",
+        "Loop cost policy",
+        "Reciprocal-square-root folding",
+        "Dead atomic-result elimination",
+        "Fixed block contract",
+        "Approximate division cleanup"
+      ]
+    },
+    {
+      "id": "open_workloads",
+      "claim": "15 open workloads spanning pointwise operations, reductions, matrix multiplication, normalization, and attention.",
+      "count": 15,
+      "sources": [
+        {
+          "path": "benchmarks/rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/summary"
+        }
+      ],
+      "qualification": "Coverage and performance claims are limited to this open set."
+    },
+    {
+      "id": "warm_comparison",
+      "claim": "270 balanced-order RTX 5090 warm measurement calls; every call passes its original output checks.",
+      "calls": 270,
+      "calls_per_compiler": 90,
+      "calls_per_workload_compiler": 6,
+      "warmup": 20,
+      "iterations": 200,
+      "sources": [
+        {
+          "path": "benchmarks/rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/calls"
+        },
+        {
+          "path": "benchmarks/rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/protocol"
+        }
+      ],
+      "qualification": "Total includes Deuteron, generated CUDA/NVCC, and the tested Triton baseline. All six compiler order permutations per workload are retained."
+    },
+    {
+      "id": "warm_geometric_means",
+      "claim": "Equal-weight geometric mean of warm kernel latency: 3.752 us Deuteron, 6.216 us generated CUDA/NVCC, 4.332 us tested Triton.",
+      "unit": "microseconds",
+      "values": {
+        "Deuteron": 3.7524296525759135,
+        "NVCC12.8.93": 6.216321014781056,
+        "Triton3.6.0": 4.332038064959309
+      },
+      "display_values": {
+        "Deuteron": 3.752,
+        "NVCC12.8.93": 6.216,
+        "Triton3.6.0": 4.332
+      },
+      "sources": [
+        {
+          "path": "benchmarks/rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/geometric_mean_latency_us"
+        },
+        {
+          "path": "benchmarks/rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/summary"
+        }
+      ],
+      "qualification": "Computed from each workload/compiler median across six recorded calls. Excludes compilation, assembly, transport, and application overhead."
+    },
+    {
+      "id": "warm_speedups",
+      "claim": "1.66x versus generated CUDA/NVCC and 1.15x versus this Triton baseline on the 15 open workloads.",
+      "ratios": {
+        "NVCC12.8.93": 1.6566122726681274,
+        "Triton3.6.0": 1.1544621661289545
+      },
+      "display_ratios": {
+        "NVCC12.8.93": 1.6566,
+        "Triton3.6.0": 1.15446
+      },
+      "calculation": "baseline geometric mean latency divided by Deuteron geometric mean latency",
+      "sources": [
+        {
+          "path": "benchmarks/rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/geometric_mean_latency_us"
+        }
+      ],
+      "qualification": "These are workload-set warm latency ratios, not a comparison with cuBLAS or every tuned Triton implementation, and not a claim of end-to-end speedup."
+    },
+    {
+      "id": "public_tests",
+      "claim": "103 of 103 public tests pass on Python 3.13 with H100 CUDA tests and assembly enabled; no skips.",
+      "discovered": 103,
+      "passed": 103,
+      "skipped": 0,
+      "local_gpu": "NVIDIA H100",
+      "sources": [
+        {
+          "path": "benchmarks/validation-2026-10-24-r6.json",
+          "json_pointer": "/public_tests/python313_gpu"
+        },
+        {
+          "path": "benchmarks/validation-2026-10-24-r6.json",
+          "json_pointer": "/environment/local_gpu"
+        }
+      ],
+      "qualification": "The suite includes CPU interface, cache, parser, and runtime tests; this is not 103 distinct GPU workloads."
+    },
+    {
+      "id": "rtx_feature_examples",
+      "claim": "All 11 native SM120 feature examples pass on RTX 5090.",
+      "count": 11,
+      "examples": [
+        "copy",
+        "widen",
+        "narrow",
+        "affine",
+        "cancellation",
+        "vector_add",
+        "tensor_bf16x3",
+        "tensor_tf32x3",
+        "tensor_f32",
+        "attention",
+        "attention_alias"
+      ],
+      "sources": [
+        {
+          "path": "benchmarks/features-rtx5090-2026-10-24-r6.json",
+          "json_pointer": "/results"
+        }
+      ],
+      "qualification": "These are correctness examples, separate from the 15-workload performance comparison."
+    },
+    {
+      "id": "tensor_cores",
+      "claim": "BF16x3 and TF32x3 tensor products with FP32 buffers and accumulation; packed BF16 fragments can use ldmatrix.",
+      "sources": [
+        {
+          "path": "compiler/codegen/tensor.py"
+        },
+        {
+          "path": "examples/tensor_matmul/README.md"
+        },
+        {
+          "path": "README.md",
+          "anchor": "types-precision-and-supported-scope"
+        }
+      ],
+      "qualification": "BF16/TF32 are internal operand formats. Three high/residual products omit the low-by-low term and approximate FP32 multiplication under the tested tolerances."
+    },
+    {
+      "id": "async_copies",
+      "claim": "Global-to-shared cp.async copies of 4, 8, or 16 bytes, with commit/wait groups and barriers.",
+      "sources": [
+        {
+          "path": "compiler/codegen/lower.py"
+        },
+        {
+          "path": "examples/tensor_matmul/README.md"
+        },
+        {
+          "path": "docs/video/demo/capture/kernel.ptx"
+        }
+      ],
+      "qualification": "The TF32x3 demo retains the asynchronous copy ring. TMA, WGMMA, and TMEM are not implemented."
+    },
+    {
+      "id": "fp16_storage",
+      "claim": "FP16 scalar/vector global storage with exact widening, nearest-even narrowing, and explicitly typed FP32 arithmetic.",
+      "sources": [
+        {
+          "path": "compiler/storage.py"
+        },
+        {
+          "path": "compiler/codegen/lower.py"
+        },
+        {
+          "path": "examples/f16_storage.py"
+        }
+      ],
+      "qualification": "The supported pointwise subset has no native half arithmetic, half shared/tensor path, or public BF16 buffer transport. Converted NaN payloads are unspecified."
+    },
+    {
+      "id": "guarded_contract",
+      "claim": "Structural transforms preserve original launch geometry, buffers, inputs, and tolerance contracts when their guards accept.",
+      "sources": [
+        {
+          "path": "README.md",
+          "anchor": "compiler-passes"
+        },
+        {
+          "path": "docs/production.md",
+          "anchor": "input-and-kernel-abi"
+        }
+      ],
+      "qualification": "Unsupported features fail explicitly; validation does not prove arbitrary IR bounds, synchronization, termination, or universal IEEE behavior."
+    }
+  ],
+  "demo": {
+    "portable_command": "python docs/video/demo/run.py --output /tmp/deuteron-video-demo",
+    "fresh_output_directory_required": true,
+    "capture": {
+      "path": "docs/video/demo/capture/provenance.json"
+    },
+    "transcript": "docs/video/demo/capture/transcript.txt",
+    "ptx": "docs/video/demo/capture/kernel.ptx",
+    "settings": {
+      "arch": "sm_120",
+      "opt_level": 3,
+      "contraction_precision": "tf32x3",
+      "matrices": [
+        128,
+        128
+      ]
+    },
+    "exit_code": 0,
+    "ptx_sha256": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1",
+    "instructions": {
+      "mma": {
+        "line": 247,
+        "text": "mma.sync.aligned.m16n8k8.row.col.f32.tf32.tf32.f32 {%r27,%r28,%r29,%r30}, {%r21,%r22,%r23,%r24}, {%r25,%r26}, {%r27,%r28,%r29,%r30};"
+      },
+      "cp_async": {
+        "line": 49,
+        "text": "cp.async.cg.shared.global [%r1], [%rd1], 16;"
+      }
+    },
+    "scope": "CPU-only compile and inspection of actual emitted instructions; no assembly, GPU run, timing measurement, or new numerical-correctness claim.",
+    "matches_prior_validated_feature": {
+      "name": "tensor_tf32x3",
+      "source": {
+        "path": "benchmarks/features-rtx5090-2026-10-24-r6.json",
+        "json_pointer": "/variants/7"
+      },
+      "ptx_sha256": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1"
+    }
+  },
+  "presentation_caveats": [
+    "Say 27 documented pass/lowering entries, not 27 independent compiler passes.",
+    "Say 103 public tests with H100/assembly enabled, not 103 GPU workloads.",
+    "Label performance as RTX 5090 warm kernel latency over the 15 open workloads.",
+    "Name the LLVM NVPTX backend and the tested NVCC/Triton baselines explicitly.",
+    "The demo proves compilation and instruction emission; its performance and GPU correctness are not measured during this capture.",
+    "LLVM supplies optimization/code generation; eligibility under the hackathon's prohibition on existing compilers remains unconfirmed (SUBMISSION.md)."
+  ],
+  "evidence_sha256": {
+    "README.md": "bf3da0fbc4ed74217bb0948aafda3c7ae74c5d7ebd66d70b163c4aa913ee8dec",
+    "SUBMISSION.md": "187849be17fab222f2d8af38782da42bf12b98e5f2a1f07fdd338cf9077789a5",
+    "benchmarks/features-rtx5090-2026-10-24-r6.json": "8b3d37195c5b102ee4c3ee0d5cb5b2291dd4221536ffa6bd5ac67c197703736e",
+    "benchmarks/rtx5090-2026-10-24-r6.json": "8f4d78d39e141047ec51af47764a586eefef90b6a807db5836de5a7e58bd19bb",
+    "benchmarks/validation-2026-10-24-r6.json": "af7b64a06332b896986456d377c53f8cb24f26732312db57ca5673df0a3f5a4d",
+    "compiler/build.py": "41d2519619e99dae19e645968eaab5b7834d3c6e4c31f8bbd50bb11f880b8cf2",
+    "compiler/codegen/lower.py": "a03462382e875891d07724da295e2713093d79586d0e96c0fdb84a0f99d5e9c4",
+    "compiler/codegen/tensor.py": "159248f3f201e722dcff0c8d7c0fd0f3ae9169c931e7fd7a743e56a0e5215247",
+    "compiler/storage.py": "b70c5e58f8ff37f30537b1a7e1374d802989af6f095ee23e03353a503254cc42",
+    "docs/production.md": "11da5666d2efc4fde979bb3a9173ef7c7a1f616ec03b1ffbf94494c66f2367d6",
+    "docs/video/demo/capture/kernel.ptx": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1",
+    "docs/video/demo/capture/provenance.json": "678a5e8f2939206eb9305fffe48a4bd287559f41346189abb88b1f1dce1c7fff",
+    "examples/f16_storage.py": "104b41f3c26939e0ede4f8067c3c46be99cbad65800d9f598107e198c9a02bf9",
+    "examples/tensor_matmul/README.md": "8c9678bece21afe7ce02e7e7b9a04dc86323c4f21dcfa90b95cd5a7c8a70a2dd"
+  }
+}

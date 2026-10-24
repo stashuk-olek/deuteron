@@ -1,0 +1,146 @@
+{
+  "status": "pass",
+  "spoken_words": 359,
+  "scenes": 6,
+  "target_seconds": 180,
+  "narration_ends_seconds": 175,
+  "script_pdf_pages": 2,
+  "slide_pdf_pages": 6,
+  "frame_dimensions": [
+    1920,
+    1080
+  ],
+  "source_hashes_match": true,
+  "asset_hashes_match": true,
+  "narration_consistent_across_markdown_json_docx_pdf_notes": true,
+  "pptx_text_and_shape_bounds_checked": true,
+  "pdf_and_docx_and_pptx_containers_valid": true,
+  "benchmark_numbers_match_release": true,
+  "local_links_checked": [
+    {
+      "file": "recording-and-editing.md",
+      "target": "edit-plan.json"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "script.json"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "demo/capture/transcript.txt"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../../benchmarks/rtx5090-2026-10-24-r6.json"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../../benchmarks/validation-2026-10-24-r6.json"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../../benchmarks/features-rtx5090-2026-10-24-r6.json"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../production.md"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../../README.md"
+    },
+    {
+      "file": "README.md",
+      "target": "recording-script.pdf"
+    },
+    {
+      "file": "README.md",
+      "target": "recording-script.docx"
+    },
+    {
+      "file": "README.md",
+      "target": "presentation-script.md"
+    },
+    {
+      "file": "README.md",
+      "target": "recording-and-editing.md"
+    },
+    {
+      "file": "README.md",
+      "target": "slides-overview.png"
+    },
+    {
+      "file": "README.md",
+      "target": "recording-script.pdf"
+    },
+    {
+      "file": "README.md",
+      "target": "recording-script.docx"
+    },
+    {
+      "file": "README.md",
+      "target": "presentation-script.md"
+    },
+    {
+      "file": "README.md",
+      "target": "narration.txt"
+    },
+    {
+      "file": "README.md",
+      "target": "slides.pdf"
+    },
+    {
+      "file": "README.md",
+      "target": "slides.pptx"
+    },
+    {
+      "file": "README.md",
+      "target": "slides/"
+    },
+    {
+      "file": "README.md",
+      "target": "demo/README.md"
+    },
+    {
+      "file": "README.md",
+      "target": "recording-and-editing.md"
+    },
+    {
+      "file": "README.md",
+      "target": "edit-plan.json"
+    },
+    {
+      "file": "README.md",
+      "target": "claims.json"
+    },
+    {
+      "file": "README.md",
+      "target": "assets-manifest.json"
+    },
+    {
+      "file": "demo/README.md",
+      "target": "capture/transcript.txt"
+    },
+    {
+      "file": "demo/README.md",
+      "target": "capture/provenance.json"
+    },
+    {
+      "file": "demo/README.md",
+      "target": "capture/kernel.ptx"
+    },
+    {
+      "file": "demo/README.md",
+      "target": "../../../benchmarks/features-rtx5090-2026-10-24-r6.json"
+    },
+    {
+      "file": "demo/README.md",
+      "target": "../claims.json"
+    }
+  ],
+  "visual_review": "Rendered overview plus full hardware/result slides and recording-script page reviewed; no clipped or overlapping content observed. PowerPoint file structure and bounds checked without native application rendering.",
+  "handoff9_unchanged": true,
+  "compiler_changes": false,
+  "new_gpu_runs": 0,
+  "final_video_status": "awaiting_user_recording"
+}

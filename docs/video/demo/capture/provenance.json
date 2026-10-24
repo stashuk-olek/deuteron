@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "purpose": "CPU-only compilation and inspection of actual emitted PTX",
+  "started_utc": "2026-10-24T21:58:01.015553+00:00",
+  "completed_utc": "2026-10-24T21:58:01.384406+00:00",
+  "checkout_commit": "efb728d9106d864bb5f35efc95bfb5f01d95646a",
+  "working_directory": "/home/sashko/emmy/deuteron",
+  "command_argv": [
+    "/home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python",
+    "compile.py",
+    "examples/tensor_matmul/matmul_tiled_128.ir.json",
+    "--arch",
+    "sm_120",
+    "--opt-level",
+    "3",
+    "--contraction-precision",
+    "tf32x3"
+  ],
+  "shell_command": "env -u PYTHONPATH -u DEUTERON_CACHE -u DEUTERON_TEST_DEVICE -u PTXAS PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= /home/sashko/emmy/emmy-hackathon-2026/.venv/bin/python compile.py examples/tensor_matmul/matmul_tiled_128.ir.json --arch sm_120 --opt-level 3 --contraction-precision tf32x3 > docs/video/demo/capture/kernel.ptx",
+  "environment_unset": [
+    "PYTHONPATH",
+    "DEUTERON_CACHE",
+    "DEUTERON_TEST_DEVICE",
+    "PTXAS"
+  ],
+  "environment_set": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "CUDA_VISIBLE_DEVICES": ""
+  },
+  "python": "3.13.13 (main, Apr 14 2026, 14:28:56) [Clang 22.1.3 ]",
+  "dependencies": {
+    "emmy-ml": "0.3.11",
+    "llvmlite": "0.50.0",
+    "numpy": "2.5.4"
+  },
+  "compiler_files": {
+    "compile.py": "78cb3a86dea931ad278f6f7b01851d75560d711b53b00b904c7e582d63285e15",
+    "compiler/__init__.py": "6fa72350ec8ec12bdaf1be03469e2ab5d66ddd77a562dc8ba1c9de181bc66c78",
+    "compiler/_version.py": "20c8e430ededc2143396e553a3c67aac4ec483ef54efdfcb18a31cb162ca0646",
+    "compiler/analysis.py": "3d422a8654595239b38f82bed1e90ff472eeb7ab488cfccfbd65e3ed3f59d265",
+    "compiler/build.py": "41d2519619e99dae19e645968eaab5b7834d3c6e4c31f8bbd50bb11f880b8cf2",
+    "compiler/cache.py": "fcb2d15566d8b1ed82f69f3721b90f21c524170d3df59427f181a197ebe627f7",
+    "compiler/cli.py": "5efc0a9b1f6f8ce4e88ec8d5e6aad502ca2a232cdf96601eb6ef458804305b50",
+    "compiler/codegen/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compiler/codegen/lower.py": "a03462382e875891d07724da295e2713093d79586d0e96c0fdb84a0f99d5e9c4",
+    "compiler/codegen/tensor.py": "159248f3f201e722dcff0c8d7c0fd0f3ae9169c931e7fd7a743e56a0e5215247",
+    "compiler/options.py": "079a274e29dcd4ce2bb84abfc38f097ec198e661358659a32def6c2bd91129ac",
+    "compiler/passes/__init__.py": "4b6bfdba43ce39c14e83c5ae98cdc75b71c2fa94901b922ab09f8e09abac77d8",
+    "compiler/passes/contraction.py": "0634af7933ecf2b14c67b7c6467cadeefb5407cc0c25d004b3512c3018e9b8f4",
+    "compiler/passes/gridfold.py": "b99d3c42e4137f7050d086a4c63b0acbe7977e4ba475814ab53bd663f01e2e16",
+    "compiler/passes/hybrid_normalizer.py": "79704821227efd407210c4aa66219cd6b111bd5c9ed9a2b8c8ac9873b9d35867",
+    "compiler/passes/lifetime.py": "e67e11e3cc25d92ae4ef2ef5c7637c424896a4d31748c0feeb773c93b9c4c2d0",
+    "compiler/passes/recurrence.py": "d648cd5bc580a818b6c63d2746604a4f9f1f0c0237a10f2edbfad883ccc84e5d",
+    "compiler/passes/regforward.py": "2e872f914334c2be776f38bf48afe657607cb4421c62fdc6de60b31d12e1f2fc",
+    "compiler/passes/regstage.py": "36f6217af5bd48b380567d1bb838691a05b227901d95a61e68ff70338f2883e5",
+    "compiler/passes/tailtree.py": "7a53257bfd171249c7c699d4d81fe6bfa7472af27c141f82d64ac41c822f08da",
+    "compiler/passes/vectorize.py": "07cbee6b3c736e792ea101f32980492256e263d9a51753a111cd81e163f3ee63",
+    "compiler/ptx.py": "d99b3e8e7244544746888027a35f5ea8aa74439448e3d9b06932028d8aa47d8a",
+    "compiler/storage.py": "b70c5e58f8ff37f30537b1a7e1374d802989af6f095ee23e03353a503254cc42",
+    "compiler/transforms.py": "890bd0de81870f7b120b008ab62f03b0f90cc744720f5dd1f5f1d060e1e1cb30",
+    "compiler/validation.py": "1b641adcda4009479470eadec0425bf9e9ef04df45a37f371a3028469c582a62"
+  },
+  "compiler_tree_sha256": "0a5393d8c93085f36b60efc6e613781c8e63c85e980dc3a1d2baaaa2f7f77942",
+  "compiler_sources_unchanged": true,
+  "compiler_matches_checkout_commit": true,
+  "input_files": {
+    "examples/tensor_matmul/matmul_tiled_128.ir.json": "e2c4a09d80bb0e30be74045c9410b4ec8e7e3ad9f8e4cfca6cbae4bba9457482",
+    "examples/tensor_matmul/meta.json": "d54cef57290ff6b7363faa11b38afeef40542fcbecf96084ed3cd7aa1ee0055e"
+  },
+  "inputs_unchanged": true,
+  "exit_code": 0,
+  "ptx": "kernel.ptx",
+  "ptx_sha256": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1",
+  "ptx_bytes": 38418,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "assembly_performed": false,
+  "gpu_execution_performed": false,
+  "gpu_correctness_checked": false,
+  "benchmark_performed": false,
+  "instructions": {
+    "mma": {
+      "line": 247,
+      "text": "mma.sync.aligned.m16n8k8.row.col.f32.tf32.tf32.f32 {%r27,%r28,%r29,%r30}, {%r21,%r22,%r23,%r24}, {%r25,%r26}, {%r27,%r28,%r29,%r30};"
+    },
+    "cp_async": {
+      "line": 49,
+      "text": "cp.async.cg.shared.global [%r1], [%rd1], 16;"
+    }
+  }
+}

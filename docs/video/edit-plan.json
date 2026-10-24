@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "project": "Deuteron three-minute presentation",
+  "status": "awaiting_user_recording",
+  "recording": {
+    "required_assets": [
+      "Original continuous talking-head video with clear voice audio"
+    ],
+    "optional_assets": [
+      "Separate microphone recording, with a visible clap for synchronization if convenient",
+      "Relevant screen capture at original resolution",
+      "Preferred-take note or approximate mistake timestamps"
+    ],
+    "preferred_format": {
+      "width": 1920,
+      "height": 1080,
+      "aspect_ratio": "16:9",
+      "fps": 30
+    },
+    "camera": "Eye-level, head-and-shoulders framing, clean background, front-facing light",
+    "voice": "Clear dry speech; no baked-in music; no clipping",
+    "handles_seconds": {
+      "minimum": 2,
+      "maximum": 3
+    },
+    "mistakes": "Pause 2\u20133 seconds, restart the full sentence, and continue recording",
+    "source_asset": null,
+    "preserve_original": true,
+    "work_on_copy": true
+  },
+  "timeline": {
+    "target_duration_seconds": 180,
+    "fps": 30,
+    "timing_basis": "Provisional edited-program positions; align source cuts to actual narration",
+    "source_in_out_points": "Unset until the recording is reviewed",
+    "scenes": [
+      {
+        "id": "scene-01",
+        "start_seconds": 0,
+        "end_seconds": 20,
+        "slide_id": "slide-01",
+        "cues": [
+          "Open on the presenter for the introductory sentence",
+          "Insert slide-01 full screen at the first suitable phrase boundary"
+        ]
+      },
+      {
+        "id": "scene-02",
+        "start_seconds": 20,
+        "end_seconds": 50,
+        "slide_id": "slide-02",
+        "cues": [
+          "Show slide-02 full screen",
+          "Reveal or highlight details only when the narration introduces them"
+        ]
+      },
+      {
+        "id": "scene-03",
+        "start_seconds": 50,
+        "end_seconds": 85,
+        "slide_id": "slide-03",
+        "cues": [
+          "Show slide-03 full screen",
+          "If available and relevant, insert a readable demo within this interval"
+        ]
+      },
+      {
+        "id": "scene-04",
+        "start_seconds": 85,
+        "end_seconds": 110,
+        "slide_id": "slide-04",
+        "cues": [
+          "Show slide-04 full screen",
+          "Use an optional demo only where it directly follows the narration"
+        ]
+      },
+      {
+        "id": "scene-05",
+        "start_seconds": 110,
+        "end_seconds": 150,
+        "slide_id": "slide-05",
+        "cues": [
+          "Show slide-05 full screen",
+          "Keep detailed text and numbers readable; avoid motion while they are discussed"
+        ]
+      },
+      {
+        "id": "scene-06",
+        "start_seconds": 150,
+        "end_seconds": 175,
+        "slide_id": "slide-06",
+        "cues": [
+          "Show slide-06 full screen",
+          "Return to the presenter for the closing sentence",
+          "Finish all words and the music fade before the silent end hold"
+        ]
+      }
+    ],
+    "end_hold": {
+      "start_seconds": 175,
+      "end_seconds": 180,
+      "slide_id": "slide-06",
+      "picture": "Static full-screen closing slide",
+      "speech": false,
+      "music": false,
+      "other_audio": false,
+      "captions": false
+    },
+    "duration_policy": {
+      "adjust_to_actual_voice": true,
+      "trim_wordless_pauses_first": true,
+      "allow_word_truncation": false,
+      "allow_voice_time_compression": false,
+      "overrun_action": "Use a shorter spoken pickup or revise the cut; never force the target by cutting words"
+    }
+  },
+  "picture_plan": {
+    "default_transition": "Clean cut at a spoken phrase boundary",
+    "optional_crossfade": {
+      "minimum_frames": 6,
+      "maximum_frames": 8,
+      "fps": 30,
+      "duration_accounting": "Overlap inside the planned timeline; do not add runtime"
+    },
+    "motion": "Restrained reveals and highlights; no continuous zooming or decorative effects",
+    "presenter": {
+      "intro": true,
+      "outro": true,
+      "small_overlay_optional": true,
+      "overlay_rule": "Use only empty slide space; omit the inset if it covers content or captions"
+    },
+    "demo_policy": "Optional inserts replace part of a slide interval; all six slides still appear full screen",
+    "slide_asset_pattern": "slides/slide-{number:02d}.png",
+    "slide_native_dimensions": {
+      "width": 1920,
+      "height": 1080
+    },
+    "captioned_slide_layout": {
+      "slide_width": 1728,
+      "slide_height": 972,
+      "x": 96,
+      "y": 0,
+      "caption_band_y": 972,
+      "caption_band_height": 108,
+      "background": "#0C1422",
+      "rule": "Scale the full slide uniformly into this presentation area; reserve the bottom band for captions and preserve every slide footnote. Check two-line captions fit the band."
+    },
+    "clean_slide_layout": "Use the native full-screen 1920\u00d71080 slide; presenter inset only in unobstructed space."
+  },
+  "audio_plan": {
+    "voice_priority": true,
+    "processing": "Correct sync, edit mistakes, and apply light cleanup only as needed for intelligibility",
+    "music": {
+      "status": "not_selected",
+      "asset": null,
+      "style": "Low instrumental ambient or electronic",
+      "vocals": false,
+      "rights_policy": "Original or properly licensed for the intended distribution",
+      "provenance_required": [
+        "Track title",
+        "Creator",
+        "Source URL or original creation record",
+        "License or rights evidence",
+        "Attribution text if required"
+      ],
+      "initial_level_below_voice_db": {
+        "minimum": 18,
+        "maximum": 24
+      },
+      "duck_under_speech": true,
+      "ducking_amount": "Adjust to the actual voice and music so every word remains clear",
+      "fade_timing": "Set after the narration edit; finish the fade by 175 seconds",
+      "generate_or_fetch_now": false
+    },
+    "initial_mix_targets": {
+      "integrated_lufs": -16,
+      "true_peak_ceiling_dbtp": -1,
+      "status": "Starting targets, not measured results or guaranteed final settings",
+      "verification": "Listen for intelligibility and measure the final encoded export; adjust as needed"
+    },
+    "silent_end_hold_seconds": 5
+  },
+  "captions_policy": {
+    "status": "not_generated",
+    "transcript_source": "Actual recorded speech",
+    "alignment": "Realign to edited audio after picture and narration cuts settle",
+    "manual_review": "Check technical names, numbers, punctuation, and every caption boundary",
+    "layout": "Readable text in safe margins, normally no more than two lines",
+    "formats": [
+      "srt",
+      "vtt"
+    ],
+    "generate_placeholder_final_srt": false,
+    "captioned_master": "Burn in the reviewed aligned captions",
+    "clean_master": "No burned-in captions"
+  },
+  "export_targets": {
+    "container": "mp4",
+    "video": {
+      "codec": "h264",
+      "profile": "high",
+      "pixel_format": "yuv420p",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "frame_rate_mode": "constant",
+      "initial_crf": 18,
+      "fast_start": true
+    },
+    "audio": {
+      "codec": "aac",
+      "sample_rate_hz": 48000,
+      "channels": 2,
+      "bitrate_kbps": 320
+    },
+    "deliverables": [
+      "deuteron-3min-clean.mp4",
+      "deuteron-3min-captioned.mp4",
+      "deuteron-3min.srt",
+      "deuteron-3min.vtt"
+    ],
+    "archive": [
+      "Original recording",
+      "Editable project",
+      "Slide and demo sources",
+      "Music provenance",
+      "Final exports"
+    ],
+    "final_review": "Check timing, voice clarity, slide readability, caption sync, and the complete silent end hold"
+  }
+}

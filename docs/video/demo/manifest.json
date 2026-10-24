@@ -1,0 +1,12 @@
+{
+  "docs/video/claims.json": "ffbb9e1ea51de7b637a75ad498b5f194da751b2061aa904618ca996a562fdfc7",
+  "docs/video/demo/README.md": "f0edb0203a99d7086d6c37a85a560fe2b54893ccd61ec172074e414b74c3d3f5",
+  "docs/video/demo/capture/command.txt": "b3928d01d945afb8d3bf5c3996108c317c52f437c74c88d16797784907e73ba7",
+  "docs/video/demo/capture/compiler.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "docs/video/demo/capture/kernel.ptx": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1",
+  "docs/video/demo/capture/provenance.json": "678a5e8f2939206eb9305fffe48a4bd287559f41346189abb88b1f1dce1c7fff",
+  "docs/video/demo/capture/transcript.txt": "ad16cb8cbe949bbed394fb39ecce1922f20b36e8f01f0c3e99e2dd5d4c46d012",
+  "docs/video/demo/run.py": "16a2646088eac1fa3a91368479bb544a58c4b2d5f00feab1fcbc0f79bdec74ab",
+  "docs/video/demo/verification-initial.json": "3e378580ddf2f537801b795593902b03cd91269394240221f63b089c1537e345",
+  "docs/video/demo/verification.json": "9e120bf5ed853f832c125dd4f4ca76b4e433ddc8388f26ec52e06050f52c0a5e"
+}
