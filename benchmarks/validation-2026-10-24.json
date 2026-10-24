@@ -1,0 +1,67 @@
+{
+  "compiler_commit": "947f7c48897858a37095c45defd86d119f86d51e",
+  "public_tests": {
+    "count": 36,
+    "all_passed": true,
+    "gpu": "NVIDIA H100, local GPU1",
+    "assembly": "CUDA12.8 ptxas",
+    "occupancy_clean": true,
+    "log": "test_all_key_groups_and_inplace_denominator (test_attention.AttentionCudaTests.test_all_key_groups_and_inplace_denominator) ... ok\ntest_control_aliases_decline_grouping (test_attention.AttentionTests.test_control_aliases_decline_grouping) ... ok\ntest_dependent_or_duplicate_output_rows_decline_grouping (test_attention.AttentionTests.test_dependent_or_duplicate_output_rows_decline_grouping) ... ok\ntest_example_compiles_and_owns_all_values (test_attention.AttentionTests.test_example_compiles_and_owns_all_values) ... ok\ntest_inplace_denominator_is_accepted (test_attention.AttentionTests.test_inplace_denominator_is_accepted) ... ok\ntest_mixed_storage_and_incomplete_warps_decline_grouping (test_attention.AttentionTests.test_mixed_storage_and_incomplete_warps_decline_grouping) ... ok\ntest_post_tile_consumers_decline_grouping (test_attention.AttentionTests.test_post_tile_consumers_decline_grouping) ... ok\ntest_reference_uses_the_seeded_f32_inputs (test_attention.AttentionTests.test_reference_uses_the_seeded_f32_inputs) ... ok\ntest_unclosed_suffix_declines_grouping (test_attention.AttentionTests.test_unclosed_suffix_declines_grouping) ... ok\ntest_all_half_bits_copy_exactly_at_scalar_and_vector_widths (test_f16_storage.StorageCudaTests.test_all_half_bits_copy_exactly_at_scalar_and_vector_widths) ... ok\ntest_explicit_float_compute_avoids_half_intermediate_rounding (test_f16_storage.StorageCudaTests.test_explicit_float_compute_avoids_half_intermediate_rounding) ... ok\ntest_half_widening (test_f16_storage.StorageCudaTests.test_half_widening) ... ok\ntest_round_to_nearest_even_half_boundaries (test_f16_storage.StorageCudaTests.test_round_to_nearest_even_half_boundaries) ... ok\ntest_strided_loop_vectorization_preserves_half_storage (test_f16_storage.StorageCudaTests.test_strided_loop_vectorization_preserves_half_storage) ... ok\ntest_unaligned_vector_half_access (test_f16_storage.StorageCudaTests.test_unaligned_vector_half_access) ... ok\ntest_atomic_half_store_rejected (test_f16_storage.StorageTypingTests.test_atomic_half_store_rejected) ... ok\ntest_explicit_float_compute_and_half_store (test_f16_storage.StorageTypingTests.test_explicit_float_compute_and_half_store) ... ok\ntest_mismatched_load_dtype (test_f16_storage.StorageTypingTests.test_mismatched_load_dtype) ... ok\ntest_mismatched_store_value_dtype (test_f16_storage.StorageTypingTests.test_mismatched_store_value_dtype) ... ok\ntest_missing_load_stamp_uses_buffer_dtype (test_f16_storage.StorageTypingTests.test_missing_load_stamp_uses_buffer_dtype) ... ok\ntest_native_and_implicit_half_arithmetic_rejected (test_f16_storage.StorageTypingTests.test_native_and_implicit_half_arithmetic_rejected) ... ok\ntest_non_pointwise_storage_rejected (test_f16_storage.StorageTypingTests.test_non_pointwise_storage_rejected) ... ok\ntest_store_to_readonly_input_rejected (test_f16_storage.StorageTypingTests.test_store_to_readonly_input_rejected) ... ok\ntest_duplicate_argument_order_is_rejected (test_interface.CompilerInterfaceTests.test_duplicate_argument_order_is_rejected) ... ok\ntest_ir_and_launch_metadata_are_sufficient (test_interface.CompilerInterfaceTests.test_ir_and_launch_metadata_are_sufficient) ... ok\ntest_supported_targets_compile_without_a_gpu (test_interface.CompilerInterfaceTests.test_supported_targets_compile_without_a_gpu) ... ok\ntest_unknown_target_is_rejected (test_interface.CompilerInterfaceTests.test_unknown_target_is_rejected) ... ok\ntest_partial_last_block_matches_numpy_exactly (test_interface.VectorExecutionTests.test_partial_last_block_matches_numpy_exactly) ... ok\ntest_default_uses_packed_bf16_tensor_cores (test_tensor_copy.TensorCopyTests.test_default_uses_packed_bf16_tensor_cores) ... ok\ntest_example_shapes_and_reference (test_tensor_copy.TensorCopyTests.test_example_shapes_and_reference) ... ok\ntest_f32_retains_copy_engine_and_barriers (test_tensor_copy.TensorCopyTests.test_f32_retains_copy_engine_and_barriers) ... ok\ntest_gpu_correctness_in_all_precision_modes (test_tensor_copy.TensorCopyTests.test_gpu_correctness_in_all_precision_modes) ... ok\ntest_modes_assemble (test_tensor_copy.TensorCopyTests.test_modes_assemble) ... ok\ntest_native_blackwell_assembly (test_tensor_copy.TensorCopyTests.test_native_blackwell_assembly) ... ok\ntest_tf32_uses_tensor_cores_and_async_copies (test_tensor_copy.TensorCopyTests.test_tf32_uses_tensor_cores_and_async_copies) ... ok\ntest_wrong_prefetch_phase_declines_register_packing (test_tensor_copy.TensorCopyTests.test_wrong_prefetch_phase_declines_register_packing) ... ok\n\n----------------------------------------------------------------------\nRan 36 tests in 3.386s\n\nOK\n",
+    "log_sha256": "562a4e653cd68b7c389007a3462f455641c31ccf44a3ac1e1121418abf0e1f21"
+  },
+  "generated_examples": {
+    "count": 6,
+    "all_passed": true,
+    "occupancy_clean": true
+  },
+  "original_workloads": {
+    "count": 15,
+    "local_configurations": [
+      "SM89/O3",
+      "SM89/O2"
+    ],
+    "local_devices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "all_correct": true,
+    "occupancy_clean": true,
+    "compile_configurations": [
+      "SM89/O3",
+      "SM120/O3",
+      "SM89/O2"
+    ],
+    "compilations": 45,
+    "assemblies": 75,
+    "all_assembled": true,
+    "final_source_ptx_equivalence": true
+  },
+  "hosted_rtx5090": {
+    "comparison_calls": 270,
+    "feature_example_calls": 11,
+    "cold_confirmation_calls": 100,
+    "all_correct": true
+  },
+  "static_check": {
+    "tool": "pyrefly",
+    "errors": 0,
+    "arguments": [
+      "check",
+      "compiler/",
+      "compile.py",
+      "benchmark.py",
+      "check.py",
+      "examples/",
+      "tests/"
+    ]
+  },
+  "excluded_attempts": [
+    "An earlier expanded target test exposed SM110/PTX8.7 mismatch, fixed to PTX9.0.",
+    "A GPU7 integration run passed all36 tests but encountered a foreign GPU process; its timings are excluded. The final complete run used clean GPU1."
+  ]
+}

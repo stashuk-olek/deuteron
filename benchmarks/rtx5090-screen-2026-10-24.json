@@ -1,0 +1,2998 @@
+{
+  "started_for": "Correctness and predeclared small Triton configuration screen. These samples are not final comparison measurements.",
+  "results": [
+    {
+      "variant": {
+        "problem": "a01_attention",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "c280c572744016ecf6ca2971312ad2ce8a10b28c0f3e38561c1a096c2ea7352f",
+        "expected_sha256": "ccc0ad1a70f679781c8aff8064ae73368e04bc35018a537dc15ef8610262ed51",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 64,
+          "N": 64,
+          "D": 64,
+          "BM": 16
+        },
+        "launch": {
+          "node": "matmul_1",
+          "entry": "attention_kernel",
+          "arg_order": [
+            "div_c1",
+            "q",
+            "kt",
+            "v",
+            "matmul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            4,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16384,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "div_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                8.0
+              ]
+            },
+            {
+              "name": "q",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 0
+            },
+            {
+              "name": "kt",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 1
+            },
+            {
+              "name": "v",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 2
+            },
+            {
+              "name": "matmul_1",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/a01_attention-0/kernel.ptx",
+        "ptx_sha256": "c513ab18780ecc7e66e56181b412358d86b56b471fbaa40de6c0030ddb5ce601",
+        "compile_seconds": 0.5871724486351013,
+        "shared": 16384,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:29.191432+00:00",
+          "median_us": 5.568,
+          "rtt_s": 0.8194137495011091,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 6.258487701416016e-06,
+              "max_normalized_tolerance_ratio": 0.04626128844593128,
+              "sha256": "80920758b23a5e2f76df690623d8df5c329c714ec915453f133a588aad4159c2"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:30.937369+00:00",
+          "median_us": 4.832,
+          "rtt_s": 0.8116316143423319,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 6.258487701416016e-06,
+              "max_normalized_tolerance_ratio": 0.04626128844593128,
+              "sha256": "80920758b23a5e2f76df690623d8df5c329c714ec915453f133a588aad4159c2"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 5.199999999999999
+    },
+    {
+      "variant": {
+        "problem": "a01_attention",
+        "config": 1,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "c280c572744016ecf6ca2971312ad2ce8a10b28c0f3e38561c1a096c2ea7352f",
+        "expected_sha256": "ccc0ad1a70f679781c8aff8064ae73368e04bc35018a537dc15ef8610262ed51",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 64,
+          "N": 64,
+          "D": 64,
+          "BM": 32
+        },
+        "launch": {
+          "node": "matmul_1",
+          "entry": "attention_kernel",
+          "arg_order": [
+            "div_c1",
+            "q",
+            "kt",
+            "v",
+            "matmul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            2,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16384,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "div_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                8.0
+              ]
+            },
+            {
+              "name": "q",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 0
+            },
+            {
+              "name": "kt",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 1
+            },
+            {
+              "name": "v",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 2
+            },
+            {
+              "name": "matmul_1",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/a01_attention-1/kernel.ptx",
+        "ptx_sha256": "9c7828d4365eb095d6e67d9b480388532fc43284a2cb962a3fdea64fb296c585",
+        "compile_seconds": 0.3259711414575577,
+        "shared": 16384,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:31.750999+00:00",
+          "median_us": 6.848,
+          "rtt_s": 0.8773943167179823,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 6.258487701416016e-06,
+              "max_normalized_tolerance_ratio": 0.04626128844593128,
+              "sha256": "80920758b23a5e2f76df690623d8df5c329c714ec915453f133a588aad4159c2"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:33.598848+00:00",
+          "median_us": 6.848,
+          "rtt_s": 0.7933248467743397,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 6.258487701416016e-06,
+              "max_normalized_tolerance_ratio": 0.04626128844593128,
+              "sha256": "80920758b23a5e2f76df690623d8df5c329c714ec915453f133a588aad4159c2"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 6.848
+    },
+    {
+      "variant": {
+        "problem": "a01_attention",
+        "config": 2,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "c280c572744016ecf6ca2971312ad2ce8a10b28c0f3e38561c1a096c2ea7352f",
+        "expected_sha256": "ccc0ad1a70f679781c8aff8064ae73368e04bc35018a537dc15ef8610262ed51",
+        "options": {
+          "num_warps": 8,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 64,
+          "N": 64,
+          "D": 64,
+          "BM": 16
+        },
+        "launch": {
+          "node": "matmul_1",
+          "entry": "attention_kernel",
+          "arg_order": [
+            "div_c1",
+            "q",
+            "kt",
+            "v",
+            "matmul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            4,
+            1,
+            1
+          ],
+          "block": [
+            256,
+            1,
+            1
+          ],
+          "smem_bytes": 16384,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "div_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                8.0
+              ]
+            },
+            {
+              "name": "q",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 0
+            },
+            {
+              "name": "kt",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 1
+            },
+            {
+              "name": "v",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "seed": 2
+            },
+            {
+              "name": "matmul_1",
+              "dtype": "f32",
+              "shape": [
+                64,
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/a01_attention-2/kernel.ptx",
+        "ptx_sha256": "cba23c59da2a8d36dca86954a992066e4f5f1ce12e347c817c005185a86defeb",
+        "compile_seconds": 0.16101916879415512,
+        "shared": 16384,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:34.394427+00:00",
+          "median_us": 4.8,
+          "rtt_s": 0.8999328892678022,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 6.198883056640625e-06,
+              "max_normalized_tolerance_ratio": 0.04626128844593128,
+              "sha256": "20665a3ace2328b060d08f68038bf78cf6dc04d72354d25977235f27bf597590"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:36.244313+00:00",
+          "median_us": 4.8,
+          "rtt_s": 0.7877738550305367,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 6.198883056640625e-06,
+              "max_normalized_tolerance_ratio": 0.04626128844593128,
+              "sha256": "20665a3ace2328b060d08f68038bf78cf6dc04d72354d25977235f27bf597590"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 4.8
+    },
+    {
+      "variant": {
+        "problem": "a02_attention_128",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "adcc08994786076e7cb9835ab3bab19b0dc9c0d00a999adea124380f8300de18",
+        "expected_sha256": "ebd7c000d75e52707f2e65304e05fbf963b4799919f814f685490c76c89e7080",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 128,
+          "N": 128,
+          "D": 32,
+          "BM": 16
+        },
+        "launch": {
+          "node": "matmul_1",
+          "entry": "attention_kernel",
+          "arg_order": [
+            "div_c1",
+            "q",
+            "kt",
+            "v",
+            "matmul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            8,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16384,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "div_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                5.656854
+              ]
+            },
+            {
+              "name": "q",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "seed": 0
+            },
+            {
+              "name": "kt",
+              "dtype": "f32",
+              "shape": [
+                32,
+                128
+              ],
+              "seed": 1
+            },
+            {
+              "name": "v",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "seed": 2
+            },
+            {
+              "name": "matmul_1",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/a02_attention_128-0/kernel.ptx",
+        "ptx_sha256": "bee3b6e0aa2b6fbbec01a0c61c64be68f65e41299b7e045db1d8a2cccabbc67e",
+        "compile_seconds": 0.22822717763483524,
+        "shared": 16384,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:37.034306+00:00",
+          "median_us": 6.816,
+          "rtt_s": 0.8031267412006855,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 4.231929779052734e-06,
+              "max_normalized_tolerance_ratio": 0.028892085720799973,
+              "sha256": "2880be198f289081239bb6e4cd2bf1da5ff14f0c2d76f205002301e6c4e01bda"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:38.774524+00:00",
+          "median_us": 6.816,
+          "rtt_s": 0.7888291627168655,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 4.231929779052734e-06,
+              "max_normalized_tolerance_ratio": 0.028892085720799973,
+              "sha256": "2880be198f289081239bb6e4cd2bf1da5ff14f0c2d76f205002301e6c4e01bda"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 6.816
+    },
+    {
+      "variant": {
+        "problem": "a02_attention_128",
+        "config": 1,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "adcc08994786076e7cb9835ab3bab19b0dc9c0d00a999adea124380f8300de18",
+        "expected_sha256": "ebd7c000d75e52707f2e65304e05fbf963b4799919f814f685490c76c89e7080",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 128,
+          "N": 128,
+          "D": 32,
+          "BM": 32
+        },
+        "launch": {
+          "node": "matmul_1",
+          "entry": "attention_kernel",
+          "arg_order": [
+            "div_c1",
+            "q",
+            "kt",
+            "v",
+            "matmul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            4,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16384,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "div_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                5.656854
+              ]
+            },
+            {
+              "name": "q",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "seed": 0
+            },
+            {
+              "name": "kt",
+              "dtype": "f32",
+              "shape": [
+                32,
+                128
+              ],
+              "seed": 1
+            },
+            {
+              "name": "v",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "seed": 2
+            },
+            {
+              "name": "matmul_1",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/a02_attention_128-1/kernel.ptx",
+        "ptx_sha256": "41212b1d014efc87b35b520b6721da25b2089e7bb0a4db750ad09845245fe36d",
+        "compile_seconds": 0.5723947249352932,
+        "shared": 16384,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:39.565771+00:00",
+          "median_us": 6.848,
+          "rtt_s": 0.7876848224550486,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 4.231929779052734e-06,
+              "max_normalized_tolerance_ratio": 0.028892085720799973,
+              "sha256": "f3cd8038430f256cac2de8064c064f01bdf72f466dad07b7de9e8eec5a90925f"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:41.561189+00:00",
+          "median_us": 6.848,
+          "rtt_s": 0.8017534520477057,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 4.231929779052734e-06,
+              "max_normalized_tolerance_ratio": 0.028892085720799973,
+              "sha256": "f3cd8038430f256cac2de8064c064f01bdf72f466dad07b7de9e8eec5a90925f"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 6.848
+    },
+    {
+      "variant": {
+        "problem": "a02_attention_128",
+        "config": 2,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "adcc08994786076e7cb9835ab3bab19b0dc9c0d00a999adea124380f8300de18",
+        "expected_sha256": "ebd7c000d75e52707f2e65304e05fbf963b4799919f814f685490c76c89e7080",
+        "options": {
+          "num_warps": 8,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 128,
+          "N": 128,
+          "D": 32,
+          "BM": 16
+        },
+        "launch": {
+          "node": "matmul_1",
+          "entry": "attention_kernel",
+          "arg_order": [
+            "div_c1",
+            "q",
+            "kt",
+            "v",
+            "matmul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            8,
+            1,
+            1
+          ],
+          "block": [
+            256,
+            1,
+            1
+          ],
+          "smem_bytes": 16384,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "div_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                5.656854
+              ]
+            },
+            {
+              "name": "q",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "seed": 0
+            },
+            {
+              "name": "kt",
+              "dtype": "f32",
+              "shape": [
+                32,
+                128
+              ],
+              "seed": 1
+            },
+            {
+              "name": "v",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "seed": 2
+            },
+            {
+              "name": "matmul_1",
+              "dtype": "f32",
+              "shape": [
+                128,
+                32
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/a02_attention_128-2/kernel.ptx",
+        "ptx_sha256": "0956752edac812d093256ef1c36262fe383517d38c8280d759d7d8c3408dde13",
+        "compile_seconds": 0.18001901172101498,
+        "shared": 16384,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:42.365851+00:00",
+          "median_us": 6.816,
+          "rtt_s": 0.7944459114223719,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 4.231929779052734e-06,
+              "max_normalized_tolerance_ratio": 0.028892085720799973,
+              "sha256": "5cc42d7e219382a35d6b34d05ab3c2ec587263c4e28b5173ffa2343eb2ff7e07"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:44.021645+00:00",
+          "median_us": 6.848,
+          "rtt_s": 0.8963698577135801,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul_1": {
+              "max_absolute_error": 4.231929779052734e-06,
+              "max_normalized_tolerance_ratio": 0.028892085720799973,
+              "sha256": "5cc42d7e219382a35d6b34d05ab3c2ec587263c4e28b5173ffa2343eb2ff7e07"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 6.832
+    },
+    {
+      "variant": {
+        "problem": "f01_rmsnorm",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "f45014c6b0963ec9727fc0f1c9bb585319c4ac94292260bc8f7c10557c1b8e1d",
+        "expected_sha256": "197016500cfca3ee3a1952273d50655e5bbf60093c28ad801e28eb3ccb76a6fb",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "COLS": 1024,
+          "BLOCK": 1024
+        },
+        "launch": {
+          "node": "mul_1",
+          "entry": "rms_kernel",
+          "arg_order": [
+            "mean_count",
+            "add_c1",
+            "x",
+            "w",
+            "mul_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            64,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "mean_count",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                1024.0
+              ]
+            },
+            {
+              "name": "add_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                1e-05
+              ]
+            },
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                64,
+                1024
+              ],
+              "seed": 0
+            },
+            {
+              "name": "w",
+              "dtype": "f32",
+              "shape": [
+                1024
+              ],
+              "seed": 1
+            },
+            {
+              "name": "mul_1",
+              "dtype": "f32",
+              "shape": [
+                64,
+                1024
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/f01_rmsnorm-0/kernel.ptx",
+        "ptx_sha256": "9ff0cf453b9a0171bc31c32a32dea70dca6fae27ef7092f8640f85084f880e9c",
+        "compile_seconds": 0.06810258887708187,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:44.920503+00:00",
+          "median_us": 3.264,
+          "rtt_s": 1.3800445403903723,
+          "arch": "sm_120a",
+          "errors": {
+            "mul_1": {
+              "max_absolute_error": 1.9073486328125e-06,
+              "max_normalized_tolerance_ratio": 0.000216223897424075,
+              "sha256": "3a2aadca85003170e0ea809a7f16585d51c4266abde22b2ea3b839c6a5a768e1"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.264
+    },
+    {
+      "variant": {
+        "problem": "f02_row_softmax",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "ddbe97ea42c7b077d30d140b751f8062caf47b5620cb423a02c1dd848cd61900",
+        "expected_sha256": "7e38d188cdc0bbb7afda1e6007318b0174bcdf82eb3855775967e49d4b8ee8ce",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "COLS": 256,
+          "BLOCK": 256
+        },
+        "launch": {
+          "node": "softmax",
+          "entry": "softmax_kernel",
+          "arg_order": [
+            "x",
+            "softmax",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            64,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                64,
+                256
+              ],
+              "seed": 0
+            },
+            {
+              "name": "softmax",
+              "dtype": "f32",
+              "shape": [
+                64,
+                256
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/f02_row_softmax-0/kernel.ptx",
+        "ptx_sha256": "5c94923e34fe053f2b44a1a6b5cdd846d4608b49a82c8c45554536449076ed41",
+        "compile_seconds": 0.0411241240799427,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:46.978731+00:00",
+          "median_us": 3.072,
+          "rtt_s": 1.2215403486043215,
+          "arch": "sm_120a",
+          "errors": {
+            "softmax": {
+              "max_absolute_error": 7.450580596923828e-09,
+              "max_normalized_tolerance_ratio": 0.00015064747440875022,
+              "sha256": "a7cd8fef5d7fd78497923671ee4b5b4cff7164adc989ba40ef16b9df78f7a809"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.072
+    },
+    {
+      "variant": {
+        "problem": "f03_l2norm",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "cbf67c2d198f4fea1bb140083ec65c4bf14202090daaa4aac77f1514ecc60b95",
+        "expected_sha256": "fb2e242cbfe9834c6d45f27f29acc750a5b4ea8ad6ab509baa7a5b4c53586380",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "COLS": 512,
+          "BLOCK": 512
+        },
+        "launch": {
+          "node": "div",
+          "entry": "l2_kernel",
+          "arg_order": [
+            "x",
+            "div",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            64,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                64,
+                512
+              ],
+              "seed": 0
+            },
+            {
+              "name": "div",
+              "dtype": "f32",
+              "shape": [
+                64,
+                512
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/f03_l2norm-0/kernel.ptx",
+        "ptx_sha256": "72751ea5dfe168b33e41527dd211bb5da83ad26daf296c43b61b5595782f3f1e",
+        "compile_seconds": 0.060145437717437744,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:48.861161+00:00",
+          "median_us": 3.104,
+          "rtt_s": 1.2466553468257189,
+          "arch": "sm_120a",
+          "errors": {
+            "div": {
+              "max_absolute_error": 2.9802322387695312e-08,
+              "max_normalized_tolerance_ratio": 0.00013189584101022084,
+              "sha256": "3830b5b55b49baa141be30e9c5a5aa6cce6fb6cbd66a7441e5be6e9ca3b4f3bd"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.104
+    },
+    {
+      "variant": {
+        "problem": "m01_matmul_512",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "3324370a2d29614c6c7ff7cf549563f9afb22bab0ed31ed62d8ffd27c59dcd57",
+        "expected_sha256": "6396bececa75b2adee8c83bb0c090f9a68e7297d7de492f5a2f0cd3e67f24c36",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 3,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 512,
+          "N": 512,
+          "K": 512,
+          "BM": 32,
+          "BN": 64,
+          "BK": 32
+        },
+        "launch": {
+          "node": "matmul",
+          "entry": "matmul_kernel",
+          "arg_order": [
+            "x1",
+            "x0",
+            "matmul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            128,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 24576,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "seed": 1
+            },
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "seed": 0
+            },
+            {
+              "name": "matmul",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/m01_matmul_512-0/kernel.ptx",
+        "ptx_sha256": "24ca250fd2e061070dad99d9faa564ff2b6f0d02ba21042a3953be5861e1cb39",
+        "compile_seconds": 0.14758895710110664,
+        "shared": 24576,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:50.629089+00:00",
+          "median_us": 15.04,
+          "rtt_s": 1.7922424003481865,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.0005519390106201172,
+              "max_normalized_tolerance_ratio": 0.39782342492338957,
+              "sha256": "e1267859fdaec59ad7ed24b8eed0f0f631a13ddef0639a902495213043f5ac0f"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:53.185749+00:00",
+          "median_us": 15.008,
+          "rtt_s": 2.0148161090910435,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.0005519390106201172,
+              "max_normalized_tolerance_ratio": 0.39782342492338957,
+              "sha256": "e1267859fdaec59ad7ed24b8eed0f0f631a13ddef0639a902495213043f5ac0f"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 15.024
+    },
+    {
+      "variant": {
+        "problem": "m01_matmul_512",
+        "config": 1,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "3324370a2d29614c6c7ff7cf549563f9afb22bab0ed31ed62d8ffd27c59dcd57",
+        "expected_sha256": "6396bececa75b2adee8c83bb0c090f9a68e7297d7de492f5a2f0cd3e67f24c36",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 3,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 512,
+          "N": 512,
+          "K": 512,
+          "BM": 64,
+          "BN": 64,
+          "BK": 32
+        },
+        "launch": {
+          "node": "matmul",
+          "entry": "matmul_kernel",
+          "arg_order": [
+            "x1",
+            "x0",
+            "matmul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            64,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 32768,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "seed": 1
+            },
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "seed": 0
+            },
+            {
+              "name": "matmul",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/m01_matmul_512-1/kernel.ptx",
+        "ptx_sha256": "a0b1432b505899642bfc41ccb1e509d5ad20658cddcf0bac9560e1e12a3d7030",
+        "compile_seconds": 0.19656218588352203,
+        "shared": 32768,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:55.226362+00:00",
+          "median_us": 15.04,
+          "rtt_s": 1.7462146040052176,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.0005519390106201172,
+              "max_normalized_tolerance_ratio": 0.39782342492338957,
+              "sha256": "e1267859fdaec59ad7ed24b8eed0f0f631a13ddef0639a902495213043f5ac0f"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:56:57.848582+00:00",
+          "median_us": 15.024,
+          "rtt_s": 1.7907431311905384,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.0005519390106201172,
+              "max_normalized_tolerance_ratio": 0.39782342492338957,
+              "sha256": "e1267859fdaec59ad7ed24b8eed0f0f631a13ddef0639a902495213043f5ac0f"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 15.032
+    },
+    {
+      "variant": {
+        "problem": "m01_matmul_512",
+        "config": 2,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "3324370a2d29614c6c7ff7cf549563f9afb22bab0ed31ed62d8ffd27c59dcd57",
+        "expected_sha256": "6396bececa75b2adee8c83bb0c090f9a68e7297d7de492f5a2f0cd3e67f24c36",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 3,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 512,
+          "N": 512,
+          "K": 512,
+          "BM": 32,
+          "BN": 64,
+          "BK": 64
+        },
+        "launch": {
+          "node": "matmul",
+          "entry": "matmul_kernel",
+          "arg_order": [
+            "x1",
+            "x0",
+            "matmul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            128,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 49152,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "seed": 1
+            },
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "seed": 0
+            },
+            {
+              "name": "matmul",
+              "dtype": "f32",
+              "shape": [
+                512,
+                512
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/m01_matmul_512-2/kernel.ptx",
+        "ptx_sha256": "ff05e7a2a69047d8e82b7b0ecb4278b360f13bc7b0f69df62e8146c621f16a20",
+        "compile_seconds": 0.2104660514742136,
+        "shared": 49152,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:56:59.657259+00:00",
+          "median_us": 12.992,
+          "rtt_s": 1.728598153218627,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.0005512237548828125,
+              "max_normalized_tolerance_ratio": 0.3952108653630697,
+              "sha256": "de95948dcb14ffef123c8cc3467f47d46bd4dcbd10c099adff7cb8b0b513ed05"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:57:02.429220+00:00",
+          "median_us": 12.976,
+          "rtt_s": 2.008673056960106,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.0005512237548828125,
+              "max_normalized_tolerance_ratio": 0.3952108653630697,
+              "sha256": "de95948dcb14ffef123c8cc3467f47d46bd4dcbd10c099adff7cb8b0b513ed05"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 12.984000000000002
+    },
+    {
+      "variant": {
+        "problem": "m02_matmul_rect",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "a82fd8d7f5933749868035254537b962d3d0140c8bf3e22f7f8a54a289a9c365",
+        "expected_sha256": "b0a5f6719c01fdc55054d983e7d75f880577e4741c63ae39c9fa704507e58134",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 3,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 128,
+          "N": 64,
+          "K": 256,
+          "BM": 32,
+          "BN": 64,
+          "BK": 32
+        },
+        "launch": {
+          "node": "matmul",
+          "entry": "matmul_kernel",
+          "arg_order": [
+            "x1",
+            "x0",
+            "matmul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            4,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 24576,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                256,
+                64
+              ],
+              "seed": 1
+            },
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                128,
+                256
+              ],
+              "seed": 0
+            },
+            {
+              "name": "matmul",
+              "dtype": "f32",
+              "shape": [
+                128,
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/m02_matmul_rect-0/kernel.ptx",
+        "ptx_sha256": "5acf886eb69dfa3d47a3c15a91cfcc6c4cfcfe5b8721bfdb6a2af3542e263f6f",
+        "compile_seconds": 0.14751012809574604,
+        "shared": 24576,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:04.455312+00:00",
+          "median_us": 8.864,
+          "rtt_s": 1.076035464182496,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.00031280517578125,
+              "max_normalized_tolerance_ratio": 0.19979982207033176,
+              "sha256": "362ca554a7924de8f5c3046ff424bbc3feb1d3126636a42ca9bd834b51483e87"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:57:06.271305+00:00",
+          "median_us": 8.864,
+          "rtt_s": 0.9474010039120913,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.00031280517578125,
+              "max_normalized_tolerance_ratio": 0.19979982207033176,
+              "sha256": "362ca554a7924de8f5c3046ff424bbc3feb1d3126636a42ca9bd834b51483e87"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 8.864
+    },
+    {
+      "variant": {
+        "problem": "m02_matmul_rect",
+        "config": 1,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "a82fd8d7f5933749868035254537b962d3d0140c8bf3e22f7f8a54a289a9c365",
+        "expected_sha256": "b0a5f6719c01fdc55054d983e7d75f880577e4741c63ae39c9fa704507e58134",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 3,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 128,
+          "N": 64,
+          "K": 256,
+          "BM": 64,
+          "BN": 64,
+          "BK": 32
+        },
+        "launch": {
+          "node": "matmul",
+          "entry": "matmul_kernel",
+          "arg_order": [
+            "x1",
+            "x0",
+            "matmul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            2,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 32768,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                256,
+                64
+              ],
+              "seed": 1
+            },
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                128,
+                256
+              ],
+              "seed": 0
+            },
+            {
+              "name": "matmul",
+              "dtype": "f32",
+              "shape": [
+                128,
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/m02_matmul_rect-1/kernel.ptx",
+        "ptx_sha256": "5cea87eae8a61b1d0f3ede7bf2b16ce61b2790484e6952af11636e0ab432ad50",
+        "compile_seconds": 0.19499579444527626,
+        "shared": 32768,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:07.221477+00:00",
+          "median_us": 10.88,
+          "rtt_s": 0.9270229451358318,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.00031280517578125,
+              "max_normalized_tolerance_ratio": 0.19979982207033176,
+              "sha256": "362ca554a7924de8f5c3046ff424bbc3feb1d3126636a42ca9bd834b51483e87"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:57:09.007728+00:00",
+          "median_us": 10.912,
+          "rtt_s": 1.0742587316781282,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.00031280517578125,
+              "max_normalized_tolerance_ratio": 0.19979982207033176,
+              "sha256": "362ca554a7924de8f5c3046ff424bbc3feb1d3126636a42ca9bd834b51483e87"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 10.896
+    },
+    {
+      "variant": {
+        "problem": "m02_matmul_rect",
+        "config": 2,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "a82fd8d7f5933749868035254537b962d3d0140c8bf3e22f7f8a54a289a9c365",
+        "expected_sha256": "b0a5f6719c01fdc55054d983e7d75f880577e4741c63ae39c9fa704507e58134",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 3,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "M": 128,
+          "N": 64,
+          "K": 256,
+          "BM": 32,
+          "BN": 64,
+          "BK": 64
+        },
+        "launch": {
+          "node": "matmul",
+          "entry": "matmul_kernel",
+          "arg_order": [
+            "x1",
+            "x0",
+            "matmul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            4,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 49152,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                256,
+                64
+              ],
+              "seed": 1
+            },
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                128,
+                256
+              ],
+              "seed": 0
+            },
+            {
+              "name": "matmul",
+              "dtype": "f32",
+              "shape": [
+                128,
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/m02_matmul_rect-2/kernel.ptx",
+        "ptx_sha256": "4794581b1bed73e1c31658715f6f7c63fc57b80499ff9175f04421e3dbed5957",
+        "compile_seconds": 0.2181189078837633,
+        "shared": 49152,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:10.084601+00:00",
+          "median_us": 6.848,
+          "rtt_s": 1.0567223131656647,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.00031566619873046875,
+              "max_normalized_tolerance_ratio": 0.19979982207033176,
+              "sha256": "c50faaa7d1809e1ceada979b22d908d016012360549047e9e4ecc1683194d8e1"
+            }
+          },
+          "correct": true
+        },
+        {
+          "started_utc": "2026-10-24T18:57:12.020904+00:00",
+          "median_us": 6.848,
+          "rtt_s": 0.9488143026828766,
+          "arch": "sm_120a",
+          "errors": {
+            "matmul": {
+              "max_absolute_error": 0.00031566619873046875,
+              "max_normalized_tolerance_ratio": 0.19979982207033176,
+              "sha256": "c50faaa7d1809e1ceada979b22d908d016012360549047e9e4ecc1683194d8e1"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 6.848
+    },
+    {
+      "variant": {
+        "problem": "p00_scalar_add",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "67f4c80a5c78c9fa571f4088633acc56cae0a758d2a65e7c89c07a96e665709c",
+        "expected_sha256": "69e4a749183c5402f03c28a957cb1f523186d16f9b9974c75cd0ebbbfd925478",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 128,
+          "BLOCK": 1024
+        },
+        "launch": {
+          "node": "add",
+          "entry": "add_kernel",
+          "arg_order": [
+            "x0",
+            "x1",
+            "add",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            1,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 0,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                128
+              ],
+              "seed": 0
+            },
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                128
+              ],
+              "seed": 1
+            },
+            {
+              "name": "add",
+              "dtype": "f32",
+              "shape": [
+                128
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/p00_scalar_add-0/kernel.ptx",
+        "ptx_sha256": "2a21085607cce6e2d75db61e3a1f822767bcd7eea8a3af5ae3a3aab662b41d43",
+        "compile_seconds": 0.035747820511460304,
+        "shared": 0,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:12.972468+00:00",
+          "median_us": 3.104,
+          "rtt_s": 0.5006325244903564,
+          "arch": "sm_120a",
+          "errors": {
+            "add": {
+              "max_absolute_error": 0.0,
+              "max_normalized_tolerance_ratio": 0.0,
+              "sha256": "ad6e96417757b5320e2cf52c32ab38f0cbf46c847e5a33a23193899e61a6f6d1"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.104
+    },
+    {
+      "variant": {
+        "problem": "p01_vector_add",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "4607a6a14553ec256b2073ff8fef18a850e315033f4fdace21f26fdcc2a867c6",
+        "expected_sha256": "1a72f87aa3afd4e84746d2c0bfcfde9d024f573ce863322f72d2c6b3bb133086",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 1024,
+          "BLOCK": 1024
+        },
+        "launch": {
+          "node": "add",
+          "entry": "add_kernel",
+          "arg_order": [
+            "x0",
+            "x1",
+            "add",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            1,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 0,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x0",
+              "dtype": "f32",
+              "shape": [
+                1024
+              ],
+              "seed": 0
+            },
+            {
+              "name": "x1",
+              "dtype": "f32",
+              "shape": [
+                1024
+              ],
+              "seed": 1
+            },
+            {
+              "name": "add",
+              "dtype": "f32",
+              "shape": [
+                1024
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/p01_vector_add-0/kernel.ptx",
+        "ptx_sha256": "e6f804acfa420e95825d8c0f2ef6de13f667e1b0b894e6b18afcad2b4e25f81d",
+        "compile_seconds": 0.03283197432756424,
+        "shared": 0,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:14.003386+00:00",
+          "median_us": 3.104,
+          "rtt_s": 0.6528837941586971,
+          "arch": "sm_120a",
+          "errors": {
+            "add": {
+              "max_absolute_error": 0.0,
+              "max_normalized_tolerance_ratio": 0.0,
+              "sha256": "14ed7f0e036e5829f133708109c2cc24824b55e866211a11657ada1df0ee3e8d"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.104
+    },
+    {
+      "variant": {
+        "problem": "p02_scale_shift",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "7c1c3ea69e4d61128d72fbaf3a82a76125a5273c3ced6197ac2f150d03d121e1",
+        "expected_sha256": "515539ace84b0cb38ab3e5e6ed20894b774ab428a86be180529d54fd8ad63dd6",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 4096,
+          "BLOCK": 1024
+        },
+        "launch": {
+          "node": "add",
+          "entry": "affine_kernel",
+          "arg_order": [
+            "mul_c1",
+            "add_c1",
+            "x",
+            "add",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            4,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 0,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "mul_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                2.0
+              ]
+            },
+            {
+              "name": "add_c1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                1.0
+              ]
+            },
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                4096
+              ],
+              "seed": 0
+            },
+            {
+              "name": "add",
+              "dtype": "f32",
+              "shape": [
+                4096
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/p02_scale_shift-0/kernel.ptx",
+        "ptx_sha256": "21ff9577ebc24949787d633e6e3a615bc584af968dcd8619637146054ffd0e02",
+        "compile_seconds": 0.03466108813881874,
+        "shared": 0,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:15.220067+00:00",
+          "median_us": 3.216,
+          "rtt_s": 0.8952986169606447,
+          "arch": "sm_120a",
+          "errors": {
+            "add": {
+              "max_absolute_error": 0.0,
+              "max_normalized_tolerance_ratio": 0.0,
+              "sha256": "83131cff9d1aca87c89fb706748f6b0d65c58a367d4c29a71901107a8c6b92da"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.216
+    },
+    {
+      "variant": {
+        "problem": "p03_relu_mul",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "a2dbbe3a3cec7c45fcdde2c08f0d3276647c2a4b56ede3345be16404d1ded8c9",
+        "expected_sha256": "a0fc97901b28331b29bb5f01cf104944c3376c633dd4cce65d551ad61035e52f",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 2048,
+          "BLOCK": 1024
+        },
+        "launch": {
+          "node": "mul",
+          "entry": "relu_product_kernel",
+          "arg_order": [
+            "x",
+            "y",
+            "mul",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            2,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 0,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                2048
+              ],
+              "seed": 0
+            },
+            {
+              "name": "y",
+              "dtype": "f32",
+              "shape": [
+                2048
+              ],
+              "seed": 1
+            },
+            {
+              "name": "mul",
+              "dtype": "f32",
+              "shape": [
+                2048
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/p03_relu_mul-0/kernel.ptx",
+        "ptx_sha256": "a6e21cf8d77400ed56fe1254fca38e5d0fe105824a64988e2f416e08ff8d1353",
+        "compile_seconds": 0.035512423142790794,
+        "shared": 0,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:16.632593+00:00",
+          "median_us": 3.136,
+          "rtt_s": 0.6400796659290791,
+          "arch": "sm_120a",
+          "errors": {
+            "mul": {
+              "max_absolute_error": 0.0,
+              "max_normalized_tolerance_ratio": 0.0,
+              "sha256": "2f9b553799559b31fe5c0968db751a59c0190fd88be48aa487661fe1585342a8"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.136
+    },
+    {
+      "variant": {
+        "problem": "r01_array_sum",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "46cf07073f4e612e811decbc2ca900ea210811194a1e336053a6f179ecb4b00e",
+        "expected_sha256": "899c8058da70456bc3714d71ffc2814dd9777e37d39be7379b359e452924cb5c",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 1024,
+          "BLOCK": 1024
+        },
+        "launch": {
+          "node": "sum_1",
+          "entry": "sum_kernel",
+          "arg_order": [
+            "x",
+            "sum_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            1,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                1024
+              ],
+              "seed": 0
+            },
+            {
+              "name": "sum_1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/r01_array_sum-0/kernel.ptx",
+        "ptx_sha256": "96507dad7b3a17c93063aad131f7c991598064121a781beaf4142c5609a6e528",
+        "compile_seconds": 0.03838231600821018,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:17.793635+00:00",
+          "median_us": 3.104,
+          "rtt_s": 0.5498593188822269,
+          "arch": "sm_120a",
+          "errors": {
+            "sum_1": {
+              "max_absolute_error": 3.814697265625e-06,
+              "max_normalized_tolerance_ratio": 0.0007425814075288992,
+              "sha256": "d27162ebd63b3f014209085df7983653ef7816784f9bf4738cf3fafe1a7c1f68"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.104
+    },
+    {
+      "variant": {
+        "problem": "r02_big_sum",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "db364be00e35402a3d6f10fcd55562115c7604dea94f8126a02179a80476d19e",
+        "expected_sha256": "0109852644d0785b770fa38d996b063b156f01e8bfccb303ea0581e42696eec1",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 65536,
+          "BLOCK": 4096
+        },
+        "launch": {
+          "node": "sum_1",
+          "entry": "sum_kernel",
+          "arg_order": [
+            "x",
+            "sum_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            1,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                65536
+              ],
+              "seed": 0
+            },
+            {
+              "name": "sum_1",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/r02_big_sum-0/kernel.ptx",
+        "ptx_sha256": "d7e8c98f8e5931bf66f093ca08f17f7ab19a6d69ea7beb5dea6f9e1e977213a6",
+        "compile_seconds": 0.05546528100967407,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:18.865148+00:00",
+          "median_us": 8.864,
+          "rtt_s": 0.5164079312235117,
+          "arch": "sm_120a",
+          "errors": {
+            "sum_1": {
+              "max_absolute_error": 4.57763671875e-05,
+              "max_normalized_tolerance_ratio": 0.00028478991190593653,
+              "sha256": "c6bcb38b56771ebe5cc1ed277c8fb7027c0a10891f1b0fd4dd3b6cadd6104ada"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 8.864
+    },
+    {
+      "variant": {
+        "problem": "r03_mean",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "d7ab661c388ad447f5661a3b36cba448cf5142402756f1e1c35d110db06c84fe",
+        "expected_sha256": "9c53fd65aebbc9b6ca477653643273195149be2d93ab472a135883a0a128c5f7",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "N": 32768,
+          "BLOCK": 4096
+        },
+        "launch": {
+          "node": "mean",
+          "entry": "mean_kernel",
+          "arg_order": [
+            "x",
+            "mean_keepdim_count",
+            "mean",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            1,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                32768
+              ],
+              "seed": 0
+            },
+            {
+              "name": "mean_keepdim_count",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                32768.0
+              ]
+            },
+            {
+              "name": "mean",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/r03_mean-0/kernel.ptx",
+        "ptx_sha256": "45197a7919f1c5911e25a54a6ff6b9661b99126de0ce3a3de0916710b2694237",
+        "compile_seconds": 0.06849388405680656,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:20.070432+00:00",
+          "median_us": 6.464,
+          "rtt_s": 0.5540825985372066,
+          "arch": "sm_120a",
+          "errors": {
+            "mean": {
+              "max_absolute_error": 0.0,
+              "max_normalized_tolerance_ratio": 0.0,
+              "sha256": "f16dae09f39e88b2fb4c78d8d3e317f866b97034162db6b646fc43b389dd7f10"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 6.464
+    },
+    {
+      "variant": {
+        "problem": "r04_row_sum",
+        "config": 0,
+        "compiler": "Triton3.6.0",
+        "source_sha256": "b9adc78a649f790f5ae471bdcfecf5a7e80e286cd2a6473b7835a67d0c93749c",
+        "meta_sha256": "803cb710590156ad319eb44b2d2aa6c1ee9b0e3a666ebc09de259e50d83a3ba1",
+        "expected_sha256": "cb724cbe21276b1438add7263e418f52c0eb90c4501954a245678dcc793c895d",
+        "options": {
+          "num_warps": 4,
+          "num_stages": 2,
+          "enable_fp_fusion": true,
+          "ptx_version": 87
+        },
+        "constants": {
+          "COLS": 512,
+          "BLOCK": 512
+        },
+        "launch": {
+          "node": "sum_1",
+          "entry": "row_sum_kernel",
+          "arg_order": [
+            "x",
+            "sum_1",
+            "__triton_global_scratch",
+            "__triton_profile_scratch"
+          ],
+          "grid": [
+            64,
+            1,
+            1
+          ],
+          "block": [
+            128,
+            1,
+            1
+          ],
+          "smem_bytes": 16,
+          "zero_outputs": [],
+          "args": [
+            {
+              "name": "x",
+              "dtype": "f32",
+              "shape": [
+                64,
+                512
+              ],
+              "seed": 0
+            },
+            {
+              "name": "sum_1",
+              "dtype": "f32",
+              "shape": [
+                64
+              ],
+              "output": true
+            },
+            {
+              "name": "__triton_global_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            },
+            {
+              "name": "__triton_profile_scratch",
+              "dtype": "f32",
+              "shape": [
+                1
+              ],
+              "data": [
+                0.0
+              ]
+            }
+          ],
+          "final": true
+        },
+        "ptx": "/tmp/deuteron-5090-r5/comparison/triton-fused/r04_row_sum-0/kernel.ptx",
+        "ptx_sha256": "6b420896b05744941081bbb2ee2b2d8f3307f01fcb4d98e9690e078a789589ab",
+        "compile_seconds": 0.03323415480554104,
+        "shared": 16,
+        "target": "sm_120a",
+        "status": "compiled"
+      },
+      "calls": [
+        {
+          "started_utc": "2026-10-24T18:57:21.325390+00:00",
+          "median_us": 3.136,
+          "rtt_s": 0.5113605875521898,
+          "arch": "sm_120a",
+          "errors": {
+            "sum_1": {
+              "max_absolute_error": 4.76837158203125e-06,
+              "max_normalized_tolerance_ratio": 0.009210066701145063,
+              "sha256": "fea02eda6b9f3c4b54a303227d254a0b684043536049f79594e151122143594c"
+            }
+          },
+          "correct": true
+        }
+      ],
+      "correct": true,
+      "warm_median_us": 3.136
+    }
+  ],
+  "runner_calls": {
+    "compile": 23,
+    "run": 35,
+    "busy_retries": 0,
+    "recompiles": 0
+  }
+}
