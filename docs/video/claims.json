@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source_paths_relative_to": "repository root",
   "release": {
     "commit": "efb728d9106d864bb5f35efc95bfb5f01d95646a",
@@ -35,6 +35,12 @@
         {
           "path": "README.md",
           "anchor": "compiler-passes"
+        },
+        {
+          "path": "docs/video/passes.json"
+        },
+        {
+          "path": "docs/video/pass-reference.md"
         }
       ],
       "qualification": "Counts the 27 source-linked rows in the Compiler passes inventory, including lowering mechanisms and analyses. LLVM internal passes are separate; this is not a claim of 27 independent pass modules.",
@@ -221,7 +227,7 @@
           "path": "docs/video/demo/capture/kernel.ptx"
         }
       ],
-      "qualification": "The TF32x3 demo retains the asynchronous copy ring. TMA, WGMMA, and TMEM are not implemented."
+      "qualification": "Eligible TF32x3 and FP32 matrix paths retain the input asynchronous ring; certified packed BF16 staging replaces it with register prefetch and packed shared stores. TMA, WGMMA, and TMEM are not implemented."
     },
     {
       "id": "fp16_storage",
@@ -253,6 +259,103 @@
         }
       ],
       "qualification": "Unsupported features fail explicitly; validation does not prove arbitrary IR bounds, synchronization, termination, or universal IEEE behavior."
+    },
+    {
+      "id": "pass_load_reuse",
+      "claim": "Four-wide elementwise vectorization and guarded reduction input forwarding expose contiguous memory accesses and preserve eligible values for the consumer.",
+      "sources": [
+        {
+          "path": "compiler/passes/vectorize.py",
+          "symbol": "vectorize_elementwise"
+        },
+        {
+          "path": "compiler/passes/regforward.py",
+          "symbol": "forward_reduction_loads_register"
+        },
+        {
+          "path": "compiler/transforms.py",
+          "symbol": "striped_reduction"
+        }
+      ],
+      "qualification": "Each path has its own coverage, ownership, readonly-input, and lifetime conditions. Independent accumulators are selected for eligible long coalesced reductions."
+    },
+    {
+      "id": "pass_splitk_folding",
+      "claim": "Split-K grid folding merges existing logical K partitions into deeper per-CTA work, retaining the physical launch and atomic output update.",
+      "sources": [
+        {
+          "path": "compiler/passes/gridfold.py",
+          "symbol": "fold_grid_contractions"
+        }
+      ],
+      "qualification": "The factor-two diagram is illustrative per output tile within a larger grid. Selection checks divisibility, affine coverage, depth <=32, shared memory <=48 KiB, and at least 32768 remaining logical threads."
+    },
+    {
+      "id": "pass_packed_pipeline",
+      "claim": "Certified FP32 copy rings for BF16 lowering can become register prefetch, producer high/residual packing, one used shared stage, fragment lookahead, and guarded final drain.",
+      "sources": [
+        {
+          "path": "compiler/passes/regstage.py",
+          "symbol": "stage_register_loads"
+        },
+        {
+          "path": "compiler/codegen/tensor.py",
+          "symbol": "TensorEmitter._emit_packed"
+        },
+        {
+          "path": "compiler/codegen/lower.py"
+        }
+      ],
+      "qualification": "The exact original clamped copy phase, complete alignment/coverage, and exclusive shared ownership are checked. Producer synchronization remains. One used stage does not establish lower reserved shared allocation; the packed path replaces cp.async for that ring."
+    },
+    {
+      "id": "pass_staged_recurrence",
+      "claim": "Recognized online max/mass/value recurrences compute scores once per sharing group, form unnormalized exponential weights, update mass in registers, and store weights for PV.",
+      "sources": [
+        {
+          "path": "compiler/passes/recurrence.py",
+          "symbol": "RecurrenceEmitter.emit"
+        },
+        {
+          "path": "compiler/passes/lifetime.py",
+          "symbol": "recurrence_storage_is_warp_private"
+        }
+      ],
+      "qualification": "Operand and weight staging require coverage and scratch/traffic guards. Aliasing dead operand storage requires same-warp and same-component dependence, a finite negative identity, and no later conflicting use."
+    },
+    {
+      "id": "pass_grouped_pv",
+      "claim": "An eligible one-warp, 32-column recurrence uses four eight-lane groups over key shards; lanes accumulate four adjacent columns, combine groups, then eight lanes replay four output columns each.",
+      "sources": [
+        {
+          "path": "compiler/passes/recurrence.py",
+          "symbol": "_grouped_value_axis"
+        },
+        {
+          "path": "compiler/passes/recurrence.py",
+          "symbol": "RecurrenceEmitter.grouped_values"
+        },
+        {
+          "path": "tests/test_attention.py"
+        }
+      ],
+      "qualification": "Requires the certified FP32 shape, aligned contiguous columns, unique ownership, and a closed suffix. The denominator and current accumulator are restored before each column replay."
+    },
+    {
+      "id": "innovation_attribution",
+      "claim": "The engineering contribution is the recognizers, guards, ownership rewrites, and composition of GPU transformations implemented in Deuteron.",
+      "sources": [
+        {
+          "path": "docs/video/innovations.md"
+        },
+        {
+          "path": "docs/video/pass-reference.md"
+        },
+        {
+          "path": "compiler/build.py"
+        }
+      ],
+      "qualification": "Tensorization, compensated products, attention algorithms, shared layouts, software pipelining, vector loads, and warp collectives are established techniques. LLVM supplies optimization and NVPTX. No first-ever or per-pass speedup claim is made."
     }
   ],
   "demo": {
@@ -292,15 +395,17 @@
         "json_pointer": "/variants/7"
       },
       "ptx_sha256": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1"
-    }
+    },
+    "presentation_use": "Supporting source material only; removed from the narrated deck."
   },
   "presentation_caveats": [
     "Say 27 documented pass/lowering entries, not 27 independent compiler passes.",
-    "Say 103 public tests with H100/assembly enabled, not 103 GPU workloads.",
     "Label performance as RTX 5090 warm kernel latency over the 15 open workloads.",
     "Name the LLVM NVPTX backend and the tested NVCC/Triton baselines explicitly.",
-    "The demo proves compilation and instruction emission; its performance and GPU correctness are not measured during this capture.",
-    "LLVM supplies optimization/code generation; eligibility under the hackathon's prohibition on existing compilers remains unconfirmed (SUBMISSION.md)."
+    "LLVM supplies optimization/code generation; eligibility under the hackathon's prohibition on existing compilers remains unconfirmed (SUBMISSION.md).",
+    "The old standalone PTX-demo and reliability/test-count slides are not part of this revision.",
+    "The three reference slides are outside the three-minute timeline.",
+    "The benchmark shows whole-compiler results, not an isolated gain from any illustrated pass."
   ],
   "evidence_sha256": {
     "README.md": "bf3da0fbc4ed74217bb0948aafda3c7ae74c5d7ebd66d70b163c4aa913ee8dec",
@@ -308,14 +413,44 @@
     "benchmarks/features-rtx5090-2026-10-24-r6.json": "8b3d37195c5b102ee4c3ee0d5cb5b2291dd4221536ffa6bd5ac67c197703736e",
     "benchmarks/rtx5090-2026-10-24-r6.json": "8f4d78d39e141047ec51af47764a586eefef90b6a807db5836de5a7e58bd19bb",
     "benchmarks/validation-2026-10-24-r6.json": "af7b64a06332b896986456d377c53f8cb24f26732312db57ca5673df0a3f5a4d",
+    "compiler/analysis.py": "3d422a8654595239b38f82bed1e90ff472eeb7ab488cfccfbd65e3ed3f59d265",
     "compiler/build.py": "41d2519619e99dae19e645968eaab5b7834d3c6e4c31f8bbd50bb11f880b8cf2",
     "compiler/codegen/lower.py": "a03462382e875891d07724da295e2713093d79586d0e96c0fdb84a0f99d5e9c4",
     "compiler/codegen/tensor.py": "159248f3f201e722dcff0c8d7c0fd0f3ae9169c931e7fd7a743e56a0e5215247",
+    "compiler/passes/contraction.py": "0634af7933ecf2b14c67b7c6467cadeefb5407cc0c25d004b3512c3018e9b8f4",
+    "compiler/passes/gridfold.py": "b99d3c42e4137f7050d086a4c63b0acbe7977e4ba475814ab53bd663f01e2e16",
+    "compiler/passes/hybrid_normalizer.py": "79704821227efd407210c4aa66219cd6b111bd5c9ed9a2b8c8ac9873b9d35867",
+    "compiler/passes/lifetime.py": "e67e11e3cc25d92ae4ef2ef5c7637c424896a4d31748c0feeb773c93b9c4c2d0",
+    "compiler/passes/recurrence.py": "d648cd5bc580a818b6c63d2746604a4f9f1f0c0237a10f2edbfad883ccc84e5d",
+    "compiler/passes/regforward.py": "2e872f914334c2be776f38bf48afe657607cb4421c62fdc6de60b31d12e1f2fc",
+    "compiler/passes/regstage.py": "36f6217af5bd48b380567d1bb838691a05b227901d95a61e68ff70338f2883e5",
+    "compiler/passes/tailtree.py": "7a53257bfd171249c7c699d4d81fe6bfa7472af27c141f82d64ac41c822f08da",
+    "compiler/passes/vectorize.py": "07cbee6b3c736e792ea101f32980492256e263d9a51753a111cd81e163f3ee63",
+    "compiler/ptx.py": "d99b3e8e7244544746888027a35f5ea8aa74439448e3d9b06932028d8aa47d8a",
     "compiler/storage.py": "b70c5e58f8ff37f30537b1a7e1374d802989af6f095ee23e03353a503254cc42",
+    "compiler/transforms.py": "890bd0de81870f7b120b008ab62f03b0f90cc744720f5dd1f5f1d060e1e1cb30",
     "docs/production.md": "11da5666d2efc4fde979bb3a9173ef7c7a1f616ec03b1ffbf94494c66f2367d6",
     "docs/video/demo/capture/kernel.ptx": "c1cb19cbdb11541acc84f9ad1d12fd550ff0da487689d4d1b3ecfc747c3419c1",
     "docs/video/demo/capture/provenance.json": "678a5e8f2939206eb9305fffe48a4bd287559f41346189abb88b1f1dce1c7fff",
+    "docs/video/innovations.md": "39babdafc843f72b3b893234e012f423cc0e4eedfa0bdffaad7af317c5167cac",
+    "docs/video/pass-reference.md": "3dd94826a2e637823445002a9785ef0912543585cf16f283bff0b1b89dea2709",
+    "docs/video/passes.json": "c11033aec4d70031b97648f7f17e7899292c951c9e0f3312b140f02a3eab7bc8",
     "examples/f16_storage.py": "104b41f3c26939e0ede4f8067c3c46be99cbad65800d9f598107e198c9a02bf9",
-    "examples/tensor_matmul/README.md": "8c9678bece21afe7ce02e7e7b9a04dc86323c4f21dcfa90b95cd5a7c8a70a2dd"
+    "examples/tensor_matmul/README.md": "8c9678bece21afe7ce02e7e7b9a04dc86323c4f21dcfa90b95cd5a7c8a70a2dd",
+    "tests/test_attention.py": "a0d7c9ece3be6ebcfb00bbd359899a27b4fe3071c5bb822c6c499b8373c2da4f"
+  },
+  "presentation_revision": {
+    "name": "passes-and-innovations",
+    "main_slides": 9,
+    "reference_slides": 3,
+    "reference_slides_in_video": false,
+    "spoken_words": 355,
+    "removed_topics": [
+      "Standalone compile/PTX demonstration (previous slide 4)",
+      "Reliability and test-count closing slide (previous slide 6)"
+    ],
+    "new_gpu_runs": 0,
+    "new_compiler_changes": false,
+    "benchmark_scope": "Recorded whole-compiler results; no new pass ablations"
   }
 }

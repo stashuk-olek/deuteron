@@ -1,56 +1,147 @@
 {
-  "title": "Deuteron: a three-minute compiler presentation",
+  "schema_version": 2,
+  "revision": "passes-and-innovations",
+  "title": "Deuteron: compiler passes and innovations in three minutes",
   "language": "en",
   "target_seconds": 180,
   "segments": [
     {
       "slide": 1,
       "start_seconds": 0,
-      "end_seconds": 20,
-      "title": "Scheduled IR to RTX 5090",
-      "spoken": "A fast GPU still needs a good schedule. We built Deuteron to compile scheduled Emmy Kernel IR into PTX for the RTX 5090. We reduce repeated work and memory traffic while preserving each workload's original launch, inputs, and numerical tolerances.",
-      "visual_cue": "Show Deuteron, Scheduled Emmy Kernel IR → PTX, and RTX 5090. Reveal a short line: same launch, inputs, and tolerances. Keep the opening uncluttered."
+      "end_seconds": 12,
+      "title": "The compiler transformations we built",
+      "spoken": "Deuteron compiles scheduled Emmy Kernel IR into PTX for the RTX 5090. Our contribution is guarded compiler passes that change memory reuse, parallel work, and tensor pipelines.",
+      "brief_cue": "Open on the presenter, then the title. Point to reuse, parallel work, and tensor pipelines.",
+      "delivery": "Start directly. Give the three transformation families one beat each.",
+      "visual_cue": "Show the title and the three contribution families: reuse data, redistribute work, and build tensor pipelines. Keep scheduled Emmy IR and RTX 5090 visible.",
+      "pass_ids": []
     },
     {
       "slide": 2,
-      "start_seconds": 20,
-      "end_seconds": 50,
-      "title": "Structure, guards, and LLVM",
-      "spoken": "First, we validate the kernel and launch metadata. Custom passes then recognize reusable loads, cooperative reductions, and matrix pipelines. Each rewrite checks shapes, ownership, and dependencies; if its proof fails, supported code keeps the generic path. We lower the result into typed LLVM IR. LLVM supplies optimization and the NVPTX backend; our contribution is the GPU analysis, guarded transformations, and lowering.",
-      "visual_cue": "Reveal the pipeline left to right: IR + launch metadata → validation and custom GPU passes → typed LLVM IR → LLVM optimization and NVPTX → PTX. Highlight reuse, reductions, and matrix staging. Keep the LLVM/NVPTX credit visible."
+      "start_seconds": 12,
+      "end_seconds": 27,
+      "title": "Where our passes run",
+      "spoken": "We validate IR and metadata; each rewrite checks index and ownership conditions. Early passes vectorize loops, forward reduction inputs, reorder recurrences, and fold split-K grids. Specialized lowering follows; LLVM supplies optimization and NVPTX code generation.",
+      "brief_cue": "Follow the pipeline. Say the LLVM credit clearly.",
+      "delivery": "Follow the stages left to right. Read the early rewrite names as a sequence, not as separate claims of algorithmic invention.",
+      "visual_cue": "Show input validation, the actual early rewrite order, specialized lowering, and LLVM/NVPTX. The early order is vectorization, register forwarding, recurrence reordering, then grid folding. Name the project contribution: recognizers, guards, and transformed GPU schedules.",
+      "pass_ids": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06"
+      ]
     },
     {
       "slide": 3,
-      "start_seconds": 50,
-      "end_seconds": 85,
-      "title": "Tensor cores, copies, and types",
-      "spoken": "For matrix multiplication, we use compensated BF16x3 or TF32x3 tensor products. Buffers and accumulation stay FP32; lower precision is internal, and these modes remain approximations. Ordinary FP32 multiplication is available too. Asynchronous global-to-shared copies, with explicit waits and barriers, let computation overlap data movement. A separate FP16 storage path provides exact widening and nearest-even narrowing, with explicit FP32 arithmetic. The focus is reducing memory traffic and feeding the hardware effectively.",
-      "visual_cue": "Use three columns: BF16x3 / TF32x3 tensor products, cp.async + waits/barriers, and FP16 storage → FP32 arithmetic. Label tensor buffers and accumulation FP32, internal approximate operands, and the ordinary FP32 option. Optional small copy label: 4 / 8 / 16 bytes."
+      "start_seconds": 27,
+      "end_seconds": 44,
+      "title": "Reuse data before loading it again",
+      "spoken": "Elementwise vectorization packs four values per lane. Reduction load forwarding keeps inputs in registers for the consumer instead of loading them again. Coalesced sum and square reductions use contiguous loads; long eligible loops add independent accumulators.",
+      "brief_cue": "Trace the retained vector through reduction and consumer.",
+      "delivery": "Point once to the removed second global read. The diagrams illustrate admitted patterns, not a measurement of every kernel.",
+      "visual_cue": "Show scalar loop to four values per lane; then load vector, reduce, and reuse the same vector in a consumer. Highlight matching indices, readonly input, closed lifetimes, and aligned complete coverage.",
+      "pass_ids": [
+        "P03",
+        "P04",
+        "P08"
+      ]
     },
     {
       "slide": 4,
-      "start_seconds": 85,
-      "end_seconds": 110,
-      "title": "Compile it, inspect it",
-      "spoken": "Let's compile the standalone matrix example in TF32x3 mode for the 5090. Compilation runs on the CPU, using only the scheduled IR and its adjacent launch metadata. The generated PTX contains mma.sync tensor instructions and cp.async copies. These are actual compiler outputs. This command only compiles; GPU correctness is tested separately.",
-      "visual_cue": "Show the real terminal capture from docs/video/demo/capture/transcript.txt. Recording command: python docs/video/demo/run.py --output /tmp/deuteron-video-demo. Highlight the emitted mma.sync.aligned.m16n8k8.row.col.f32.tf32.tf32.f32 and cp.async.cg.shared.global instructions. Keep a Compile-only · SM120/O3 · TF32x3 label visible; do not imply live GPU execution or numerical checking."
+      "start_seconds": 44,
+      "end_seconds": 63,
+      "title": "Reshape parallel work",
+      "spoken": "Cooperative dot reduction shares a repeated dot across lanes and combines partials with shuffles. Small-tree elimination removes redundant reduction stages. Split-K grid folding merges eligible K partitions into deeper work per block while preserving the original physical grid.",
+      "brief_cue": "Show lane cooperation, then folded K work and inactive surplus blocks.",
+      "delivery": "Pause between the lane-level rewrite and the block-level rewrite. Keep the original-grid constraint audible.",
+      "visual_cue": "Use two concrete illustrations: repeated dot to lane partials plus shuffle, and four eligible split-K partitions folded into two logical partitions with twice the K work. Label the factor-two drawing illustrative; the actual factor is guarded. Surplus physical CTAs exit; the original atomic output remains. The four partitions are per output tile within a larger grid; sufficient total parallelism remains a guard.",
+      "pass_ids": [
+        "P06",
+        "P07",
+        "P09",
+        "P10"
+      ]
     },
     {
       "slide": 5,
-      "start_seconds": 110,
-      "end_seconds": 150,
-      "title": "Measured on the open set",
-      "spoken": "Across fifteen open workloads, Deuteron's geometric mean warm latency is three point seven five microseconds. That's a one point six six times speedup over generated CUDA compiled with NVCC, and one point one five times over the tested Triton baseline. We used two hundred seventy calls with balanced execution order, checking every output against the original references and tolerances. Raw samples and artifacts are included. Compilation, assembly, and network time are excluded. These are warm kernel timings on this set, with a limited Triton search.",
-      "visual_cue": "Show warm geometric-mean latency bars: Deuteron 3.752 µs, NVCC 6.216 µs, tested Triton 4.332 µs. Headline Deuteron speedups: 1.66× / 1.15×. Footer: 15 open workloads · 270 balanced warm calls · all original output checks pass. Small method detail: 20 warmups / 200 iterations per call. Link the round-6 raw results; do not mix in the separate cold profile."
+      "start_seconds": 63,
+      "end_seconds": 86,
+      "title": "Turn contractions into tensor work",
+      "spoken": "Contraction tensorization recognizes a closed shared-memory multiply-add and emits compensated BF16x3 or TF32x3 products. Three high and residual products accumulate in FP32; omitting low times low makes this approximate. Shared-memory layout matches producers to MMA fragments. Separate FP16 storage uses explicit FP32 arithmetic.",
+      "brief_cue": "Explain the three products. Keep the FP16 strip separate from tensor operands.",
+      "delivery": "Say BF16x3 and TF32x3 slowly. The approximation and the separate FP16 storage path must remain explicit.",
+      "visual_cue": "Show a shared-memory contraction becoming warp MMA, with high/high, high/low, and low/high products. Label low/low omitted, FP32 buffers and accumulation, and ordinary FP32 mode available. Show a separate FP16 storage to FP32 arithmetic to nearest-even FP16 store strip.",
+      "pass_ids": [
+        "P02",
+        "P11",
+        "P12"
+      ]
     },
     {
       "slide": 6,
+      "start_seconds": 86,
+      "end_seconds": 109,
+      "title": "Rewrite the pipeline feeding tensor cores",
+      "spoken": "Packed register staging replaces a certified FP32 copy ring for BF16 lowering with vector prefetch, high and residual packing, and one used shared stage. Fragment pipelining loads the next MMA fragment early. Pipeline drain skips unused final prefetches. Other eligible paths retain asynchronous copies.",
+      "brief_cue": "Compare the two paths. The packed BF16 path replaces the asynchronous ring.",
+      "delivery": "Stress replaces and used stage. Do not claim that packing itself is asynchronous or that reserved shared memory is halved.",
+      "visual_cue": "Compare the scheduled FP32 asynchronous copy ring with the certified packed BF16 rewrite: register prefetch, producer packing, shared layout, and fragment lookahead. Keep the exact copy-phase guard visible. Show final unused prefetch/consumer barrier omitted while producer synchronization remains. TF32x3 and FP32 retain the eligible cp.async path.",
+      "pass_ids": [
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ]
+    },
+    {
+      "slide": 7,
+      "start_seconds": 109,
+      "end_seconds": 132,
+      "title": "Recognize and stage the attention recurrence",
+      "spoken": "Staged online recurrence computes attention scores once per sharing group, then materializes unnormalized weights for mass and value accumulation. Blocked recurrence loads group adjacent keys. Shared-storage reuse overwrites dead operands only when warp ownership and dependency checks make it safe.",
+      "brief_cue": "Follow scores to weights to mass and PV. Then show guarded storage reuse.",
+      "delivery": "Say unnormalized weights, and keep once per sharing group. Reuse depends on the proof shown on the slide.",
+      "visual_cue": "Show repeated score and online max/mass/value work becoming score reuse, row maximum, shared unnormalized weights, and separate mass/PV accumulation. Show two/four adjacent key rounds and read-to-maximum-to-store lifetime ordering in the same warp and component. Each unnormalized weight feeds register mass accumulation directly and shared storage for PV; mass does not reread shared weights.",
+      "pass_ids": [
+        "P16",
+        "P17",
+        "P19"
+      ]
+    },
+    {
+      "slide": 8,
+      "start_seconds": 132,
+      "end_seconds": 150,
+      "title": "Redistribute probability–value work",
+      "spoken": "Warp-distributed vector PV reduction targets one warp and thirty-two columns. Four groups split the keys; each lane accumulates four adjacent columns. Shuffles combine the groups. The original output suffix is replayed, restoring the denominator before every column.",
+      "brief_cue": "Trace four key shards into the first eight writing lanes.",
+      "delivery": "Explain the ownership picture, then emphasize denominator restoration as the compiler correctness detail.",
+      "visual_cue": "Draw four eight-lane groups, each processing a key shard and four adjacent columns per lane. Combine groups with butterfly offsets 16 and 8; only the first eight lanes write. Show restoring the saved denominator before each closed per-column suffix replay.",
+      "pass_ids": [
+        "P18"
+      ]
+    },
+    {
+      "slide": 9,
       "start_seconds": 150,
       "end_seconds": 175,
-      "title": "Reliability and an explicit scope",
-      "spoken": "We also ship an installable command, restricted parsing, validated interfaces, and corruption-tolerant caches. All one hundred and three tests passed with GPU checks enabled on H100; eleven feature examples passed on the 5090. Scope stays explicit: supported scheduled IR and documented numerical modes. Deuteron makes GPU compiler decisions visible, reproducible, and measurable.",
-      "visual_cue": "Show restricted parsing, validated interfaces, bounded memory cache, and atomic checked disk records. Separate validation labels: 103 tests with GPU checks enabled on H100; 11 native RTX 5090 examples. Close with Supported scheduled IR · Reproducible evidence and a readable repository label. Keep this slide unchanged for the five-second silent end hold."
+      "title": "Measure the whole compiler on RTX 5090",
+      "spoken": "On fifteen open workloads, geometric mean warm latency is three point seven five microseconds. Speedups are one point six six times over generated CUDA with NVCC, and one point one five times over the tested Triton baseline. All two hundred seventy calls passed the original checks. These are whole-compiler results with a limited Triton search.",
+      "brief_cue": "Slow for the ratios. Hold the results slide silently from 2:55 to 3:00.",
+      "delivery": "Keep warm, tested baseline, whole-compiler, and limited search. Do not attribute the aggregate numbers to a single pass.",
+      "visual_cue": "Show the recorded warm latency bars: Deuteron 3.752 microseconds, NVCC 6.216, tested Triton 4.332. Show 1.66x and 1.15x, 15 open workloads, 270 balanced calls, 20 warmups/200 iterations, original output checks, and compile/assembly/transport excluded. Hold this slide unchanged for the last five seconds.",
+      "pass_ids": []
     }
   ],
-  "end_hold_seconds": 5
+  "end_hold_seconds": 5,
+  "reference_slides": 3,
+  "reference_slides_in_video": false,
+  "removed_topics": [
+    "Standalone compile/PTX demonstration (previous slide 4)",
+    "Reliability and test-count closing slide (previous slide 6)"
+  ],
+  "innovation_scope": "Implemented compiler recognizers, guards, ownership rewrites, and pipeline composition; established GPU techniques and LLVM are credited. No first-ever claim or individual-pass speedup is asserted."
 }

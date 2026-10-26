@@ -1,6 +1,6 @@
 # Recording and editing the Deuteron video
 
-The target is a three-minute presentation. Record one continuous talking-head take using the supplied script; the edit will insert six full-screen slides and any available demos. Editing is **awaiting your recording**.
+The target is a three-minute presentation. Record one continuous talking-head take using the supplied script; the edit will insert nine full-screen slides focused on compiler passes and engineering contributions. Editing is **awaiting your recording**.
 
 ## Record one clean take
 
@@ -18,15 +18,20 @@ These are target positions in the finished video, not cut points in your raw rec
 
 | Time | Slide | Picture |
 | --- | --- | --- |
-| 0:00–0:20 | `slide-01` | Presenter opening, then the first slide full screen |
-| 0:20–0:50 | `slide-02` | Full-screen slide, following the narration |
-| 0:50–1:25 | `slide-03` | Full-screen slide; optional relevant demo insert |
-| 1:25–1:50 | `slide-04` | Full-screen slide; optional relevant demo insert |
-| 1:50–2:30 | `slide-05` | Full-screen slide with readable details |
-| 2:30–2:55 | `slide-06` | Closing slide, then presenter for the closing sentence |
-| 2:55–3:00 | `slide-06` | Static closing slide; no speech or music |
+| 0:00–0:12 | `slide-01` | The compiler transformations we built |
+| 0:12–0:27 | `slide-02` | Where our passes run |
+| 0:27–0:44 | `slide-03` | Reuse data before loading it again |
+| 0:44–1:03 | `slide-04` | Reshape parallel work |
+| 1:03–1:26 | `slide-05` | Turn contractions into tensor work |
+| 1:26–1:49 | `slide-06` | Rewrite the pipeline feeding tensor cores |
+| 1:49–2:12 | `slide-07` | Recognize and stage the attention recurrence |
+| 2:12–2:30 | `slide-08` | Redistribute probability–value work |
+| 2:30–2:55 | `slide-09` | Measure the whole compiler on RTX 5090 |
+| 2:55–3:00 | `slide-09` | Static RTX 5090 comparison; no speech or music |
 
-Use clean cuts and occasional **6–8-frame crossfades** at 30 fps, with restrained motion. Keep slides readable; add a small presenter inset only where it leaves the slide and captions clear. Demos can replace part of a slide interval without extending the timeline. Match changes to the actual spoken phrases, then adjust pauses and inserts to approach three minutes. If the narration overruns, shorten a sentence with a pickup rather than cutting words or speeding up the voice.
+The three optional pass-reference slides are for preparation and discussion, outside the three-minute video. The prior standalone PTX demonstration and reliability/test-count slides are removed from the narrated deck.
+
+Use clean cuts and occasional **6–8-frame crossfades** at 30 fps, with restrained motion. Keep slides readable; add a small presenter inset only where it leaves the slide and captions clear. Use the pass diagrams for the indicated intervals; there is no separate terminal-demo segment in this revision. Match changes to the actual spoken phrases, then adjust pauses and inserts to approach three minutes. If the narration overruns, shorten a sentence with a pickup rather than cutting words or speeding up the voice.
 
 ## Sound, captions, and delivery
 

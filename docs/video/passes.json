@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "scope": "These 27 README entries include analyses, structural rewrites, policies, and specialized lowerings; they are not 27 independently scheduled passes. LLVM optimization stages are separate.",
+  "entries": [
+    {
+      "id": "P01",
+      "name": "Symbolic index and effect analysis",
+      "source": "compiler/analysis.py",
+      "summary": "Prove index equivalence, stride, variable use, and effects.",
+      "guard": "Integer coordinates and supported operators; non-affine products decline.",
+      "description": "Canonicalizes supported affine expressions, checks uses/equality/strides, and provides inputs to pass-specific bounds and ownership proofs. Unsupported expressions stop the relevant rewrite."
+    },
+    {
+      "id": "P02",
+      "name": "Storage typing",
+      "source": "compiler/storage.py",
+      "summary": "Keep half storage separate from explicit FP32 arithmetic.",
+      "guard": "f16/f32 global buffers, control-only indices, explicit f32 results, plain stores.",
+      "description": "Validates half/float types before rewrites and lowering: explicit FP32 arithmetic, control-only indices, and ordinary output stores."
+    },
+    {
+      "id": "P03",
+      "name": "Elementwise vectorization",
+      "source": "compiler/passes/vectorize.py",
+      "summary": "Turn scalar thread-strided loops into four values per lane.",
+      "guard": "Extent divisible by 4×threads; contiguous indices; safe overlap and lifetimes.",
+      "description": "Converts contiguous thread-strided scalar loops to four elements per lane. Requires divisible extents, safe overlap, closed temporaries, and ordinary stores."
+    },
+    {
+      "id": "P04",
+      "name": "Reduction load forwarding",
+      "source": "compiler/passes/regforward.py",
+      "summary": "Reuse reduction inputs in registers in the following consumer.",
+      "guard": "Readonly matching input, no writes, intervening CTA barrier, ≤8 vector trips.",
+      "description": "Keeps input vectors in registers across a reduction and its consumer, removing repeated global loads. Proves matching indices, readonly inputs, and closed lifetimes."
+    },
+    {
+      "id": "P05",
+      "name": "Recurrence-axis reordering",
+      "source": "compiler/passes/recurrence.py",
+      "summary": "Move score-independent tile axes into the lane-sharing position.",
+      "guard": "Closed named coordinates, exact tile coverage, no rasterization, wider sharing.",
+      "description": "Reorders logical tile axes to increase provable lane sharing while retaining the physical launch and output mapping."
+    },
+    {
+      "id": "P06",
+      "name": "Split-K grid folding",
+      "source": "compiler/passes/gridfold.py",
+      "summary": "Merge split-K partitions into deeper per-CTA contractions.",
+      "guard": "Atomic dense contraction; affine coverage; depth≤32, shared≤48 KiB, enough work.",
+      "description": "Folds an output-independent atomic contraction axis into deeper per-CTA K work. Guards affine coverage, shared memory, and remaining parallelism; surplus physical CTAs exit through the tile guard."
+    },
+    {
+      "id": "P07",
+      "name": "Cooperative dot reduction",
+      "source": "compiler/transforms.py",
+      "summary": "Share a repeated dot product across a power-of-two lane group.",
+      "guard": "Closed load/load/product/sum loop, full warps, uniform scope, width≤32.",
+      "description": "Distributes a repeated dot product across a power-of-two lane group and combines partial sums with shuffles. Requires full participating warps and closed scalar/index scope."
+    },
+    {
+      "id": "P08",
+      "name": "Coalesced sum/square reduction",
+      "source": "compiler/transforms.py",
+      "summary": "Coalesce sum/square loads and pipeline long register reductions.",
+      "guard": "Seeded sum/square with matching warp/tree reduction; long path also readonly.",
+      "description": "Maps thread-strided reductions to contiguous vector loads. Long eligible loops use independent FP32 accumulators and alternating load batches; explicit unroll settings bypass that automatic pipeline."
+    },
+    {
+      "id": "P09",
+      "name": "Small-tree elimination",
+      "source": "compiler/passes/tailtree.py",
+      "summary": "Replace small shared reduction trees with direct loads and adds.",
+      "guard": "2–8 power-of-two partials, producer barrier, exclusive scratch, closed states.",
+      "description": "Replaces closed trees of 2–8 warp partials with direct shared loads and balanced scalar addition; eligible multiple-state trees use a subgroup shuffle. Requires the producer barrier and exclusive scratch lifetime."
+    },
+    {
+      "id": "P10",
+      "name": "Warp tree specialization",
+      "source": "compiler/codegen/lower.py",
+      "summary": "Let warp 0 finish a warp-partial tree and broadcast the result.",
+      "guard": "Enabled specialization, warp-indexed tree, no inner dimension, length≤32.",
+      "description": "Lets warp 0 combine up to 32 warp partials and broadcast through shared memory with one CTA barrier. Other trees retain generic shared-memory reduction."
+    },
+    {
+      "id": "P11",
+      "name": "Contraction tensorization",
+      "source": "compiler/passes/contraction.py",
+      "summary": "Recognize dense shared-memory contractions for compensated MMA.",
+      "guard": "Complete affine tiles, full warps, closed scalar scope, supported M/N/K sizes.",
+      "description": "Recognizes dense shared-memory multiply/add contractions and emits BF16x3 or TF32x3 MMA. Proves complete affine output tiles, full warps, supported dimensions, and scalar ownership."
+    },
+    {
+      "id": "P12",
+      "name": "Tensor shared-memory layout",
+      "source": "compiler/codegen/tensor.py",
+      "summary": "Match tensor producers and consumers with bank-aware layouts.",
+      "guard": "Recognized tensor operands; compatible dimensions and packed BF16 eligibility.",
+      "description": "Applies matching producer/consumer bank remapping and packed layouts; uses `ldmatrix` for eligible BF16 fragments."
+    },
+    {
+      "id": "P13",
+      "name": "Packed register staging",
+      "source": "compiler/passes/regstage.py",
+      "summary": "Replace a certified copy ring with register prefetch and packed data.",
+      "guard": "Exact original future phase, complete aligned copies, readonly inputs, closed ring.",
+      "description": "Replaces a certified asynchronous matrix-copy ring with vector global prefetches, BF16 high/residual packing, and one packed shared stage. Checks original clamped future coordinates, alignment, bounds, and ownership."
+    },
+    {
+      "id": "P14",
+      "name": "Tensor fragment pipelining",
+      "source": "compiler/codegen/tensor.py",
+      "summary": "Load the next MMA fragment before consuming the current fragment.",
+      "guard": "Certified packed BF16 operands; compatible fragment depth and loop bounds.",
+      "description": "Carries current MMA fragments in loop phis and loads the next fragment before consuming the current one. Keeps the fragment loop compact; the outer packed K loop defaults to unroll two."
+    },
+    {
+      "id": "P15",
+      "name": "Pipeline drain",
+      "source": "compiler/passes/regstage.py",
+      "summary": "Skip the final unused prefetch and consumer barrier.",
+      "guard": "Certified staging loop with uniform next-tile predicate and no later shared users.",
+      "description": "Omits the final unused register prefetch and consumer barrier when no next K tile exists. Producer stores and their barrier remain; the staging proof excludes later shared users."
+    },
+    {
+      "id": "P16",
+      "name": "Staged online recurrence",
+      "source": "compiler/passes/recurrence.py",
+      "summary": "Stage recognized score/max/mass/value recurrences into GPU phases.",
+      "guard": "Exact recurrence algebra, readonly operands, uniform scale, bounded rounds/scratch.",
+      "description": "Recognizes max/mass/weighted-sum recurrences, computes scores once, and separates normalization from value accumulation using shared probabilities. May stage reusable readonly operands with `cp.async` under traffic/scratch-budget guards."
+    },
+    {
+      "id": "P17",
+      "name": "Blocked recurrence loads and address hoisting",
+      "source": "compiler/passes/recurrence.py",
+      "summary": "Group contiguous key rounds and hoist affine value addresses.",
+      "guard": "Compatible 2/4 key rounds; unstaged operands; affine bounded full value coverage.",
+      "description": "Groups contiguous key rounds for vector loads and hoists affine value-gather bases. Requires full coverage, compatible staging, and bounded positive strides."
+    },
+    {
+      "id": "P18",
+      "name": "Warp-distributed vector PV reduction",
+      "source": "compiler/passes/recurrence.py",
+      "summary": "Distribute PV keys across four groups and vectorize four columns.",
+      "guard": "Single full warp, 32 columns, one component, full ownership, replayable suffix.",
+      "description": "For certified single-warp, 32-column recurrences, four groups distribute keys while each lane accumulates four adjacent columns. Shuffles combine groups. Proves alignment, unique output ownership, and closed per-column suffix replay; restores the denominator each time."
+    },
+    {
+      "id": "P19",
+      "name": "Recurrence shared-storage reuse",
+      "source": "compiler/passes/lifetime.py",
+      "summary": "Reuse dead staged-operand storage for shared probabilities.",
+      "guard": "Same warp/component ownership; finite negative identity; bounded full mapping.",
+      "description": "Reuses dead staged-operand storage for probabilities when every overwritten read belongs to the same warp/component. Read-to-maximum-to-store dependence orders reuse; otherwise scratch remains separate."
+    },
+    {
+      "id": "P20",
+      "name": "Hybrid row normalizer",
+      "source": "compiler/passes/hybrid_normalizer.py",
+      "summary": "Separate row maximum work from owned-value exponentials and mass.",
+      "guard": "Closed max/mass tree, finite seed, 64–256 threads, bounded rows, approximate math.",
+      "description": "Each warp obtains the row maximum, each thread exponentiates its owned values, and only scalar mass crosses warps. Requires a closed max/mass tree, bounded work, and approximate math enabled."
+    },
+    {
+      "id": "P21",
+      "name": "Ordered hardware warp maximum",
+      "source": "compiler/codegen/lower.py",
+      "summary": "Use integer warp redux for proven non-NaN FP32 maximum.",
+      "guard": "Full warp; non-NaN identity fold; recurrence CTA must have more than 32 threads.",
+      "description": "Maps proven non-NaN FP32 values to ordered integer keys for `redux.sync.max.s32`, then reverses the mapping. Used for full warps in certified normalizers and multi-warp recurrences; single-warp recurrences retain shuffles."
+    },
+    {
+      "id": "P22",
+      "name": "CTA/thread address factoring",
+      "source": "compiler/codegen/lower.py",
+      "summary": "Decode CTA axes and thread axes separately.",
+      "guard": "Trailing-axis product equals block width; no rasterization; bounded tile ownership.",
+      "description": "Separates leading CTA axes from trailing thread axes when their product matches the block width. Avoids repeated full-ticket division; guards bounds, rasterization, and partial-grid ownership."
+    },
+    {
+      "id": "P23",
+      "name": "Loop cost policy",
+      "source": "compiler/transforms.py",
+      "summary": "Choose structure-sensitive LLVM unroll and vectorization hints.",
+      "guard": "Recognized loop structure; explicit options; specialized coalesced-loop policy.",
+      "description": "Supplies structure-sensitive unroll/vectorization hints. Explicit options remain authoritative; this is a heuristic policy, not runtime autotuning."
+    },
+    {
+      "id": "P24",
+      "name": "Reciprocal-square-root folding",
+      "source": "compiler/transforms.py",
+      "summary": "Recognize adjacent sqrt-to-reciprocal dataflow for approximate rsqrt.",
+      "guard": "Adjacent matching assignments, no self-overwrite, approximate math enabled.",
+      "description": "Folds adjacent sqrt→reciprocal dataflow to approximate reciprocal square root when enabled."
+    },
+    {
+      "id": "P25",
+      "name": "Dead atomic-result elimination",
+      "source": "compiler/ptx.py",
+      "summary": "Use a PTX reduction when an atomic add result is unused.",
+      "guard": "Recognized FP32 global-add form and no later destination-register use.",
+      "description": "Changes unused-result atomic add to PTX reduction while retaining recognized predicate/order/scope qualifiers."
+    },
+    {
+      "id": "P26",
+      "name": "Fixed block contract",
+      "source": "compiler/ptx.py",
+      "summary": "Express the fixed launch width as a PTX block-size requirement.",
+      "guard": "Recognized maxntid directive and the compiler’s fixed-launch contract.",
+      "description": "Changes `.maxntid` to `.reqntid` for the launch's fixed thread dimensions."
+    },
+    {
+      "id": "P27",
+      "name": "Approximate division cleanup",
+      "source": "compiler/ptx.py",
+      "summary": "Select approximate FP32 division only when enabled.",
+      "guard": "approximate_math enabled and an exact div.rn.f32 opcode match.",
+      "description": "Selects approximate division lowering only when the corresponding math option is enabled."
+    }
+  ]
+}

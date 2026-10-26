@@ -1,54 +1,37 @@
 {
   "status": "pass",
-  "spoken_words": 359,
-  "scenes": 6,
+  "revision": "passes-and-innovations",
+  "spoken_words": 355,
+  "scenes": 9,
+  "reference_slides": 3,
+  "pass_entries": 27,
+  "reference_slides_in_video": false,
   "target_seconds": 180,
   "narration_ends_seconds": 175,
-  "script_pdf_pages": 2,
-  "slide_pdf_pages": 6,
+  "page_counts": {
+    "slides.pdf": 9,
+    "pass-reference.pdf": 3,
+    "recording-script.pdf": 3
+  },
   "frame_dimensions": [
     1920,
     1080
   ],
+  "overview_dimensions": [
+    1920,
+    1280
+  ],
   "source_hashes_match": true,
   "asset_hashes_match": true,
+  "claims_hashes_match": true,
+  "pass_inventory_exactly_matches_README": true,
   "narration_consistent_across_markdown_json_docx_pdf_notes": true,
   "pptx_text_and_shape_bounds_checked": true,
+  "pdf_text_spans_within_pages": 473,
   "pdf_and_docx_and_pptx_containers_valid": true,
   "benchmark_numbers_match_release": true,
+  "old_demo_and_reliability_slides_removed": true,
   "local_links_checked": [
-    {
-      "file": "recording-and-editing.md",
-      "target": "edit-plan.json"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "script.json"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "demo/capture/transcript.txt"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "../../benchmarks/rtx5090-2026-10-24-r6.json"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "../../benchmarks/validation-2026-10-24-r6.json"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "../../benchmarks/features-rtx5090-2026-10-24-r6.json"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "../production.md"
-    },
-    {
-      "file": "presentation-script.md",
-      "target": "../../README.md"
-    },
     {
       "file": "README.md",
       "target": "recording-script.pdf"
@@ -59,11 +42,15 @@
     },
     {
       "file": "README.md",
+      "target": "slides.pdf"
+    },
+    {
+      "file": "README.md",
       "target": "presentation-script.md"
     },
     {
       "file": "README.md",
-      "target": "recording-and-editing.md"
+      "target": "pass-reference.pdf"
     },
     {
       "file": "README.md",
@@ -95,11 +82,31 @@
     },
     {
       "file": "README.md",
+      "target": "pass-reference.pdf"
+    },
+    {
+      "file": "README.md",
+      "target": "pass-reference.pptx"
+    },
+    {
+      "file": "README.md",
+      "target": "pass-reference.md"
+    },
+    {
+      "file": "README.md",
+      "target": "innovations.md"
+    },
+    {
+      "file": "README.md",
+      "target": "passes.json"
+    },
+    {
+      "file": "README.md",
       "target": "slides/"
     },
     {
       "file": "README.md",
-      "target": "demo/README.md"
+      "target": "reference-slides/"
     },
     {
       "file": "README.md",
@@ -115,31 +122,297 @@
     },
     {
       "file": "README.md",
+      "target": "demo/README.md"
+    },
+    {
+      "file": "README.md",
       "target": "assets-manifest.json"
     },
     {
-      "file": "demo/README.md",
-      "target": "capture/transcript.txt"
+      "file": "README.md",
+      "target": "verification.json"
     },
     {
-      "file": "demo/README.md",
-      "target": "capture/provenance.json"
+      "file": "presentation-script.md",
+      "target": "script.json"
     },
     {
-      "file": "demo/README.md",
-      "target": "capture/kernel.ptx"
+      "file": "presentation-script.md",
+      "target": "innovations.md"
     },
     {
-      "file": "demo/README.md",
-      "target": "../../../benchmarks/features-rtx5090-2026-10-24-r6.json"
+      "file": "presentation-script.md",
+      "target": "pass-reference.md"
     },
     {
-      "file": "demo/README.md",
-      "target": "../claims.json"
+      "file": "presentation-script.md",
+      "target": "pass-reference.pdf"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "pass-reference.md"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../../benchmarks/rtx5090-2026-10-24-r6.json"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "../production.md"
+    },
+    {
+      "file": "presentation-script.md",
+      "target": "recording-and-editing.md"
+    },
+    {
+      "file": "recording-and-editing.md",
+      "target": "edit-plan.json"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/build.py#L120"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/regforward.py#L302"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/regforward.py#L161"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/gridfold.py#L23"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/gridfold.py#L43"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/gridfold.py#L96"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/contraction.py#L6"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/regstage.py#L70"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/codegen/tensor.py#L121"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/codegen/tensor.py#L133"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/regstage.py#L163"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/regstage.py#L234"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/recurrence.py#L47"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/recurrence.py#L609"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/recurrence.py#L17"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/recurrence.py#L144"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/lifetime.py#L5"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/recurrence.py#L564"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/passes/recurrence.py#L390"
+    },
+    {
+      "file": "innovations.md",
+      "target": "../../compiler/storage.py#L5"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../README.md#compiler-passes"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "passes.json"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/build.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/lower.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/__init__.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/analysis.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/storage.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/vectorize.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/regforward.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/recurrence.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/gridfold.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/transforms.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/transforms.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/tailtree.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/lower.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/contraction.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/tensor.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/regstage.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/tensor.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/regstage.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/recurrence.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/recurrence.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/recurrence.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/lifetime.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/passes/hybrid_normalizer.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/lower.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/lower.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/transforms.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/transforms.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/ptx.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/ptx.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/ptx.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/build.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../compiler/codegen/lower.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../tests/test_tensor_copy.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../tests/test_attention.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../tests/test_f16_storage.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../tests/test_interface.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../tests/test_validation.py"
+    },
+    {
+      "file": "pass-reference.md",
+      "target": "../../benchmarks/validation-2026-10-24-r6.json"
     }
   ],
-  "visual_review": "Rendered overview plus full hardware/result slides and recording-script page reviewed; no clipped or overlapping content observed. PowerPoint file structure and bounds checked without native application rendering.",
+  "visual_review": "Reviewed overview of all nine main slides, full tensor-pipeline/attention/PV slides, reference page 2, and final script page. No clipping or overlap observed. Fixed PDF/PNG rendering; PowerPoint structure/bounds checked without native app rendering.",
+  "source_review": "Pass explanations reviewed against current source by reduction, tensor, and attention agents. No remaining material findings.",
   "handoff9_unchanged": true,
+  "original_video_kit_unchanged": true,
   "compiler_changes": false,
   "new_gpu_runs": 0,
   "final_video_status": "awaiting_user_recording"

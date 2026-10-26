@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "project": "Deuteron three-minute presentation",
+  "schema_version": 2,
+  "project": "Deuteron — compiler passes and innovations",
   "status": "awaiting_user_recording",
   "recording": {
     "required_assets": [
@@ -23,7 +23,7 @@
       "minimum": 2,
       "maximum": 3
     },
-    "mistakes": "Pause 2\u20133 seconds, restart the full sentence, and continue recording",
+    "mistakes": "Pause 2–3 seconds, restart the full sentence, and continue recording",
     "source_asset": null,
     "preserve_original": true,
     "work_on_copy": true
@@ -37,70 +37,108 @@
       {
         "id": "scene-01",
         "start_seconds": 0,
-        "end_seconds": 20,
+        "end_seconds": 12,
         "slide_id": "slide-01",
+        "title": "The compiler transformations we built",
         "cues": [
-          "Open on the presenter for the introductory sentence",
-          "Insert slide-01 full screen at the first suitable phrase boundary"
+          "Open on the presenter, then the title. Point to reuse, parallel work, and tensor pipelines.",
+          "Show the title and the three contribution families: reuse data, redistribute work, and build tensor pipelines. Keep scheduled Emmy IR and RTX 5090 visible."
         ]
       },
       {
         "id": "scene-02",
-        "start_seconds": 20,
-        "end_seconds": 50,
+        "start_seconds": 12,
+        "end_seconds": 27,
         "slide_id": "slide-02",
+        "title": "Where our passes run",
         "cues": [
-          "Show slide-02 full screen",
-          "Reveal or highlight details only when the narration introduces them"
+          "Follow the pipeline. Say the LLVM credit clearly.",
+          "Show input validation, the actual early rewrite order, specialized lowering, and LLVM/NVPTX. The early order is vectorization, register forwarding, recurrence reordering, then grid folding. Name the project contribution: recognizers, guards, and transformed GPU schedules."
         ]
       },
       {
         "id": "scene-03",
-        "start_seconds": 50,
-        "end_seconds": 85,
+        "start_seconds": 27,
+        "end_seconds": 44,
         "slide_id": "slide-03",
+        "title": "Reuse data before loading it again",
         "cues": [
-          "Show slide-03 full screen",
-          "If available and relevant, insert a readable demo within this interval"
+          "Trace the retained vector through reduction and consumer.",
+          "Show scalar loop to four values per lane; then load vector, reduce, and reuse the same vector in a consumer. Highlight matching indices, readonly input, closed lifetimes, and aligned complete coverage."
         ]
       },
       {
         "id": "scene-04",
-        "start_seconds": 85,
-        "end_seconds": 110,
+        "start_seconds": 44,
+        "end_seconds": 63,
         "slide_id": "slide-04",
+        "title": "Reshape parallel work",
         "cues": [
-          "Show slide-04 full screen",
-          "Use an optional demo only where it directly follows the narration"
+          "Show lane cooperation, then folded K work and inactive surplus blocks.",
+          "Use two concrete illustrations: repeated dot to lane partials plus shuffle, and four eligible split-K partitions folded into two logical partitions with twice the K work. Label the factor-two drawing illustrative; the actual factor is guarded. Surplus physical CTAs exit; the original atomic output remains. The four partitions are per output tile within a larger grid; sufficient total parallelism remains a guard."
         ]
       },
       {
         "id": "scene-05",
-        "start_seconds": 110,
-        "end_seconds": 150,
+        "start_seconds": 63,
+        "end_seconds": 86,
         "slide_id": "slide-05",
+        "title": "Turn contractions into tensor work",
         "cues": [
-          "Show slide-05 full screen",
-          "Keep detailed text and numbers readable; avoid motion while they are discussed"
+          "Explain the three products. Keep the FP16 strip separate from tensor operands.",
+          "Show a shared-memory contraction becoming warp MMA, with high/high, high/low, and low/high products. Label low/low omitted, FP32 buffers and accumulation, and ordinary FP32 mode available. Show a separate FP16 storage to FP32 arithmetic to nearest-even FP16 store strip."
         ]
       },
       {
         "id": "scene-06",
+        "start_seconds": 86,
+        "end_seconds": 109,
+        "slide_id": "slide-06",
+        "title": "Rewrite the pipeline feeding tensor cores",
+        "cues": [
+          "Compare the two paths. The packed BF16 path replaces the asynchronous ring.",
+          "Compare the scheduled FP32 asynchronous copy ring with the certified packed BF16 rewrite: register prefetch, producer packing, shared layout, and fragment lookahead. Keep the exact copy-phase guard visible. Show final unused prefetch/consumer barrier omitted while producer synchronization remains. TF32x3 and FP32 retain the eligible cp.async path."
+        ]
+      },
+      {
+        "id": "scene-07",
+        "start_seconds": 109,
+        "end_seconds": 132,
+        "slide_id": "slide-07",
+        "title": "Recognize and stage the attention recurrence",
+        "cues": [
+          "Follow scores to weights to mass and PV. Then show guarded storage reuse.",
+          "Show repeated score and online max/mass/value work becoming score reuse, row maximum, shared unnormalized weights, and separate mass/PV accumulation. Show two/four adjacent key rounds and read-to-maximum-to-store lifetime ordering in the same warp and component. Each unnormalized weight feeds register mass accumulation directly and shared storage for PV; mass does not reread shared weights."
+        ]
+      },
+      {
+        "id": "scene-08",
+        "start_seconds": 132,
+        "end_seconds": 150,
+        "slide_id": "slide-08",
+        "title": "Redistribute probability–value work",
+        "cues": [
+          "Trace four key shards into the first eight writing lanes.",
+          "Draw four eight-lane groups, each processing a key shard and four adjacent columns per lane. Combine groups with butterfly offsets 16 and 8; only the first eight lanes write. Show restoring the saved denominator before each closed per-column suffix replay."
+        ]
+      },
+      {
+        "id": "scene-09",
         "start_seconds": 150,
         "end_seconds": 175,
-        "slide_id": "slide-06",
+        "slide_id": "slide-09",
+        "title": "Measure the whole compiler on RTX 5090",
         "cues": [
-          "Show slide-06 full screen",
-          "Return to the presenter for the closing sentence",
-          "Finish all words and the music fade before the silent end hold"
+          "Slow for the ratios. Hold the results slide silently from 2:55 to 3:00.",
+          "Show the recorded warm latency bars: Deuteron 3.752 microseconds, NVCC 6.216, tested Triton 4.332. Show 1.66x and 1.15x, 15 open workloads, 270 balanced calls, 20 warmups/200 iterations, original output checks, and compile/assembly/transport excluded. Hold this slide unchanged for the last five seconds."
         ]
       }
     ],
     "end_hold": {
       "start_seconds": 175,
       "end_seconds": 180,
-      "slide_id": "slide-06",
-      "picture": "Static full-screen closing slide",
+      "slide_id": "slide-09",
+      "picture": "Static full-screen RTX 5090 results slide",
       "speech": false,
       "music": false,
       "other_audio": false,
@@ -112,7 +150,8 @@
       "allow_word_truncation": false,
       "allow_voice_time_compression": false,
       "overrun_action": "Use a shorter spoken pickup or revise the cut; never force the target by cutting words"
-    }
+    },
+    "reference_slides_in_video": false
   },
   "picture_plan": {
     "default_transition": "Clean cut at a spoken phrase boundary",
@@ -125,11 +164,11 @@
     "motion": "Restrained reveals and highlights; no continuous zooming or decorative effects",
     "presenter": {
       "intro": true,
-      "outro": true,
+      "outro": false,
       "small_overlay_optional": true,
       "overlay_rule": "Use only empty slide space; omit the inset if it covers content or captions"
     },
-    "demo_policy": "Optional inserts replace part of a slide interval; all six slides still appear full screen",
+    "demo_policy": "The narrated edit uses nine slides and no standalone terminal demo. The three pass-reference slides and archived compile demonstration stay outside the three-minute timeline.",
     "slide_asset_pattern": "slides/slide-{number:02d}.png",
     "slide_native_dimensions": {
       "width": 1920,
@@ -145,7 +184,10 @@
       "background": "#0C1422",
       "rule": "Scale the full slide uniformly into this presentation area; reserve the bottom band for captions and preserve every slide footnote. Check two-line captions fit the band."
     },
-    "clean_slide_layout": "Use the native full-screen 1920\u00d71080 slide; presenter inset only in unobstructed space."
+    "clean_slide_layout": "Use the native full-screen 1920×1080 slide; presenter inset only in unobstructed space.",
+    "reference_asset_pattern": "reference-slides/slide-{number:02d}.png",
+    "reference_slide_count": 3,
+    "main_slide_count": 9
   },
   "audio_plan": {
     "voice_priority": true,
@@ -227,5 +269,6 @@
       "Final exports"
     ],
     "final_review": "Check timing, voice clarity, slide readability, caption sync, and the complete silent end hold"
-  }
+  },
+  "presentation_revision": "passes-and-innovations"
 }
