@@ -2,16 +2,16 @@ Deuteron compiles scheduled Emmy Kernel IR into PTX for the RTX 5090. Our contri
 
 We validate IR and metadata; each rewrite checks index and ownership conditions. Early passes vectorize loops, forward reduction inputs, reorder recurrences, and fold split-K grids. Specialized lowering follows; LLVM supplies optimization and NVPTX code generation.
 
-Elementwise vectorization packs four values per lane. Reduction load forwarding keeps inputs in registers for the consumer instead of loading them again. Coalesced sum and square reductions use contiguous loads; long eligible loops add independent accumulators.
+We look for repeated reads of the same input, or neighboring values loaded one at a time. We keep reusable values in registers and load nearby values together. That means fewer repeated trips to global memory.
 
-Cooperative dot reduction shares a repeated dot across lanes and combines partials with shuffles. Small-tree elimination removes redundant reduction stages. Split-K grid folding merges eligible K partitions into deeper work per block while preserving the original physical grid.
+We look for repeated calculations and blocks doing tiny pieces of work. We share dot products across threads, remove unnecessary reduction steps, and merge small pieces when enough parallel work remains. That reduces duplicated work and scheduling overhead.
 
-Contraction tensorization recognizes a closed shared-memory multiply-add and emits compensated BF16x3 or TF32x3 products. Three high and residual products accumulate in FP32; omitting low times low makes this approximate. Shared-memory layout matches producers to MMA fragments. Separate FP16 storage uses explicit FP32 arithmetic.
+We look for matrix multiplication written as ordinary multiply-and-add loops. We replace them with tensor-core operations, using three lower-precision products to approximate the result while adding them together in 32-bit precision. We also arrange shared memory so tensor cores can read it efficiently.
 
-Packed register staging replaces a certified FP32 copy ring for BF16 lowering with vector prefetch, high and residual packing, and one used shared stage. Fragment pipelining loads the next MMA fragment early. Pipeline drain skips unused final prefetches. Other eligible paths retain asynchronous copies.
+We look for tensor-core loops that repeatedly copy and convert their matrix inputs. For the supported BF16 path, we fetch upcoming inputs early and pack them before the tensor cores need them. We also skip the final prefetch when there is no more work.
 
-Staged online recurrence computes attention scores once per sharing group, then materializes unnormalized weights for mass and value accumulation. Blocked recurrence loads group adjacent keys. Shared-storage reuse overwrites dead operands only when warp ownership and dependency checks make it safe.
+We look for attention loops that repeat the score calculation across output columns. We calculate scores once per group and reuse their weights. We also load neighboring keys together and reuse temporary storage once its values are no longer needed.
 
-Warp-distributed vector PV reduction targets one warp and thirty-two columns. Four groups split the keys; each lane accumulates four adjacent columns. Shuffles combine the groups. The original output suffix is replayed, restoring the denominator before every column.
+We look for attention loops where each thread scans every key for one output column. We split keys among thread groups, load four adjacent columns together, and combine their partial results. Each column keeps its original normalization.
 
 On fifteen open workloads, geometric mean warm latency is three point seven five microseconds. Speedups are one point six six times over generated CUDA with NVCC, and one point one five times over the tested Triton baseline. All two hundred seventy calls passed the original checks. These are whole-compiler results with a limited Triton search.

@@ -37,9 +37,9 @@ Record one continuous take with clear speech. The slides carry the diagrams and 
 
 ## 0:27–0:44 · Slide 3: Reuse data before loading it again
 
-**Delivery:** Point once to the removed second global read. The diagrams illustrate admitted patterns, not a measurement of every kernel.
+**Delivery:** State the pattern first, then explain the change. Point to the repeated read, then show the saved values being reused.
 
-> Elementwise vectorization packs four values per lane. Reduction load forwarding keeps inputs in registers for the consumer instead of loading them again. Coalesced sum and square reductions use contiguous loads; long eligible loops add independent accumulators.
+> We look for repeated reads of the same input, or neighboring values loaded one at a time. We keep reusable values in registers and load nearby values together. That means fewer repeated trips to global memory.
 
 **On screen:** Show scalar loop to four values per lane; then load vector, reduce, and reuse the same vector in a consumer. Highlight matching indices, readonly input, closed lifetimes, and aligned complete coverage.
 
@@ -47,9 +47,9 @@ Record one continuous take with clear speech. The slides carry the diagrams and 
 
 ## 0:44–1:03 · Slide 4: Reshape parallel work
 
-**Delivery:** Pause between the lane-level rewrite and the block-level rewrite. Keep the original-grid constraint audible.
+**Delivery:** State the pattern first, then explain the change. Show repeated work becoming shared work, then small pieces being combined.
 
-> Cooperative dot reduction shares a repeated dot across lanes and combines partials with shuffles. Small-tree elimination removes redundant reduction stages. Split-K grid folding merges eligible K partitions into deeper work per block while preserving the original physical grid.
+> We look for repeated calculations and blocks doing tiny pieces of work. We share dot products across threads, remove unnecessary reduction steps, and merge small pieces when enough parallel work remains. That reduces duplicated work and scheduling overhead.
 
 **On screen:** Use two concrete illustrations: repeated dot to lane partials plus shuffle, and four eligible split-K partitions folded into two logical partitions with twice the K work. Label the factor-two drawing illustrative; the actual factor is guarded. Surplus physical CTAs exit; the original atomic output remains. The four partitions are per output tile within a larger grid; sufficient total parallelism remains a guard.
 
@@ -57,9 +57,9 @@ Record one continuous take with clear speech. The slides carry the diagrams and 
 
 ## 1:03–1:26 · Slide 5: Turn contractions into tensor work
 
-**Delivery:** Say BF16x3 and TF32x3 slowly. The approximation and the separate FP16 storage path must remain explicit.
+**Delivery:** State the pattern first, then explain the change. Follow the loop into tensor-core operations. Say that the result is approximate.
 
-> Contraction tensorization recognizes a closed shared-memory multiply-add and emits compensated BF16x3 or TF32x3 products. Three high and residual products accumulate in FP32; omitting low times low makes this approximate. Shared-memory layout matches producers to MMA fragments. Separate FP16 storage uses explicit FP32 arithmetic.
+> We look for matrix multiplication written as ordinary multiply-and-add loops. We replace them with tensor-core operations, using three lower-precision products to approximate the result while adding them together in 32-bit precision. We also arrange shared memory so tensor cores can read it efficiently.
 
 **On screen:** Show a shared-memory contraction becoming warp MMA, with high/high, high/low, and low/high products. Label low/low omitted, FP32 buffers and accumulation, and ordinary FP32 mode available. Show a separate FP16 storage to FP32 arithmetic to nearest-even FP16 store strip.
 
@@ -67,9 +67,9 @@ Record one continuous take with clear speech. The slides carry the diagrams and 
 
 ## 1:26–1:49 · Slide 6: Rewrite the pipeline feeding tensor cores
 
-**Delivery:** Stress replaces and used stage. Do not claim that packing itself is asynchronous or that reserved shared memory is halved.
+**Delivery:** State the pattern first, then explain the change. Show the next inputs arriving early, then the unused final load being removed.
 
-> Packed register staging replaces a certified FP32 copy ring for BF16 lowering with vector prefetch, high and residual packing, and one used shared stage. Fragment pipelining loads the next MMA fragment early. Pipeline drain skips unused final prefetches. Other eligible paths retain asynchronous copies.
+> We look for tensor-core loops that repeatedly copy and convert their matrix inputs. For the supported BF16 path, we fetch upcoming inputs early and pack them before the tensor cores need them. We also skip the final prefetch when there is no more work.
 
 **On screen:** Compare the scheduled FP32 asynchronous copy ring with the certified packed BF16 rewrite: register prefetch, producer packing, shared layout, and fragment lookahead. Keep the exact copy-phase guard visible. Show final unused prefetch/consumer barrier omitted while producer synchronization remains. TF32x3 and FP32 retain the eligible cp.async path.
 
@@ -77,9 +77,9 @@ Record one continuous take with clear speech. The slides carry the diagrams and 
 
 ## 1:49–2:12 · Slide 7: Recognize and stage the attention recurrence
 
-**Delivery:** Say unnormalized weights, and keep once per sharing group. Reuse depends on the proof shown on the slide.
+**Delivery:** State the pattern first, then explain the change. Show one score calculation feeding several outputs, then temporary storage being reused.
 
-> Staged online recurrence computes attention scores once per sharing group, then materializes unnormalized weights for mass and value accumulation. Blocked recurrence loads group adjacent keys. Shared-storage reuse overwrites dead operands only when warp ownership and dependency checks make it safe.
+> We look for attention loops that repeat the score calculation across output columns. We calculate scores once per group and reuse their weights. We also load neighboring keys together and reuse temporary storage once its values are no longer needed.
 
 **On screen:** Show repeated score and online max/mass/value work becoming score reuse, row maximum, shared unnormalized weights, and separate mass/PV accumulation. Show two/four adjacent key rounds and read-to-maximum-to-store lifetime ordering in the same warp and component. Each unnormalized weight feeds register mass accumulation directly and shared storage for PV; mass does not reread shared weights.
 
@@ -87,9 +87,9 @@ Record one continuous take with clear speech. The slides carry the diagrams and 
 
 ## 2:12–2:30 · Slide 8: Redistribute probability–value work
 
-**Delivery:** Explain the ownership picture, then emphasize denominator restoration as the compiler correctness detail.
+**Delivery:** State the pattern first, then explain the change. Show the keys split among groups, then their partial results being combined.
 
-> Warp-distributed vector PV reduction targets one warp and thirty-two columns. Four groups split the keys; each lane accumulates four adjacent columns. Shuffles combine the groups. The original output suffix is replayed, restoring the denominator before every column.
+> We look for attention loops where each thread scans every key for one output column. We split keys among thread groups, load four adjacent columns together, and combine their partial results. Each column keeps its original normalization.
 
 **On screen:** Draw four eight-lane groups, each processing a key shard and four adjacent columns per lane. Combine groups with butterfly offsets 16 and 8; only the first eight lanes write. Show restoring the saved denominator before each closed per-column suffix replay.
 
@@ -125,11 +125,11 @@ The optional [three-page pass reference](pass-reference.pdf) covers all 27 docum
 
 ## Optional cuts after rehearsal
 
-- Slide 3: omit the final sentence about coalesced sums; its pass name and diagram remain on screen.
-- Slide 5: omit the final sentence about separate FP16 storage; keep the separate strip visible.
-- Slide 6: omit the fragment-lookahead sentence if necessary; the diagram still shows this lowering.
+- Slide 3: omit the final sentence about fewer trips to memory; the diagram shows the benefit.
+- Slide 5: omit the final sentence about arranging shared memory; the diagram still shows the layout.
+- Slide 6: omit the final sentence about skipping the last prefetch; the diagram still shows this change.
 
-Keep the tensor approximation, the original-grid qualification, LLVM attribution, and benchmark qualifiers. If the take runs long, use a shorter sentence or pickup rather than speeding up technical names.
+Keep the tensor approximation, LLVM attribution, and benchmark qualifiers. The slide diagrams and evidence notes retain the detailed rewrite conditions. If the take runs long, use a shorter sentence or pickup rather than speeding up technical names.
 
 ## Evidence and boundaries
 

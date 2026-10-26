@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-10-26T18:42:04.230890+00:00",
+  "generated_utc": "2026-10-26T21:16:52.982892+00:00",
   "revision": "passes-and-innovations",
   "source_release": "efb728d9106d864bb5f35efc95bfb5f01d95646a",
   "spoken_words": 355,
@@ -19,9 +19,9 @@
   ],
   "final_video_status": "awaiting_user_recording",
   "source_sha256": {
-    "docs/video/script.json": "e1b285df58d16c0f0b5bddde0940832680f7b1110d36a48c0641a6f2395db6b7",
+    "docs/video/script.json": "81d97d18c8e9e29d0fb866de7d86b73c20e087d768ac3527d617db2353db0563",
     "docs/video/passes.json": "c11033aec4d70031b97648f7f17e7899292c951c9e0f3312b140f02a3eab7bc8",
-    "docs/video/build_assets.py": "883b6968aed13cf59b6c2dd2f6aaaa1327de334859e7f6ba19214c2a0e4f921e",
+    "docs/video/build_assets.py": "85657bd232f84e0f9ac214a6b45d86efccc9b1a5bf1df28666053c0f4af8f8de",
     "docs/video/requirements.txt": "3173ee024329cf21ae8897bd802d4ee9be64faa90a0f70e23cff90dd9fc55367",
     "docs/video/innovations.md": "39babdafc843f72b3b893234e012f423cc0e4eedfa0bdffaad7af317c5167cac",
     "docs/video/pass-reference.md": "3dd94826a2e637823445002a9785ef0912543585cf16f283bff0b1b89dea2709",
@@ -49,8 +49,8 @@
       "bytes": 83812
     },
     "slides.pptx": {
-      "sha256": "97486735e3b93bbe354263b12454c5bc199cf8d07891f5cb8d4de7bcda631ac9",
-      "bytes": 71956
+      "sha256": "6fbed72a078beadaaa1946fd3783e8f15c5f98d080e0c7ba31f2d249aa6ec519",
+      "bytes": 72066
     },
     "pass-reference.pdf": {
       "sha256": "6dd8c8a2ce0f9987ee6cbaf2d8d5179050765ef35d9bbe3e86690498ca3ce152",
@@ -61,24 +61,24 @@
       "bytes": 48038
     },
     "recording-script.pdf": {
-      "sha256": "424deb4d5759ac55b32daefb31474bea4527081ae8ac5659b2894c3d4bd08172",
-      "bytes": 48378
+      "sha256": "be514a635f21a29d83c64612ccfc9e05abeaa23149d94d287e0abbaa5a6bb318",
+      "bytes": 48102
     },
     "recording-script.docx": {
-      "sha256": "7c70ed6da0e1d6cb721ccb6d52bca92eb8a8f7546cfdf4d35360d3a363a18605",
-      "bytes": 38804
+      "sha256": "a7d775ae537c215eeabe4d62ec8bd05c76dcf65df6c5af2e65ab38bcc415995a",
+      "bytes": 38619
     },
     "narration.txt": {
-      "sha256": "9256545622119aafc96a88f1b61c2e82a3f4b9d59762b5e1099e82812365e055",
-      "bytes": 2541
+      "sha256": "7483982a1336651eb69f3ceb36167ea8a092b5ad4962c02fd50f65d802edb16d",
+      "bytes": 2311
     },
     "slides-overview.png": {
       "sha256": "d7c347384ff62fb04beae0e07e284196a31ac34e66ce94eacfd3fc086a5e255a",
       "bytes": 735680
     },
     "presentation-script.md": {
-      "sha256": "72c565155c4616ec950cbb8574d6d869c573f049233ee4803ec12ca44fe1a8a6",
-      "bytes": 12916
+      "sha256": "f58d7cb4dac1bb54202e177e93c6d331c6967188f43e2a521aec565160c9c2d8",
+      "bytes": 12832
     },
     "slides/slide-01.png": {
       "sha256": "cac68336bbeefa56f53921a381b94b36cf8832c3fad039b1429ca34e10a8014f",

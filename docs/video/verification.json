@@ -27,7 +27,7 @@
   "pass_inventory_exactly_matches_README": true,
   "narration_consistent_across_markdown_json_docx_pdf_notes": true,
   "pptx_text_and_shape_bounds_checked": true,
-  "pdf_text_spans_within_pages": 473,
+  "pdf_text_spans_within_pages": 471,
   "pdf_and_docx_and_pptx_containers_valid": true,
   "benchmark_numbers_match_release": true,
   "old_demo_and_reliability_slides_removed": true,
@@ -409,11 +409,19 @@
       "target": "../../benchmarks/validation-2026-10-24-r6.json"
     }
   ],
-  "visual_review": "Reviewed overview of all nine main slides, full tensor-pipeline/attention/PV slides, reference page 2, and final script page. No clipping or overlap observed. Fixed PDF/PNG rendering; PowerPoint structure/bounds checked without native app rendering.",
+  "visual_review": "Reviewed all three pages of the simplified recording PDF: no clipping or overlap. Main and reference slide visuals are unchanged; regenerated main PowerPoint slide XML matches the prior deck, with updated speaker notes. Prior visual review covers the unchanged slides.",
   "source_review": "Pass explanations reviewed against current source by reduction, tensor, and attention agents. No remaining material findings.",
   "handoff9_unchanged": true,
   "original_video_kit_unchanged": true,
   "compiler_changes": false,
   "new_gpu_runs": 0,
-  "final_video_status": "awaiting_user_recording"
+  "final_video_status": "awaiting_user_recording",
+  "simplified_readthrough_slides": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ]
 }
